@@ -1,0 +1,398 @@
+<?xml version="1.0"?>
+<!--Phoronix Test Suite v10.8.4-->
+<PhoronixTestSuite>
+  <Generated>
+    <Title>sdp-sd</Title>
+    <LastModified>2026-08-30 09:26:09</LastModified>
+    <TestClient>Phoronix Test Suite v10.8.4</TestClient>
+    <Description>SDP-SD: SDP kernel with 16 sensitive fields protected (including page tables)</Description>
+  </Generated>
+  <System>
+    <Identifier>sdp-sd</Identifier>
+    <Hardware>Processor: SiFive RISC-V (4 Cores), Motherboard: SiFive HiFive Unmatched A00, Chipset: SiFive FU740-C000 RISC-V SoC, Memory: 16GB, Disk: Samsung SSD 980 500GB + 32GB SD32G</Hardware>
+    <Software>OS: Ubuntu 25.04, Kernel: 6.6.0-g093980467686 (riscv64), Compiler: GCC 14.2.0, File-System: ext4</Software>
+    <User>ubuntu</User>
+    <TimeStamp>2026-08-29 19:10:23</TimeStamp>
+    <TestClientVersion>10.8.4</TestClientVersion>
+    <Notes></Notes>
+    <JSON>{"compiler-configuration":"--build=riscv64-linux-gnu --disable-libquadmath --disable-libquadmath-support --disable-multilib --disable-werror --enable-checking=release --enable-clocale=gnu --enable-default-pie --enable-gnu-unique-object --enable-languages=c,ada,c++,go,d,fortran,objc,obj-c++,m2,rust --enable-libphobos-checking=release --enable-libstdcxx-backtrace --enable-libstdcxx-debug --enable-libstdcxx-time=yes --enable-link-serialization=4 --enable-multiarch --enable-nls --enable-objc-gc=auto --enable-plugin --enable-shared --enable-threads=posix --host=riscv64-linux-gnu --program-prefix=riscv64-linux-gnu- --target=riscv64-linux-gnu --with-abi=lp64d --with-arch=rv64gc --with-build-config=bootstrap-lto-lean --with-default-libstdcxx-abi=new --with-gcc-major-version-only --with-target-system-zlib=auto -v","disk-scheduler":"NONE","disk-mount-options":"relatime,rw,stripe=32","disk-details":"Block Size: 4096","python":"Python 3.13.3"}</JSON>
+  </System>
+  <Result>
+    <Identifier>pts/aio-stress-1.1.3</Identifier>
+    <Title>AIO-Stress</Title>
+    <AppVersion>0.21</AppVersion>
+    <Arguments>-o 2</Arguments>
+    <Description>Test: Random Write</Description>
+    <Scale>MB/s</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-sd</Identifier>
+        <Value>120.67</Value>
+        <RawString>120.56:120.86:120.59</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-O3 -pthread -laio"},"test-run-times":"22.36:20.35:20.40"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/sqlite-2.3.0</Identifier>
+    <Title>SQLite</Title>
+    <AppVersion>3.50.4</AppVersion>
+    <Arguments>1</Arguments>
+    <Description>Threads / Copies: 1</Description>
+    <Scale>Seconds</Scale>
+    <Proportion>LIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-sd</Identifier>
+        <Value>8.085</Value>
+        <RawString>7.879:8.04:8.224:7.935:8.242:8.041:8.208:7.941:8.209:8.05:8.198:7.923:8.184:8.027:8.169</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-lm -lz -O2"},"test-run-times":"7.88:8.04:8.22:7.94:8.24:8.04:8.21:7.94:8.21:8.05:8.20:7.92:8.18:8.03:8.17"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/dbench-1.0.2</Identifier>
+    <Title>Dbench</Title>
+    <AppVersion>4.0</AppVersion>
+    <Arguments>1</Arguments>
+    <Description>Client Count: 1</Description>
+    <Scale>MB/s</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-sd</Identifier>
+        <Value>74.4210</Value>
+        <RawString>74.453:74.2594:74.5506</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-lpopt -O2"},"test-run-times":"721.05:721.06:721.08"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/iozone-1.9.6</Identifier>
+    <Title>IOzone</Title>
+    <AppVersion>3.465</AppVersion>
+    <Arguments>-r 4k -s 512M -i0 -i1 #READ</Arguments>
+    <Description>Record Size: 4Kb - File Size: 512MB - Disk Test: Read Performance</Description>
+    <Scale>MB/s</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-sd</Identifier>
+        <Value>285.12</Value>
+        <RawString>283.3115234375:286.9267578125:285.1171875</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-O3"},"test-run-times":"274.48:306.16:269.83"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/iozone-1.9.6</Identifier>
+    <Title>IOzone</Title>
+    <AppVersion>3.465</AppVersion>
+    <Arguments>-r 4k -s 512M -i0 #WRITE</Arguments>
+    <Description>Record Size: 4Kb - File Size: 512MB - Disk Test: Write Performance</Description>
+    <Scale>MB/s</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-sd</Identifier>
+        <Value>2.74</Value>
+        <RawString>2.7353515625:2.79296875:2.7236328125:2.751953125:2.6904296875:2.7412109375:2.734375:2.7841796875:2.716796875</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-O3"},"test-run-times":"263.22:259.19:263.59:261.50:266.23:262.76:263.34:259.72:264.61"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/tiobench-1.3.1</Identifier>
+    <Title>Threaded I/O Tester</Title>
+    <AppVersion>20170503</AppVersion>
+    <Arguments>-k3 -k1 -f 32 -t 4</Arguments>
+    <Description>Test: Read - Size Per Thread: 32MB - Thread Count: 4</Description>
+    <Scale>MB/s</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-sd</Identifier>
+        <Value>949.996</Value>
+        <RawString>906.959:909.653:952.296:960.096:959.736:954.22:959.535:958.902:961.264:960.082:951.581:953.26:959.837:951.347:951.171</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-O2"},"test-run-times":"22.73:22.50:22.68:22.58:22.69:22.68:22.70:22.71:22.69:22.46:22.72:22.67:22.88:22.48:22.72"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/tiobench-1.3.1</Identifier>
+    <Title>Threaded I/O Tester</Title>
+    <AppVersion>20170503</AppVersion>
+    <Arguments>-k3 -k2 -k1 -f 32 -t 4</Arguments>
+    <Description>Test: Write - Size Per Thread: 32MB - Thread Count: 4</Description>
+    <Scale>MB/s</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-sd</Identifier>
+        <Value>6.255</Value>
+        <RawString>6.268:6.239:6.259</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-O2"},"test-run-times":"21.54:21.63:21.56"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/tiobench-1.3.1</Identifier>
+    <Title>Threaded I/O Tester</Title>
+    <AppVersion>20170503</AppVersion>
+    <Arguments>-k2 -k1 -f 32 -t 4</Arguments>
+    <Description>Test: Random Read - Size Per Thread: 32MB - Thread Count: 4</Description>
+    <Scale>MB/s</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-sd</Identifier>
+        <Value>5122.749</Value>
+        <RawString>5660.461:4250.374:5695.977:5670.743:4260.985:3593.083:4246.425:5632.315:4263.256:5510.353:5637.276:5650.466:5680.81:5633.307:5455.398</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-O2"},"test-run-times":"22.61:22.70:22.62:22.40:22.38:22.48:22.58:22.58:22.58:22.65:22.41:22.68:22.59:22.62:22.63"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/tiobench-1.3.1</Identifier>
+    <Title>Threaded I/O Tester</Title>
+    <AppVersion>20170503</AppVersion>
+    <Arguments>-k3 -k2 -f 32 -t 4</Arguments>
+    <Description>Test: Random Write - Size Per Thread: 32MB - Thread Count: 4</Description>
+    <Scale>MB/s</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-sd</Identifier>
+        <Value>114.756</Value>
+        <RawString>116.156:121.728:112.711:111.309:110.095:113.893:106.997:120.427:115.602:113.918:118.306:115.748:116.147:116.597:111.711</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-O2"},"test-run-times":"23.67:23.66:23.73:23.52:23.53:23.46:23.84:23.66:23.68:23.49:23.46:23.74:23.48:23.67:23.73"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/unpack-linux-1.2.0</Identifier>
+    <Title>Unpacking The Linux Kernel</Title>
+    <AppVersion>5.19</AppVersion>
+    <Arguments></Arguments>
+    <Description>linux-5.19.tar.xz</Description>
+    <Scale>Seconds</Scale>
+    <Proportion>LIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-sd</Identifier>
+        <Value>29.130</Value>
+        <RawString>29.558:29.22:30.203:29.141:29.148:28.945:28.841:29.048:29.023:29.031:28.823:29.034:29.059:29.076:28.931:29.245:29.189:29.242:28.948:28.893</RawString>
+        <JSON>{"test-run-times":"29.56:29.22:30.20:29.14:29.15:28.95:28.84:29.05:29.02:29.03:28.82:29.03:29.06:29.08:28.93:29.25:29.19:29.24:28.95:28.89"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/postmark-1.1.2</Identifier>
+    <Title>PostMark</Title>
+    <AppVersion>1.51</AppVersion>
+    <Arguments></Arguments>
+    <Description>Disk Transaction Performance</Description>
+    <Scale>TPS</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-sd</Identifier>
+        <Value>384</Value>
+        <RawString>384:385:384</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-O3"},"test-run-times":"652.76:650.77:652.77"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/ffmpeg-7.0.2</Identifier>
+    <Title>FFmpeg</Title>
+    <AppVersion>7.0</AppVersion>
+    <Arguments>--encoder=libx264 live</Arguments>
+    <Description>Encoder: libx264 - Scenario: Live</Description>
+    <Scale>FPS</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-sd</Identifier>
+        <Value>3.11</Value>
+        <RawString>3.1076302480237:3.106100577309:3.1073531253975</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CXX","compiler":"g++","compiler-options":"-O3 -rdynamic -lpthread -lrt -ldl"},"test-run-times":"2224.88:2226.96:2224.61"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/compress-7zip-1.12.0</Identifier>
+    <Title>7-Zip Compression</Title>
+    <AppVersion>25.00</AppVersion>
+    <Arguments></Arguments>
+    <Description>Test: Compression Rating</Description>
+    <Scale>MIPS</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-sd</Identifier>
+        <Value>2005</Value>
+        <RawString>2131:1949:1838:2019:2028:1951:1972:2120:2102:2110:1882:1952</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CXX","compiler":"g++","compiler-options":"-lpthread -ldl -O2 -fPIC"},"test-run-times":"140.71:150.44:160.50:143.57:143.84:148.33:144.97:141.79:142.27:141.71:158.48:155.04"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/compress-7zip-1.12.0</Identifier>
+    <Title>7-Zip Compression</Title>
+    <AppVersion>25.00</AppVersion>
+    <Arguments></Arguments>
+    <Description>Test: Decompression Rating</Description>
+    <Scale>MIPS</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-sd</Identifier>
+        <Value>4311</Value>
+        <RawString>4305:4291:4332:4332:4295:4335:4330:4280:4298:4315:4291:4331</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CXX","compiler":"g++","compiler-options":"-lpthread -ldl -O2 -fPIC"},"test-run-times":"140.71:150.44:160.50:143.57:143.84:148.33:144.97:141.79:142.27:141.71:158.48:155.04"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/build-linux-kernel-1.17.1</Identifier>
+    <Title>Timed Linux Kernel Compilation</Title>
+    <AppVersion>6.15</AppVersion>
+    <Arguments>defconfig</Arguments>
+    <Description>Build: defconfig</Description>
+    <Scale>Seconds</Scale>
+    <Proportion>LIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-sd</Identifier>
+        <Value>8091.771</Value>
+        <RawString>8109.744:8082.276:8083.293</RawString>
+        <JSON>{"test-run-times":"8109.74:8082.28:8083.29"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/openssl-3.6.0</Identifier>
+    <Title>OpenSSL</Title>
+    <AppVersion>3.6</AppVersion>
+    <Arguments>rsa4096</Arguments>
+    <Description>Algorithm: RSA4096</Description>
+    <Scale>sign/s</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-sd</Identifier>
+        <Value>53.0</Value>
+        <RawString>53:53:52.9</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-pthread -O3 -lssl -lcrypto -ldl"},"test-run-times":"347.23:360.36:338.45"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/openssl-3.6.0</Identifier>
+    <Title>OpenSSL</Title>
+    <AppVersion>3.6</AppVersion>
+    <Arguments>rsa4096</Arguments>
+    <Description>Algorithm: RSA4096</Description>
+    <Scale>verify/s</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-sd</Identifier>
+        <Value>4029.5</Value>
+        <RawString>4030.6:4027.5:4030.5</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-pthread -O3 -lssl -lcrypto -ldl"},"test-run-times":"347.23:360.36:338.45"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/pgbench-1.17.0</Identifier>
+    <Title>PostgreSQL</Title>
+    <AppVersion>18.1</AppVersion>
+    <Arguments>-s 1 -c 1</Arguments>
+    <Description>Scaling Factor: 1 - Clients: 1 - Mode: Read Write</Description>
+    <Scale>TPS</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-sd</Identifier>
+        <Value>528</Value>
+        <RawString>528.312226:531.733482:524.027381</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-fno-strict-aliasing -fwrapv -O2 -lpq -lpgcommon -lpgport -lm"},"test-run-times":"135.38:135.24:135.23"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/pgbench-1.17.0</Identifier>
+    <Title>PostgreSQL</Title>
+    <AppVersion>18.1</AppVersion>
+    <Arguments>-s 1 -c 1</Arguments>
+    <Description>Scaling Factor: 1 - Clients: 1 - Mode: Read Write - Average Latency</Description>
+    <Scale>ms</Scale>
+    <Proportion>LIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-sd</Identifier>
+        <Value>1.894</Value>
+        <RawString>1.893:1.881:1.908</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-fno-strict-aliasing -fwrapv -O2 -lpq -lpgcommon -lpgport -lm"},"test-run-times":"135.38:135.24:135.23"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/apache-3.0.0</Identifier>
+    <Title>Apache HTTP Server</Title>
+    <AppVersion>2.4.56</AppVersion>
+    <Arguments>-c 4</Arguments>
+    <Description>Concurrent Requests: 4</Description>
+    <Scale>Requests Per Second</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-sd</Identifier>
+        <Value>2752.68</Value>
+        <RawString>2752.86:2755.71:2749.48</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-lluajit-5.1 -lm -lssl -lcrypto -lpthread -ldl"},"test-run-times":"90.13:90.12:90.13"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/gnupg-2.5.0</Identifier>
+    <Title>GnuPG</Title>
+    <AppVersion>2.2.27</AppVersion>
+    <Arguments></Arguments>
+    <Description>2.7GB Sample File Encryption</Description>
+    <Scale>Seconds</Scale>
+    <Proportion>LIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-sd</Identifier>
+        <Value>737.552</Value>
+        <RawString>765.615:725.06:731.807:741.317:735.392:724.651:745.822:748.165:720.135</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-O2"},"test-run-times":"765.61:725.06:731.81:741.32:735.39:724.65:745.82:748.16:720.13"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+</PhoronixTestSuite>

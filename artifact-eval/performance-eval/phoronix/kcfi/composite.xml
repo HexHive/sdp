@@ -1,0 +1,398 @@
+<?xml version="1.0"?>
+<!--Phoronix Test Suite v10.8.4-->
+<PhoronixTestSuite>
+  <Generated>
+    <Title>baseline-cfi</Title>
+    <LastModified>2026-05-02 21:18:56</LastModified>
+    <TestClient>Phoronix Test Suite v10.8.4</TestClient>
+    <Description>Baseline-CFI: Vanilla Linux v6.6 with control-flow integrity enabled</Description>
+  </Generated>
+  <System>
+    <Identifier>baseline-cfi</Identifier>
+    <Hardware>Processor: SiFive RISC-V (4 Cores), Motherboard: SiFive HiFive Unmatched A00, Chipset: SiFive FU740-C000 RISC-V SoC, Memory: 16GB, Disk: Samsung SSD 980 500GB + 32GB SD32G</Hardware>
+    <Software>OS: Ubuntu 25.04, Kernel: 6.6.0-g13cc6f2af7ba (riscv64), Compiler: GCC 14.2.0, File-System: ext4</Software>
+    <User>ubuntu</User>
+    <TimeStamp>2026-05-02 08:54:33</TimeStamp>
+    <TestClientVersion>10.8.4</TestClientVersion>
+    <Notes></Notes>
+    <JSON>{"compiler-configuration":"--build=riscv64-linux-gnu --disable-libquadmath --disable-libquadmath-support --disable-multilib --disable-werror --enable-checking=release --enable-clocale=gnu --enable-default-pie --enable-gnu-unique-object --enable-languages=c,ada,c++,go,d,fortran,objc,obj-c++,m2,rust --enable-libphobos-checking=release --enable-libstdcxx-backtrace --enable-libstdcxx-debug --enable-libstdcxx-time=yes --enable-link-serialization=4 --enable-multiarch --enable-nls --enable-objc-gc=auto --enable-plugin --enable-shared --enable-threads=posix --host=riscv64-linux-gnu --program-prefix=riscv64-linux-gnu- --target=riscv64-linux-gnu --with-abi=lp64d --with-arch=rv64gc --with-build-config=bootstrap-lto-lean --with-default-libstdcxx-abi=new --with-gcc-major-version-only --with-target-system-zlib=auto -v","disk-scheduler":"NONE","disk-mount-options":"relatime,rw,stripe=32","disk-details":"Block Size: 4096","python":"Python 3.13.3"}</JSON>
+  </System>
+  <Result>
+    <Identifier>pts/aio-stress-1.1.3</Identifier>
+    <Title>AIO-Stress</Title>
+    <AppVersion>0.21</AppVersion>
+    <Arguments>-o 2</Arguments>
+    <Description>Test: Random Write</Description>
+    <Scale>MB/s</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>baseline-cfi</Identifier>
+        <Value>120.93</Value>
+        <RawString>120.88:120.86:121.04</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-O3 -pthread -laio"},"test-run-times":"22.11:20.28:20.25"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/sqlite-2.3.0</Identifier>
+    <Title>SQLite</Title>
+    <AppVersion>3.50.4</AppVersion>
+    <Arguments>1</Arguments>
+    <Description>Threads / Copies: 1</Description>
+    <Scale>Seconds</Scale>
+    <Proportion>LIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>baseline-cfi</Identifier>
+        <Value>7.729</Value>
+        <RawString>7.737:7.7:7.75</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-lm -lz -O2"},"test-run-times":"7.74:7.70:7.75"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/dbench-1.0.2</Identifier>
+    <Title>Dbench</Title>
+    <AppVersion>4.0</AppVersion>
+    <Arguments>1</Arguments>
+    <Description>Client Count: 1</Description>
+    <Scale>MB/s</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>baseline-cfi</Identifier>
+        <Value>75.2858</Value>
+        <RawString>75.4316:75.1972:75.2285</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-lpopt -O2"},"test-run-times":"721.05:721.03:721.04"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/iozone-1.9.6</Identifier>
+    <Title>IOzone</Title>
+    <AppVersion>3.465</AppVersion>
+    <Arguments>-r 4k -s 512M -i0 -i1 #READ</Arguments>
+    <Description>Record Size: 4Kb - File Size: 512MB - Disk Test: Read Performance</Description>
+    <Scale>MB/s</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>baseline-cfi</Identifier>
+        <Value>284.990234375</Value>
+        <RawString>285.0390625:284.365234375:285.56640625</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-O3"},"test-run-times":"260.65:263.06:261.93"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/iozone-1.9.6</Identifier>
+    <Title>IOzone</Title>
+    <AppVersion>3.465</AppVersion>
+    <Arguments>-r 4k -s 512M -i0 #WRITE</Arguments>
+    <Description>Record Size: 4Kb - File Size: 512MB - Disk Test: Write Performance</Description>
+    <Scale>MB/s</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>baseline-cfi</Identifier>
+        <Value>2.78</Value>
+        <RawString>2.7939453125:2.74609375:2.7900390625</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-O3"},"test-run-times":"257.56:260.52:257.41"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/tiobench-1.3.1</Identifier>
+    <Title>Threaded I/O Tester</Title>
+    <AppVersion>20170503</AppVersion>
+    <Arguments>-k3 -k1 -f 32 -t 4</Arguments>
+    <Description>Test: Read - Size Per Thread: 32MB - Thread Count: 4</Description>
+    <Scale>MB/s</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>baseline-cfi</Identifier>
+        <Value>901.328</Value>
+        <RawString>902.877:903.183:897.924</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-O2"},"test-run-times":"22.56:22.35:22.52"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/tiobench-1.3.1</Identifier>
+    <Title>Threaded I/O Tester</Title>
+    <AppVersion>20170503</AppVersion>
+    <Arguments>-k3 -k2 -k1 -f 32 -t 4</Arguments>
+    <Description>Test: Write - Size Per Thread: 32MB - Thread Count: 4</Description>
+    <Scale>MB/s</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>baseline-cfi</Identifier>
+        <Value>6.315</Value>
+        <RawString>6.325:6.292:6.327</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-O2"},"test-run-times":"21.34:21.45:21.33"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/tiobench-1.3.1</Identifier>
+    <Title>Threaded I/O Tester</Title>
+    <AppVersion>20170503</AppVersion>
+    <Arguments>-k2 -k1 -f 32 -t 4</Arguments>
+    <Description>Test: Random Read - Size Per Thread: 32MB - Thread Count: 4</Description>
+    <Scale>MB/s</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>baseline-cfi</Identifier>
+        <Value>4997.737</Value>
+        <RawString>4081.112:5628.848:5510.116:5634.795:5648.97:4240.657:3426.675:4235.465:4214.547:4182.186:5648.72:5589.764:5656.709:5652.961:5614.528</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-O2"},"test-run-times":"22.26:22.47:22.26:22.20:22.53:22.22:22.47:22.47:22.30:22.46:22.51:22.43:22.59:22.45:22.74"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/tiobench-1.3.1</Identifier>
+    <Title>Threaded I/O Tester</Title>
+    <AppVersion>20170503</AppVersion>
+    <Arguments>-k3 -k2 -f 32 -t 4</Arguments>
+    <Description>Test: Random Write - Size Per Thread: 32MB - Thread Count: 4</Description>
+    <Scale>MB/s</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>baseline-cfi</Identifier>
+        <Value>123.937</Value>
+        <RawString>129.59:130.044:120.559:125.274:119.945:125.631:112.755:122.399:124.946:115.328:120.865:129.604:129.027:124.565:128.521</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-O2"},"test-run-times":"23.47:23.18:23.59:23.16:23.45:23.23:23.80:23.46:23.36:23.68:23.36:23.21:23.10:23.17:22.94"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/unpack-linux-1.2.0</Identifier>
+    <Title>Unpacking The Linux Kernel</Title>
+    <AppVersion>5.19</AppVersion>
+    <Arguments></Arguments>
+    <Description>linux-5.19.tar.xz</Description>
+    <Scale>Seconds</Scale>
+    <Proportion>LIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>baseline-cfi</Identifier>
+        <Value>29.205</Value>
+        <RawString>30.007:28.96:28.962:29.249:29:29.269:29.644:29.468:29.107:29.035:29.022:29.29:28.926:29.259:29.039:29.019:29.233</RawString>
+        <JSON>{"test-run-times":"30.01:28.96:28.96:29.25:29.00:29.27:29.64:29.47:29.11:29.04:29.02:29.29:28.93:29.26:29.04:29.02:29.23"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/postmark-1.1.2</Identifier>
+    <Title>PostMark</Title>
+    <AppVersion>1.51</AppVersion>
+    <Arguments></Arguments>
+    <Description>Disk Transaction Performance</Description>
+    <Scale>TPS</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>baseline-cfi</Identifier>
+        <Value>386</Value>
+        <RawString>385:387:386</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-O3"},"test-run-times":"649.13:646.62:647.92"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/ffmpeg-7.0.2</Identifier>
+    <Title>FFmpeg</Title>
+    <AppVersion>7.0</AppVersion>
+    <Arguments>--encoder=libx264 live</Arguments>
+    <Description>Encoder: libx264 - Scenario: Live</Description>
+    <Scale>FPS</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>baseline-cfi</Identifier>
+        <Value>3.11</Value>
+        <RawString>3.1082476036726:3.1123760387975:3.1113463086399</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CXX","compiler":"g++","compiler-options":"-O3 -rdynamic -lpthread -lrt -ldl"},"test-run-times":"2224.69:2217.83:2219.73"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/compress-7zip-1.12.0</Identifier>
+    <Title>7-Zip Compression</Title>
+    <AppVersion>25.00</AppVersion>
+    <Arguments></Arguments>
+    <Description>Test: Compression Rating</Description>
+    <Scale>MIPS</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>baseline-cfi</Identifier>
+        <Value>1918</Value>
+        <RawString>1884:1926:2074:2084:1927:1945:1925:1739:2013:1792:1930:1782</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CXX","compiler":"g++","compiler-options":"-lpthread -ldl -O2 -fPIC"},"test-run-times":"154.25:148.98:142.22:143.59:148.06:153.31:150.11:172.89:144.65:159.79:149.96:151.74"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/compress-7zip-1.12.0</Identifier>
+    <Title>7-Zip Compression</Title>
+    <AppVersion>25.00</AppVersion>
+    <Arguments></Arguments>
+    <Description>Test: Decompression Rating</Description>
+    <Scale>MIPS</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>baseline-cfi</Identifier>
+        <Value>4316</Value>
+        <RawString>4312:4327:4310:4288:4309:4328:4321:4326:4292:4327:4322:4326</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CXX","compiler":"g++","compiler-options":"-lpthread -ldl -O2 -fPIC"},"test-run-times":"154.25:148.98:142.22:143.59:148.06:153.31:150.11:172.89:144.65:159.79:149.96:151.74"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/build-linux-kernel-1.17.1</Identifier>
+    <Title>Timed Linux Kernel Compilation</Title>
+    <AppVersion>6.15</AppVersion>
+    <Arguments>defconfig</Arguments>
+    <Description>Build: defconfig</Description>
+    <Scale>Seconds</Scale>
+    <Proportion>LIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>baseline-cfi</Identifier>
+        <Value>8111.681</Value>
+        <RawString>8132.379:8102.029:8100.636</RawString>
+        <JSON>{"test-run-times":"8132.38:8102.03:8100.64"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/openssl-3.6.0</Identifier>
+    <Title>OpenSSL</Title>
+    <AppVersion>3.6</AppVersion>
+    <Arguments>rsa4096</Arguments>
+    <Description>Algorithm: RSA4096</Description>
+    <Scale>sign/s</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>baseline-cfi</Identifier>
+        <Value>53.0</Value>
+        <RawString>53:53:52.9</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-pthread -O3 -lssl -lcrypto -ldl"},"test-run-times":"329.42:334.11:346.83"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/openssl-3.6.0</Identifier>
+    <Title>OpenSSL</Title>
+    <AppVersion>3.6</AppVersion>
+    <Arguments>rsa4096</Arguments>
+    <Description>Algorithm: RSA4096</Description>
+    <Scale>verify/s</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>baseline-cfi</Identifier>
+        <Value>4028.6</Value>
+        <RawString>4026:4028.7:4031.1</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-pthread -O3 -lssl -lcrypto -ldl"},"test-run-times":"329.42:334.11:346.83"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/pgbench-1.17.0</Identifier>
+    <Title>PostgreSQL</Title>
+    <AppVersion>18.1</AppVersion>
+    <Arguments>-s 1 -c 1</Arguments>
+    <Description>Scaling Factor: 1 - Clients: 1 - Mode: Read Write</Description>
+    <Scale>TPS</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>baseline-cfi</Identifier>
+        <Value>534</Value>
+        <RawString>533.111:534.933468:534.992721</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-fno-strict-aliasing -fwrapv -O2 -lpq -lpgcommon -lpgport -lm"},"test-run-times":"135.36:135.26:135.27"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/pgbench-1.17.0</Identifier>
+    <Title>PostgreSQL</Title>
+    <AppVersion>18.1</AppVersion>
+    <Arguments>-s 1 -c 1</Arguments>
+    <Description>Scaling Factor: 1 - Clients: 1 - Mode: Read Write - Average Latency</Description>
+    <Scale>ms</Scale>
+    <Proportion>LIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>baseline-cfi</Identifier>
+        <Value>1.871</Value>
+        <RawString>1.876:1.869:1.869</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-fno-strict-aliasing -fwrapv -O2 -lpq -lpgcommon -lpgport -lm"},"test-run-times":"135.36:135.26:135.27"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/apache-3.0.0</Identifier>
+    <Title>Apache HTTP Server</Title>
+    <AppVersion>2.4.56</AppVersion>
+    <Arguments>-c 4</Arguments>
+    <Description>Concurrent Requests: 4</Description>
+    <Scale>Requests Per Second</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>baseline-cfi</Identifier>
+        <Value>2736.84</Value>
+        <RawString>2746.23:2735.08:2729.21</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-lluajit-5.1 -lm -lssl -lcrypto -lpthread -ldl"},"test-run-times":"90.14:90.12:90.13"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/gnupg-2.5.0</Identifier>
+    <Title>GnuPG</Title>
+    <AppVersion>2.2.27</AppVersion>
+    <Arguments></Arguments>
+    <Description>2.7GB Sample File Encryption</Description>
+    <Scale>Seconds</Scale>
+    <Proportion>LIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>baseline-cfi</Identifier>
+        <Value>737.585</Value>
+        <RawString>738.751:732.713:741.292</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-O2"},"test-run-times":"738.75:732.71:741.29"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+</PhoronixTestSuite>

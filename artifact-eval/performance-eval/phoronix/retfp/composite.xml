@@ -1,0 +1,398 @@
+<?xml version="1.0"?>
+<!--Phoronix Test Suite v10.8.4-->
+<PhoronixTestSuite>
+  <Generated>
+    <Title>sdp-retfp</Title>
+    <LastModified>2026-05-27 06:20:20</LastModified>
+    <TestClient>Phoronix Test Suite v10.8.4</TestClient>
+    <Description>SDP-RETFP: SDP kernel with return addresses and function pointers protected</Description>
+  </Generated>
+  <System>
+    <Identifier>sdp-retfp</Identifier>
+    <Hardware>Processor: SiFive RISC-V (4 Cores), Motherboard: SiFive HiFive Unmatched A00, Chipset: SiFive FU740-C000 RISC-V SoC, Memory: 16GB, Disk: Samsung SSD 980 500GB + 32GB SD32G</Hardware>
+    <Software>OS: Ubuntu 25.04, Kernel: 6.6.0-ge0fa8524ba5e (riscv64), Compiler: GCC 14.2.0, File-System: ext4</Software>
+    <User>ubuntu</User>
+    <TimeStamp>2026-05-26 17:10:35</TimeStamp>
+    <TestClientVersion>10.8.4</TestClientVersion>
+    <Notes></Notes>
+    <JSON>{"compiler-configuration":"--build=riscv64-linux-gnu --disable-libquadmath --disable-libquadmath-support --disable-multilib --disable-werror --enable-checking=release --enable-clocale=gnu --enable-default-pie --enable-gnu-unique-object --enable-languages=c,ada,c++,go,d,fortran,objc,obj-c++,m2,rust --enable-libphobos-checking=release --enable-libstdcxx-backtrace --enable-libstdcxx-debug --enable-libstdcxx-time=yes --enable-link-serialization=4 --enable-multiarch --enable-nls --enable-objc-gc=auto --enable-plugin --enable-shared --enable-threads=posix --host=riscv64-linux-gnu --program-prefix=riscv64-linux-gnu- --target=riscv64-linux-gnu --with-abi=lp64d --with-arch=rv64gc --with-build-config=bootstrap-lto-lean --with-default-libstdcxx-abi=new --with-gcc-major-version-only --with-target-system-zlib=auto -v","disk-scheduler":"NONE","disk-mount-options":"relatime,rw,stripe=32","disk-details":"Block Size: 4096","python":"Python 3.13.3"}</JSON>
+  </System>
+  <Result>
+    <Identifier>pts/aio-stress-1.1.3</Identifier>
+    <Title>AIO-Stress</Title>
+    <AppVersion>0.21</AppVersion>
+    <Arguments>-o 2</Arguments>
+    <Description>Test: Random Write</Description>
+    <Scale>MB/s</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-retfp</Identifier>
+        <Value>119.68</Value>
+        <RawString>111.17:120.41:120.66:120.6:120.47:120.26:120.38:120.36:120.72:120.33:120.19:120.64</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-O3 -pthread -laio"},"test-run-times":"22.20:20.44:20.40:20.40:20.43:20.46:20.45:20.45:20.38:20.45:20.47:20.40"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/sqlite-2.3.0</Identifier>
+    <Title>SQLite</Title>
+    <AppVersion>3.50.4</AppVersion>
+    <Arguments>1</Arguments>
+    <Description>Threads / Copies: 1</Description>
+    <Scale>Seconds</Scale>
+    <Proportion>LIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-retfp</Identifier>
+        <Value>7.847</Value>
+        <RawString>7.865:7.85:7.826</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-lm -lz -O2"},"test-run-times":"7.87:7.85:7.83"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/dbench-1.0.2</Identifier>
+    <Title>Dbench</Title>
+    <AppVersion>4.0</AppVersion>
+    <Arguments>1</Arguments>
+    <Description>Client Count: 1</Description>
+    <Scale>MB/s</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-retfp</Identifier>
+        <Value>73.4311</Value>
+        <RawString>73.7427:73.4396:73.1111</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-lpopt -O2"},"test-run-times":"721.05:721.06:721.03"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/iozone-1.9.6</Identifier>
+    <Title>IOzone</Title>
+    <AppVersion>3.465</AppVersion>
+    <Arguments>-r 4k -s 512M -i0 -i1 #READ</Arguments>
+    <Description>Record Size: 4Kb - File Size: 512MB - Disk Test: Read Performance</Description>
+    <Scale>MB/s</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-retfp</Identifier>
+        <Value>283.09</Value>
+        <RawString>282.6435546875:283.7109375:282.908203125</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-O3"},"test-run-times":"261.47:265.04:265.36"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/iozone-1.9.6</Identifier>
+    <Title>IOzone</Title>
+    <AppVersion>3.465</AppVersion>
+    <Arguments>-r 4k -s 512M -i0 #WRITE</Arguments>
+    <Description>Record Size: 4Kb - File Size: 512MB - Disk Test: Write Performance</Description>
+    <Scale>MB/s</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-retfp</Identifier>
+        <Value>2.75</Value>
+        <RawString>2.7431640625:2.7509765625:2.7529296875</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-O3"},"test-run-times":"261.40:260.26:260.83"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/tiobench-1.3.1</Identifier>
+    <Title>Threaded I/O Tester</Title>
+    <AppVersion>20170503</AppVersion>
+    <Arguments>-k3 -k1 -f 32 -t 4</Arguments>
+    <Description>Test: Read - Size Per Thread: 32MB - Thread Count: 4</Description>
+    <Scale>MB/s</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-retfp</Identifier>
+        <Value>929.850</Value>
+        <RawString>891.495:890.918:938.616:941.01:939.174:940.803:942.639:932.089:939.064:938.093:933.271:929.989:929.584:928.31:932.7</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-O2"},"test-run-times":"22.49:22.50:22.55:22.50:22.53:22.52:22.48:22.46:22.48:22.47:22.58:22.55:22.54:22.52:22.52"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/tiobench-1.3.1</Identifier>
+    <Title>Threaded I/O Tester</Title>
+    <AppVersion>20170503</AppVersion>
+    <Arguments>-k3 -k2 -k1 -f 32 -t 4</Arguments>
+    <Description>Test: Write - Size Per Thread: 32MB - Thread Count: 4</Description>
+    <Scale>MB/s</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-retfp</Identifier>
+        <Value>6.291</Value>
+        <RawString>6.29:6.294:6.288</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-O2"},"test-run-times":"21.45:21.44:21.46"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/tiobench-1.3.1</Identifier>
+    <Title>Threaded I/O Tester</Title>
+    <AppVersion>20170503</AppVersion>
+    <Arguments>-k2 -k1 -f 32 -t 4</Arguments>
+    <Description>Test: Random Read - Size Per Thread: 32MB - Thread Count: 4</Description>
+    <Scale>MB/s</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-retfp</Identifier>
+        <Value>5483.647</Value>
+        <RawString>5308.34:5351.618:5475.233:5310.102:5450.752:5550.978:5584.642:5604.939:5583.668:5549.534:5589.276:5292.099:5580.746:5477.811:5544.966</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-O2"},"test-run-times":"22.49:22.47:22.43:22.41:22.36:22.46:22.41:22.35:22.33:22.42:22.32:22.45:22.45:22.31:22.52"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/tiobench-1.3.1</Identifier>
+    <Title>Threaded I/O Tester</Title>
+    <AppVersion>20170503</AppVersion>
+    <Arguments>-k3 -k2 -f 32 -t 4</Arguments>
+    <Description>Test: Random Write - Size Per Thread: 32MB - Thread Count: 4</Description>
+    <Scale>MB/s</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-retfp</Identifier>
+        <Value>129.977</Value>
+        <RawString>120.009:120.553:132.747:132.589:130.578:136.445:127.806:123.968:132.772:134.607:120.945:136.519:133.658:138.242:128.216</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-O2"},"test-run-times":"23.45:23.50:23.40:23.42:23.17:23.39:23.40:23.50:23.35:23.38:23.52:23.39:23.40:23.41:23.33"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/unpack-linux-1.2.0</Identifier>
+    <Title>Unpacking The Linux Kernel</Title>
+    <AppVersion>5.19</AppVersion>
+    <Arguments></Arguments>
+    <Description>linux-5.19.tar.xz</Description>
+    <Scale>Seconds</Scale>
+    <Proportion>LIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-retfp</Identifier>
+        <Value>29.763</Value>
+        <RawString>30.521:29.753:29.549:29.588:29.667:29.666:29.648:29.508:30.098:29.738:29.657</RawString>
+        <JSON>{"test-run-times":"30.52:29.75:29.55:29.59:29.67:29.67:29.65:29.51:30.10:29.74:29.66"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/postmark-1.1.2</Identifier>
+    <Title>PostMark</Title>
+    <AppVersion>1.51</AppVersion>
+    <Arguments></Arguments>
+    <Description>Disk Transaction Performance</Description>
+    <Scale>TPS</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-retfp</Identifier>
+        <Value>380</Value>
+        <RawString>381:380:379</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-O3"},"test-run-times":"658.36:658.27:660.56"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/ffmpeg-7.0.2</Identifier>
+    <Title>FFmpeg</Title>
+    <AppVersion>7.0</AppVersion>
+    <Arguments>--encoder=libx264 live</Arguments>
+    <Description>Encoder: libx264 - Scenario: Live</Description>
+    <Scale>FPS</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-retfp</Identifier>
+        <Value>3.11</Value>
+        <RawString>3.1154894685482:3.1129538886253:3.1077160361503</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CXX","compiler":"g++","compiler-options":"-O3 -rdynamic -lpthread -lrt -ldl"},"test-run-times":"2218.14:2217.03:2222.54"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/compress-7zip-1.12.0</Identifier>
+    <Title>7-Zip Compression</Title>
+    <AppVersion>25.00</AppVersion>
+    <Arguments></Arguments>
+    <Description>Test: Compression Rating</Description>
+    <Scale>MIPS</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-retfp</Identifier>
+        <Value>2080</Value>
+        <RawString>2054:2095:2090:2080</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CXX","compiler":"g++","compiler-options":"-lpthread -ldl -O2 -fPIC"},"test-run-times":"143.38:143.02:142.66:142.20"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/compress-7zip-1.12.0</Identifier>
+    <Title>7-Zip Compression</Title>
+    <AppVersion>25.00</AppVersion>
+    <Arguments></Arguments>
+    <Description>Test: Decompression Rating</Description>
+    <Scale>MIPS</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-retfp</Identifier>
+        <Value>4309</Value>
+        <RawString>4310:4288:4326:4312</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CXX","compiler":"g++","compiler-options":"-lpthread -ldl -O2 -fPIC"},"test-run-times":"143.38:143.02:142.66:142.20"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/build-linux-kernel-1.17.1</Identifier>
+    <Title>Timed Linux Kernel Compilation</Title>
+    <AppVersion>6.15</AppVersion>
+    <Arguments>defconfig</Arguments>
+    <Description>Build: defconfig</Description>
+    <Scale>Seconds</Scale>
+    <Proportion>LIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-retfp</Identifier>
+        <Value>8114.151</Value>
+        <RawString>8133.78:8104.392:8104.28</RawString>
+        <JSON>{"test-run-times":"8133.78:8104.39:8104.28"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/openssl-3.6.0</Identifier>
+    <Title>OpenSSL</Title>
+    <AppVersion>3.6</AppVersion>
+    <Arguments>rsa4096</Arguments>
+    <Description>Algorithm: RSA4096</Description>
+    <Scale>sign/s</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-retfp</Identifier>
+        <Value>53</Value>
+        <RawString>53:53:53</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-pthread -O3 -lssl -lcrypto -ldl"},"test-run-times":"339.21:333.04:321.08"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/openssl-3.6.0</Identifier>
+    <Title>OpenSSL</Title>
+    <AppVersion>3.6</AppVersion>
+    <Arguments>rsa4096</Arguments>
+    <Description>Algorithm: RSA4096</Description>
+    <Scale>verify/s</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-retfp</Identifier>
+        <Value>4028.6</Value>
+        <RawString>4030.5:4030:4025.3</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-pthread -O3 -lssl -lcrypto -ldl"},"test-run-times":"339.21:333.04:321.08"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/pgbench-1.17.0</Identifier>
+    <Title>PostgreSQL</Title>
+    <AppVersion>18.1</AppVersion>
+    <Arguments>-s 1 -c 1</Arguments>
+    <Description>Scaling Factor: 1 - Clients: 1 - Mode: Read Write</Description>
+    <Scale>TPS</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-retfp</Identifier>
+        <Value>532</Value>
+        <RawString>531.999077:533.3541:529.31019</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-fno-strict-aliasing -fwrapv -O2 -lpq -lpgcommon -lpgport -lm"},"test-run-times":"135.31:135.22:135.22"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/pgbench-1.17.0</Identifier>
+    <Title>PostgreSQL</Title>
+    <AppVersion>18.1</AppVersion>
+    <Arguments>-s 1 -c 1</Arguments>
+    <Description>Scaling Factor: 1 - Clients: 1 - Mode: Read Write - Average Latency</Description>
+    <Scale>ms</Scale>
+    <Proportion>LIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-retfp</Identifier>
+        <Value>1.881</Value>
+        <RawString>1.88:1.875:1.889</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-fno-strict-aliasing -fwrapv -O2 -lpq -lpgcommon -lpgport -lm"},"test-run-times":"135.31:135.22:135.22"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/apache-3.0.0</Identifier>
+    <Title>Apache HTTP Server</Title>
+    <AppVersion>2.4.56</AppVersion>
+    <Arguments>-c 4</Arguments>
+    <Description>Concurrent Requests: 4</Description>
+    <Scale>Requests Per Second</Scale>
+    <Proportion>HIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-retfp</Identifier>
+        <Value>2717.75</Value>
+        <RawString>2719.18:2729.07:2705</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-lluajit-5.1 -lm -lssl -lcrypto -lpthread -ldl"},"test-run-times":"90.14:90.09:90.11"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+  <Result>
+    <Identifier>pts/gnupg-2.5.0</Identifier>
+    <Title>GnuPG</Title>
+    <AppVersion>2.2.27</AppVersion>
+    <Arguments></Arguments>
+    <Description>2.7GB Sample File Encryption</Description>
+    <Scale>Seconds</Scale>
+    <Proportion>LIB</Proportion>
+    <DisplayFormat>BAR_GRAPH</DisplayFormat>
+    <Data>
+      <Entry>
+        <Identifier>sdp-retfp</Identifier>
+        <Value>733.138</Value>
+        <RawString>745.746:727.336:738.351:725.871:724.798:734.525:731.646:736.834</RawString>
+        <JSON>{"compiler-options":{"compiler-type":"CC","compiler":"gcc","compiler-options":"-O2"},"test-run-times":"745.75:727.34:738.35:725.87:724.80:734.52:731.65:736.83"}</JSON>
+      </Entry>
+    </Data>
+  </Result>
+</PhoronixTestSuite>
