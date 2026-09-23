@@ -1,23 +1,38 @@
 #!/usr/bin/env python3
-"""Parse lmbench raw result files and print a per-kernel table.
+"""Parse lmbench raw result files and write a per-kernel table to ae_results.log.
 
-On the board, after one run on each kernel:
+On the board, after running each kernel:
     python3 ~/lmbench/results/result_parse.py
-reads the <host>.<n> files next to it (sdpboard.0 ... sdpboard.12). Files or
-folders can be given instead, e.g. our five earlier runs of one kernel:
+reads the <host>.<n> files next to it and writes ae_results.log next to them.
+Files or folders can be given instead, e.g. our five runs of one kernel:
     result_parse.py performance-eval/lmbench/sd
-The kernel of each file is read from its header, not from its name."""
+The kernel of each file is read from its header, not from its name. The table
+has a block for each LMbench figure of the paper, and with paper_results.log
+(see paper_parse.py) next to this script, the paper's numbers under ours."""
 
 import re
 import os
 import sys
+import contextlib
 import statistics
 import argparse
 
 
-# Paper §8.3's kernels, in the order the columns are printed.
+# Paper §8.3's kernels.
 KERNELS = ["ori", "scs", "kcfi", "scskcfi",
            "sd", "ret", "fp", "fpifp", "sdretfp", "cred", "pt", "credpt", "retfp"]
+
+# The paper's LMbench figures, a block of the table each: the kernels in the
+# order of their bars, after the baseline.
+BASELINE = "ori"
+FIGURES = [
+    ("Figure 3: protecting different program assets",
+     ["sd", "ret", "fp", "fpifp", "sdretfp"]),
+    ("Figure 5: comparing with xMP",
+     ["cred", "pt", "credpt"]),
+    ("Figure 7: comparing with SCS and KCFI",
+     ["scs", "ret", "kcfi", "fp", "scskcfi", "retfp"]),
+]
 
 # `uname -r` of the kernels installed on the board. One rebuilt with
 # scripts/build_kernel_perf.sh is 6.6.0-<kernel> and needs no entry here.
@@ -39,7 +54,46 @@ BOARD_RELEASES = {
 
 RELEASE_RE = re.compile(r"^\[RELEASE: (.*)\]$")
 RUN_RE = re.compile(r"\.(\d+)$")
-RAW_RE = re.compile(r"^raw:\s+\d+\s+us\s+/\s+\d+\s+iter\s+=\s+([\d.]+)\s+us/iter")
+
+# Decimal places numbers are worked out to (lmbench's own) and shown to.
+PLACES = 4
+SHOWN = 2
+
+# (label, key)
+LATENCY_ROWS = [
+    ("syscall()",            "syscall"),
+    ("open()/close()",       "open_close"),
+    ("read()/write()",       "read_write"),
+    ("select() (10 fds)",    "select_10fd"),
+    ("select() (100 fds)",   "select_100fd"),
+    ("stat()",               "stat"),
+    ("fstat()",              "fstat"),
+    ("fork()+execve()",      "fork_execve"),
+    ("fork()+exit()",        "fork_exit"),
+    ("fork()+/bin/sh",       "fork_sh"),
+    ("sigaction()",          "sig_install"),
+    ("Signal delivery",      "sig_catch"),
+    ("Protection fault",     "prot_fault"),
+    ("Protection fault raw", "prot_fault_raw"),
+    ("Page fault",           "page_fault"),
+    ("Pipe I/O",             "pipe_lat"),
+    ("UNIX socket I/O",      "unix_lat"),
+    ("TCP socket I/O",       "tcp_lat"),
+    ("UDP socket I/O",       "udp_lat"),
+]
+
+BANDWIDTH_ROWS = [
+    ("Pipe I/O",        "bw_pipe"),
+    ("UNIX socket I/O", "bw_unix"),
+    ("TCP socket I/O",  "bw_tcp"),
+    ("mmap() I/O",      "bw_mmap"),
+    ("File I/O",        "bw_file"),
+]
+
+SECTIONS = [
+    ("Latency (us - smaller is better)",    LATENCY_ROWS),
+    ("Bandwidth (MB/s - bigger is better)", BANDWIDTH_ROWS),
+]
 
 
 def kernel_of(lines):
@@ -55,108 +109,38 @@ def kernel_of(lines):
     return "?"
 
 
-def _dec(s):
-    """Count decimal places in a numeric string."""
-    return len(s.split(".")[1]) if "." in s else 0
-
-
-def _cv(values):
-    """Sample coefficient of variation as a percentage, or None if undefined."""
-    if len(values) < 2:
-        return None
-    mean = statistics.fmean(values)
-    if mean == 0:
-        return None
-    return statistics.stdev(values) / mean * 100
-
-
-def _build_cv_map(lines):
-    """For each line index, the CV of the last 11 raw us/iter values seen so far."""
-    window = []
-    cv_at = []
-    for line in lines:
-        m = RAW_RE.match(line.strip())
-        if m:
-            try:
-                window.append(float(m.group(1)))
-                if len(window) > 11:
-                    window = window[-11:]
-            except ValueError:
-                pass
-        cv_at.append(_cv(window) if len(window) == 11 else None)
-    return cv_at
-
-
-def find_match(lines, cv_at, pattern):
-    """Return (float, decimals, cv) for the first line matching pattern, or None."""
+def find_match(lines, pattern):
+    """The number on the first line matching pattern, or None."""
     rx = re.compile(pattern)
-    for i, line in enumerate(lines):
+    for line in lines:
         m = rx.search(line)
         if m:
-            s = m.group(1)
-            return float(s), _dec(s), cv_at[i]
+            return float(m.group(1))
     return None
 
 
-def _parse_data_row(parts, expected_len, trailing=None):
-    """Return bandwidth from a `<size> <bw> [unit]` row, or None if not a data row."""
-    if len(parts) != expected_len:
-        return None
-    if trailing is not None and parts[-1] != trailing:
-        return None
-    try:
-        float(parts[0])
-        return float(parts[1]), _dec(parts[1])
-    except ValueError:
-        return None
-
-
-def _scan_bandwidth_section(lines, cv_at, header_match, expected_len, trailing=None):
-    """Walk a bandwidth section and return (float, decimals, cv) for the LAST data
-    row. The section runs from the header until a line appears that is neither
-    blank, a 'raw:' sample, nor a matching data row (i.e. the next section)."""
-    in_section = False
+def last_bw(lines, header, row):
+    """The bandwidth on the last `row` of the section under the line `header`,
+    which ends at the first line that is none of blank, "raw:" and a row."""
+    lines = [l.strip() for l in lines]
     last = None
-    for i, line in enumerate(lines):
-        stripped = line.strip()
-        if not in_section:
-            if header_match(stripped):
-                in_section = True
+    for line in lines[lines.index(header) + 1:] if header in lines else []:
+        if not line or line.startswith("raw:"):
             continue
-        if not stripped or stripped.startswith("raw:"):
-            continue
-        parsed = _parse_data_row(stripped.split(), expected_len, trailing)
-        if parsed is not None:
-            last = (parsed[0], parsed[1], cv_at[i])
-            continue
-        break
+        m = re.fullmatch(row, line)
+        if not m:
+            break
+        last = float(m.group(1))
     return last
 
 
-def get_last_bw_in_section(lines, cv_at, marker):
-    """Return (float, decimals, cv) of the last two-column row in a named section."""
-    return _scan_bandwidth_section(
-        lines, cv_at, lambda s: s == marker, expected_len=2,
-    )
-
-
-def get_tcp_bw(lines, cv_at):
-    """Return (float, decimals, cv) of TCP bandwidth at the largest message size."""
-    return _scan_bandwidth_section(
-        lines, cv_at,
-        lambda s: "Socket bandwidth using localhost" in s,
-        expected_len=3, trailing="MB/sec",
-    )
-
-
 def parse_file(filepath):
-    """Return (kernel, results) of one raw result file."""
+    """(kernel, {key: number or None}) of one raw result file."""
     with open(filepath) as f:
         lines = f.read().splitlines()
-    cv_at = _build_cv_map(lines)
 
     def fm(pat):
-        return find_match(lines, cv_at, pat)
+        return find_match(lines, pat)
 
     d = {
         "syscall":      fm(r"Simple syscall: ([\d.]+) microseconds"),
@@ -182,188 +166,220 @@ def parse_file(filepath):
         "bw_pipe":      fm(r"Pipe bandwidth: ([\d.]+) MB/sec"),
         "bw_unix":      fm(r"AF_UNIX sock stream bandwidth: ([\d.]+) MB/sec"),
     }
-
     r, w = d["read"], d["write"]
-    if r is not None and w is not None:
-        cv = None
-        if r[2] is not None and w[2] is not None:
-            cv = (r[2] + w[2]) / 2
-        d["read_write"] = ((r[0] + w[0]) / 2, r[1], cv)
-    else:
-        d["read_write"] = None
-
-    d["bw_tcp"]  = get_tcp_bw(lines, cv_at)
-    d["bw_file"] = get_last_bw_in_section(lines, cv_at, '"read bandwidth')
-    d["bw_mmap"] = get_last_bw_in_section(lines, cv_at, '"Mmap read bandwidth')
-
+    d["read_write"] = round((r + w) / 2, PLACES) if r is not None and w is not None else None
+    # The largest size's bandwidth.
+    d["bw_tcp"] = last_bw(lines, "Socket bandwidth using localhost", r"[\d.]+\s+([\d.]+)\s+MB/sec")
+    d["bw_file"] = last_bw(lines, '"read bandwidth', r"[\d.]+\s+([\d.]+)")
+    d["bw_mmap"] = last_bw(lines, '"Mmap read bandwidth', r"[\d.]+\s+([\d.]+)")
     return kernel_of(lines), d
 
 
-def fmt_val(entry):
-    if entry is None:
-        return "N/A"
-    val, dec, _ = entry
-    return f"{val:.{dec}f}"
+def merge(results):
+    """One kernel's runs as one: (mean, standard deviation or None) of each
+    metric, over the runs that have it."""
+    merged = {}
+    for key in results[0]:
+        vals = [d[key] for d in results if d[key] is not None]
+        if not vals:
+            merged[key] = None
+            continue
+        sd = round(statistics.stdev(vals), PLACES) if len(vals) > 1 else None
+        merged[key] = (round(statistics.fmean(vals), PLACES), sd)
+    return merged
 
 
-def fmt_cv(entry):
-    if entry is None or entry[2] is None:
-        return "-"
-    return f"{entry[2]:.2f}%"
+def fmt_val(entry, places=SHOWN):
+    return "N/A" if entry is None else f"{entry[0]:.{places}f}"
 
 
-# (display label, data key, unit)
-LATENCY_ROWS = [
-    ("syscall()",          "syscall",      "us"),
-    ("open()/close()",     "open_close",   "us"),
-    ("read()/write()",     "read_write",   "us"),
-    ("select() (10 fds)",  "select_10fd",  "us"),
-    ("select() (100 fds)", "select_100fd", "us"),
-    ("stat()",             "stat",         "us"),
-    ("fstat()",            "fstat",        "us"),
-    ("fork()+execve()",    "fork_execve",  "us"),
-    ("fork()+exit()",      "fork_exit",    "us"),
-    ("fork()+/bin/sh",     "fork_sh",      "us"),
-    ("sigaction()",        "sig_install",  "us"),
-    ("Signal delivery",    "sig_catch",    "us"),
-    ("Protection fault",   "prot_fault",   "us"),
-    ("Protection fault raw", "prot_fault_raw", "us"),
-    ("Page fault",         "page_fault",   "us"),
-    ("Pipe I/O",           "pipe_lat",     "us"),
-    ("UNIX socket I/O",    "unix_lat",     "us"),
-    ("TCP socket I/O",     "tcp_lat",      "us"),
-    ("UDP socket I/O",     "udp_lat",      "us"),
-]
-
-BANDWIDTH_ROWS = [
-    ("Pipe I/O",        "bw_pipe", "MB/s"),
-    ("UNIX socket I/O", "bw_unix", "MB/s"),
-    ("TCP socket I/O",  "bw_tcp",  "MB/s"),
-    ("mmap() I/O",      "bw_mmap", "MB/s"),
-    ("File I/O",        "bw_file", "MB/s"),
-]
+def fmt_sd(entry, places=SHOWN):
+    return "" if entry is None or entry[1] is None else f"(±{entry[1]:.{places}f})"
 
 
-def print_table(runs, run_names, simple=False):
-    all_labels = [r[0] for r in LATENCY_ROWS + BANDWIDTH_ROWS] + ["Metric"]
-    label_w = max(len(l) for l in all_labels)
+def fmt_diff(entry, paper):
+    """(eval - paper) / paper of the means, as "+1.23%", or ""."""
+    if entry is None or paper is None or not paper[0]:
+        return ""
+    return f"{(entry[0] - paper[0]) / paper[0] * 100:+.{SHOWN}f}%"
 
-    all_units = [r[2] for r in LATENCY_ROWS + BANDWIDTH_ROWS] + ["Unit"]
-    unit_w = max(len(u) for u in all_units)
 
-    all_keys = [r[1] for r in LATENCY_ROWS + BANDWIDTH_ROWS]
-    val_w = [
-        max((len(fmt_val(r[k])) for k in all_keys), default=0)
-        for r in runs
-    ]
-    cv_w = [
-        max((len(fmt_cv(r[k])) for k in all_keys), default=0)
-        for r in runs
-    ]
+def _splits(label):
+    """label whole, and on two lines broken after a space (dropped), "+" or "/"."""
+    out = [(label, "")]
+    for i, c in enumerate(label):
+        if c == " ":
+            out.append((label[:i], label[i + 1:]))
+        elif c in "+/":
+            out.append((label[:i + 1], label[i + 1:]))
+    return out
 
-    cell_visual_w = []
-    for vw, cw, name in zip(val_w, cv_w, run_names):
-        # Format: "[ val   cv ]"
-        if simple:
-            body_len = vw
-        else:
-            body_len = 1 + vw + 3 + cw + 1
-        cell_visual_w.append(max(body_len, len(name)))
 
-    my_sep = "\t" if simple else "  "
+def print_block(title, results, names, counts, papers=None, places=SHOWN):
+    """One block: a Latency and a Bandwidth table, one column per kernel.
+    `papers`, each kernel's {key: (mean, sd)} in the paper, adds under each
+    metric's "eval" row a "paper" row of them and the difference."""
+    all_keys = [k for _, rows in SECTIONS for _, k in rows]
+    papers = papers or [{}] * len(results)
+    tags = ["eval", "paper"] if any(papers) else [""]
+    tag_w = max(map(len, tags))
 
-    def fmt_cell(entry, i):
-        if simple:
-            return f"{fmt_val(entry)}"
-        body = f"[{fmt_val(entry):>{val_w[i]}}   {fmt_cv(entry):>{cv_w[i]}}]"
-        return f"{body:<{cell_visual_w[i]}}"
-
-    def print_row(label, key, unit):
-        if simple:
-            out = ""
-        else:
-            out = f"{label:<{label_w}}{my_sep}{unit:<{unit_w}}{my_sep}"
-        for i, r in enumerate(runs):
-            out += fmt_cell(r[key], i)
-            if i < len(runs) - 1:
-                out += my_sep
-
-        vals = [r[key][0] for r in runs if r[key] is not None]
-        all_cv = _cv(vals)
-        cv_str = f"{all_cv:.2f}%" if all_cv is not None else "-"
-        if not simple:
-            out += f"{my_sep}{cv_str:>8}"
-        print(out)
-
-    if simple:
-        headers = my_sep.join(run_names)
+    # With two rows, a metric's name can take both.
+    if tag_w:
+        label_w = max(len("Metric"), *(min(max(map(len, s)) for s in _splits(l))
+                                       for _, rows in SECTIONS for l, _ in rows))
     else:
-        headers = my_sep.join(f"{n:<{cell_visual_w[i]}}" for i, n in enumerate(run_names))
-        headers += f"{my_sep}{'CV (all)':>8}"
+        label_w = max(len(l) for l in ["Metric"] + [l for _, rows in SECTIONS for l, _ in rows])
 
-    print("\nLatency (us - smaller is better)")
-    if simple:
-        print(headers)
-    else:
-        print(f"{'Metric':<{label_w}}{my_sep}{'Unit':<{unit_w}}{my_sep}{headers}")
-    for row in LATENCY_ROWS:
-        print_row(*row)
+    def lines(label):
+        if len(label) <= label_w:
+            return label, ""
+        return min((s for s in _splits(label) if max(map(len, s)) <= label_w),
+                   key=lambda s: max(map(len, s)))
 
-    print("\nBandwidth (MB/s - bigger is better)")
-    if simple:
-        print(headers)
-    else:
-        print(f"{'Metric':<{label_w}}{my_sep}{'Unit':<{unit_w}}{my_sep}{headers}")
-    for row in BANDWIDTH_ROWS:
-        print_row(*row)
+    # Each row's (value, "(±sd)", difference) of each column.
+    def cells(r, p, key):
+        out = [(fmt_val(r[key], places), fmt_sd(r[key], places), "")]
+        if tag_w:
+            e = p.get(key)
+            out.append((fmt_val(e, places), fmt_sd(e, places), fmt_diff(r[key], e)) if p else ("", "", ""))
+        return out
+
+    grid = [{k: cells(r, p, k) for k in all_keys} for r, p in zip(results, papers)]
+    runs = [f"({c})" if c > 1 else "" for c in counts]
+
+    def width(i, part, head=""):
+        return max(len(head), *(len(c[part]) for k in all_keys for c in grid[i][k]))
+
+    val_w = [width(i, 0, n) for i, n in enumerate(names)]
+    sd_w = [width(i, 1, u) for i, u in enumerate(runs)]
+    diff_w = [width(i, 2) for i in range(len(names))]
+    sep = " | " if tag_w else "  "
+
+    # The value under the kernel's name, "(±sd)" under its number of runs.
+    def cell(i, val, sd="", diff=""):
+        out = f"{sep}{val:>{val_w[i]}}"
+        if sd_w[i]:
+            out += f" {sd:<{sd_w[i]}}"
+        if diff_w[i]:
+            out += f" {diff:>{diff_w[i]}}"
+        return out
+
+    def lead(label, tag):
+        return f"{label:<{label_w}}" + (f"  {tag:<{tag_w}}" if tag_w else "")
+
+    print(f"\n== {title} ==")
+    for section, rows in SECTIONS:
+        print(f"\n{section}")
+        head = "".join(cell(i, n, runs[i]) for i, n in enumerate(names))
+        print(f"{lead('Metric', '')}{head}".rstrip())
+        if tag_w:
+            print("-" * len(lead("", "")) + "".join("-+-" + "-" * (len(cell(i, "")) - len(sep))
+                                                    for i in range(len(names))))
+        for m, (label, key) in enumerate(rows):
+            if tag_w and m:
+                print()
+            for j, (part, tag) in enumerate(zip(lines(label), tags)):
+                line = "".join(cell(i, *grid[i][key][j]) for i in range(len(names)))
+                print(f"{lead(part, tag)}{line}".rstrip())
+
+
+def read_paper(path):
+    """{kernel: {key: (mean, sd)}} from a table print_block() wrote without the
+    paper's numbers (paper_parse.py's paper_results.log)."""
+    titles = dict(SECTIONS)
+    papers, rows, names = {}, None, None
+    with open(path) as f:
+        for line in f.read().splitlines():
+            if line.startswith("== "):
+                rows = names = None
+            elif line in titles:
+                rows, names = titles[line], None
+            elif rows and line.startswith("Metric"):
+                names = [t for t in line.split()[1:] if not t.startswith("(")]  # not "(n)"
+            elif names and line.strip():
+                label, key = max(((l, k) for l, k in rows if line.startswith(l + " ")),
+                                 key=lambda r: len(r[0]))
+                cols = []  # each column's mean, maybe then its "(±sd)"
+                for t in line[len(label):].split():
+                    if t.startswith("(±"):
+                        cols[-1][1] = float(t[2:-1])
+                    else:
+                        cols.append([None if t == "N/A" else float(t), None])
+                for name, (mean, sd) in zip(names, cols):
+                    if mean is not None:
+                        papers.setdefault(name, {})[key] = (mean, sd)
+    return papers
 
 
 def discover(paths):
-    """(run id, path) of each file given, and of each <host>.<n> in each folder given."""
+    """Each file given, and each <host>.<n> in each folder given."""
     found = []
     for p in paths:
         if os.path.isdir(p):
-            for e in os.listdir(p):
-                m = RUN_RE.search(e)
-                if m and os.path.isfile(os.path.join(p, e)):
-                    found.append((int(m.group(1)), os.path.join(p, e)))
+            for e in sorted(os.listdir(p)):
+                if RUN_RE.search(e) and os.path.isfile(os.path.join(p, e)):
+                    found.append(os.path.join(p, e))
         else:
-            m = RUN_RE.search(p)
-            found.append((int(m.group(1)) if m else 0, p))
+            found.append(p)
     return found
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Parse lmbench raw result files and print a per-kernel table.")
+    here = os.path.dirname(os.path.abspath(__file__))
+    parser = argparse.ArgumentParser(description="Parse lmbench raw result files and write a per-kernel table.")
     parser.add_argument("paths", nargs="*", metavar="<file-or-folder>",
                         help="Result files, or folders of <host>.<n> files (default: this script's folder)")
-    parser.add_argument("-s", "--simple", action="store_true", help="Output only the result value without [] and per-run CV")
+    parser.add_argument("-o", "--output", metavar="FILE", default=os.path.join(here, "ae_results.log"),
+                        help="Write the table to FILE, or print it if FILE is - (default: ae_results.log next to this script)")
     args = parser.parse_args()
 
-    found = discover(args.paths or [os.path.dirname(os.path.abspath(__file__))])
+    found = discover(args.paths or [here])
     if not found:
-        print("No <host>.<n> result files found", file=sys.stderr)
-        sys.exit(1)
+        sys.exit("No <host>.<n> result files found")
 
-    runs = []
-    for run_id, path in found:
+    runs = {}
+    for path in found:
         kernel, d = parse_file(path)
         if kernel not in KERNELS:
             print(f"{path}: unknown kernel {kernel}, add its uname -r to BOARD_RELEASES", file=sys.stderr)
-        runs.append((kernel, run_id, d))
-
-    # Paper order whatever order the kernels were run in; a kernel run more
-    # than once gets one column per run, told apart by the run id.
-    rank = {k: i for i, k in enumerate(KERNELS)}
-    runs.sort(key=lambda r: (rank.get(r[0], len(KERNELS)), r[1]))
-    kernels = [k for k, _, _ in runs]
-    names = [k if kernels.count(k) == 1 else f"{k}.{i}" for k, i, _ in runs]
+        runs.setdefault(kernel, []).append(d)
     if not args.paths:
-        missing = [k for k in KERNELS if k not in kernels]
+        missing = [k for k in KERNELS if k not in runs]
         if missing:
             print(f"No result for: {' '.join(missing)}", file=sys.stderr)
+    results = {k: merge(ds) for k, ds in runs.items()}
+    counts = {k: len(ds) for k, ds in runs.items()}
 
-    print_table([d for _, _, d in runs], names, simple=args.simple)
+    paper_log = os.path.join(here, "paper_results.log")
+    papers = read_paper(paper_log) if os.path.isfile(paper_log) else {}
+    if not papers:
+        print(f"No {paper_log}, so no comparison with the paper", file=sys.stderr)
+
+    def report():
+        key = []
+        if max(counts.values()) > 1:
+            key.append("  kernel (n)  The kernel was run n times; each value is the mean (±standard deviation) of the n runs.")
+        if papers:
+            key.append("  eval        Results of this evaluation.")
+            key.append("  paper       Results reported in the paper (paper_results.log), as mean (±standard deviation),")
+            key.append("              followed by the relative difference (eval - paper) / paper.")
+        if key:
+            print("Notation:")
+            print("\n".join(key))
+        for title, ks in FIGURES:
+            ks = [k for k in ks if k in results]
+            if ks:
+                ks = [BASELINE] * (BASELINE in results) + ks
+                print_block(title, [results[k] for k in ks], ks, [counts[k] for k in ks],
+                            [papers.get(k, {}) for k in ks])
+
+    if args.output == "-":
+        report()
+    else:
+        with open(args.output, "w") as f, contextlib.redirect_stdout(f):
+            report()
+        print(f"Wrote {args.output}")
 
 
 if __name__ == "__main__":
