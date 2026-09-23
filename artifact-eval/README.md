@@ -169,19 +169,41 @@ A proposed experiment must fit in one day, which leaves one round (~9 h) per rev
 Our original results are in `performance-eval/` for reference: `lmbench/<kernel>/`, five runs each, and `phoronix/<kernel>/`.
 
 - **Steps.**
-The 13 kernels are installed on the board.
-To rebuild them instead (~3 h), run the following and install `performance-eval/kernels/<kernel>/` on the board.
-  ```bash
-  IMAGE=sdp-build docker/new_session.sh perf scripts/build_all_perf.sh --prune
-  ```
-  For each kernel, reboot the board, pick it in the boot menu, then:
+The 13 kernels are already installed on the board.
+Open the board's console with `minicom -D /dev/ttyUSB1` (user `<BOARD_USER>`, password `<BOARD_PASSWORD>`).
+For each kernel, reboot the board and, in the GRUB menu, pick *Advanced options for Ubuntu* and choose kernel:
+
+  | Group    | Kernel    | GRUB entry                               |
+  | :------- | :-------- | :--------------------------------------- |
+  | Baseline | `ori`     | *Ubuntu, with Linux 6.6-original*        |
+  |          | `scs`     | *Ubuntu, with Linux 6.6-originalscs*     |
+  |          | `kcfi`    | *Ubuntu, with Linux 6.6-originalcfi*     |
+  |          | `scskcfi` | *Ubuntu, with Linux 6.6-originalscskcfi* |
+  | SDP      | `sd`      | *Ubuntu, with Linux 6.6-sdpsd*           |
+  |          | `ret`     | *Ubuntu, with Linux 6.6-sdpret*          |
+  |          | `fp`      | *Ubuntu, with Linux 6.6-sdpfp*           |
+  |          | `fpifp`   | *Ubuntu, with Linux 6.6-sdpfpifp*        |
+  |          | `retfp`   | *Ubuntu, with Linux 6.6-sdpretfp*        |
+  |          | `sdretfp` | *Ubuntu, with Linux 6.6-sdpsdretfp*      |
+  |          | `cred`    | *Ubuntu, with Linux 6.6-cred*            |
+  |          | `pt`      | *Ubuntu, with Linux 6.6-pagetable*       |
+  |          | `credpt`  | *Ubuntu, with Linux 6.6-credpagetable*   |
+
+  Then run the benchmark:
   ```bash
   cd ~/lmbench
   tmux
   ./run_tests_stable.sh        # then Ctrl-b c, Ctrl-b d: new window, detach. ~40 min
   ```
+  Note that during the execution, nothing else should run on the board.
   When it is done, `~/lmbench/results/` has a new `sdpboard.<n>`.
   After all the 13 kernels have run, `python3 ~/lmbench/results/result_parse.py` prints the latency and bandwidth of each primitive, one column per kernel.
+
+  *Optional: rebuild the kernels (~3 h).*
+  To rebuild them instead of using the installed ones, run the following, install `performance-eval/kernels/<kernel>/` on the board, and then follow the steps above.
+  ```bash
+  IMAGE=sdp-build docker/new_session.sh perf scripts/build_all_perf.sh --prune
+  ```
 
 - **Expected results.**
 The results should follow the trend of the LMbench overheads in Paper §8.3, but may show the variability noted above.
