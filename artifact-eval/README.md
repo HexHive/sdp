@@ -85,7 +85,13 @@ On the provided machine (§2), skip §4.1: the artifact is in `~/sdp-ae`, with t
 `cd ~/sdp-ae` and start at §4.2.
 
 #### 4.1 Installation
-From the artifact's root directory:
+From the artifact's root directory, download the guest image from the [GitHub release](https://github.com/HexHive/sdp/releases/tag/sp27-ae):
+```bash
+wget https://github.com/HexHive/sdp/releases/download/sp27-ae/image.qcow2.zip
+unzip image.qcow2.zip -d vm/
+echo "01c3a273c924c5e8045e4c7a0a42535477defc661e155ba9df68dba70037a2b1  vm/image.qcow2" | sha256sum -c   # vm/image.qcow2: OK
+```
+Then build:
 ```bash
 docker/build_image.sh                                              # 2 min
 IMAGE=sdp-build docker/new_session.sh build scripts/build_all.sh   # 55 min
@@ -193,7 +199,7 @@ For each kernel, reboot the board and, in the GRUB menu, pick *Advanced options 
   ```bash
   cd ~/lmbench
   tmux
-  ./run_tests_stable.sh        # then Ctrl-b c, Ctrl-b d: new window, detach. ~40 min
+  ./run_tests_stable.sh        # then Ctrl-b d to detach; reattach after ~40 min with `tmux a`
   ```
   Note that during the execution, nothing else should run on the board.
   When it is done, `~/lmbench/results/` has a new `sdpboard.<n>`.
