@@ -44,7 +44,7 @@ artifact-eval/
 ├── performance-eval/
 │   ├── lmbench/              our LMbench results, five runs per kernel, and result_parse.py
 │   │   └── rawprot/          "Protection fault raw" of the eight kernels whose runs above lack it
-│   ├── phoronix/             our Phoronix Test Suite results, one per kernel
+│   ├── phoronix/             our Phoronix Test Suite results, one per kernel, run_pts.sh, and result_parse.py
 │   └── kernels/<kernel>/     what build_all_perf.sh leaves for the board
 ├── vm/                       guest image, initrd, ssh key
 └── workdir/<session>/        per-session overlay, shared folder, logs
@@ -213,3 +213,22 @@ For each kernel, reboot the board and, in the GRUB menu, pick *Advanced options 
 
 - **Expected results.**
 The results should follow the trend of the LMbench overheads in Paper §8.3, but may show the variability noted above.
+
+#### 5.3 Additional Experiment
+##### E3: Performance Evaluation on Phoronix benchmarks
+This experiment is not one of the proposed experiments for the artifact evaluation: Phoronix takes ~14 h per kernel, ~8 days for all 13 kernels, far beyond the one-day limit.
+We include it for completeness, as it reproduces Paper Figures 4, 6, and 8.
+
+- **Steps.**
+For each kernel, boot it as in E2 and run the benchmark, passing its GRUB entry's name after `Linux 6.6-`, e.g. for the vanilla Linux:
+  ```bash
+  cd ~/phoronix-test-suite     # copy run_pts.sh and result_parse.py of performance-eval/phoronix/ here
+  tmux
+  ./run_pts.sh original        # then Ctrl-b d to detach; reattach after ~14 h with `tmux a`
+  ```
+  The results are saved to `~/.phoronix-test-suite/test-results/<GRUB name>/`.
+  As in E2, nothing else should run on the board during the benchmark execution.
+  Each run updates `~/phoronix-test-suite/ae_results.log`: one block per figure, with each test's mean (±standard deviation) per kernel, each followed by the paper results and the difference.
+
+- **Expected results.**
+The results should follow the trend of the Phoronix results in Paper §8.3, but some tests vary more, Threaded I/O random read and write and 7-Zip compression in particular.
