@@ -1,5 +1,17 @@
+diff --git a/.gitignore b/.gitignore
+index 61fa39967b54..67c944cf5de7 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -20,3 +20,6 @@ GTAGS
+ *.swp
+ *.patch
+ *.gcov
++
++compile_commands.json
++test/
+\ No newline at end of file
 diff --git a/configure b/configure
-index d08b71f14b..92b99a91ac 100755
+index d08b71f14b0f..92b99a91ac35 100755
 --- a/configure
 +++ b/configure
 @@ -1705,7 +1705,9 @@ if test "$skip_meson" = no; then
@@ -14,7 +26,7 @@ index d08b71f14b..92b99a91ac 100755
    test -n "$objcc" && echo "objc_args = [$(meson_quote $OBJCFLAGS $EXTRA_OBJCFLAGS)]" >> $cross
    echo "c_link_args = [$(meson_quote $CFLAGS $LDFLAGS $EXTRA_CFLAGS $EXTRA_LDFLAGS)]" >> $cross
 diff --git a/contrib/plugins/Makefile b/contrib/plugins/Makefile
-index 05a2a45c5c..9d8d1f841a 100644
+index 05a2a45c5c33..9d8d1f841a56 100644
 --- a/contrib/plugins/Makefile
 +++ b/contrib/plugins/Makefile
 @@ -30,6 +30,9 @@ NAMES += drcov
@@ -29,7 +41,7 @@ index 05a2a45c5c..9d8d1f841a 100644
  LDLIBS += $(shell $(PKG_CONFIG) --libs glib-2.0)
 diff --git a/contrib/plugins/sdp_counter.c b/contrib/plugins/sdp_counter.c
 new file mode 100644
-index 0000000000..0fb6f5e483
+index 000000000000..0fb6f5e483ce
 --- /dev/null
 +++ b/contrib/plugins/sdp_counter.c
 @@ -0,0 +1,264 @@
@@ -298,7 +310,7 @@ index 0000000000..0fb6f5e483
 +    return 0;
 +}
 diff --git a/hw/riscv/virt.c b/hw/riscv/virt.c
-index cef41c150a..1ca9bf16a8 100644
+index cef41c150aaf..1ca9bf16a842 100644
 --- a/hw/riscv/virt.c
 +++ b/hw/riscv/virt.c
 @@ -44,6 +44,7 @@
@@ -354,7 +366,7 @@ index cef41c150a..1ca9bf16a8 100644
      memory_region_init_rom(mask_rom, NULL, "riscv_virt_board.mrom",
                             memmap[VIRT_MROM].size, &error_fatal);
 diff --git a/include/qemu/log.h b/include/qemu/log.h
-index e10e24cd4f..03ef904af7 100644
+index e10e24cd4fc8..03ef904af722 100644
 --- a/include/qemu/log.h
 +++ b/include/qemu/log.h
 @@ -38,6 +38,10 @@ bool qemu_log_separate(void);
@@ -369,7 +381,7 @@ index e10e24cd4f..03ef904af7 100644
  
  FILE *qemu_log_trylock(void) G_GNUC_WARN_UNUSED_RESULT;
 diff --git a/net/slirp.c b/net/slirp.c
-index eb9a456ed4..a1033d499c 100644
+index eb9a456ed49e..a1033d499c48 100644
 --- a/net/slirp.c
 +++ b/net/slirp.c
 @@ -363,8 +363,13 @@ static void net_slirp_poll_notify(Notifier *notifier, void *data)
@@ -387,7 +399,7 @@ index eb9a456ed4..a1033d499c 100644
      case MAIN_LOOP_POLL_OK:
      case MAIN_LOOP_POLL_ERR:
 diff --git a/target/riscv/cpu.c b/target/riscv/cpu.c
-index a90808a3ba..339786c82e 100644
+index a90808a3bace..339786c82e4c 100644
 --- a/target/riscv/cpu.c
 +++ b/target/riscv/cpu.c
 @@ -291,6 +291,9 @@ static const char * const riscv_excp_names[] = {
@@ -411,7 +423,7 @@ index a90808a3ba..339786c82e 100644
  #endif
      env->xl = riscv_cpu_mxl(env);
 diff --git a/target/riscv/cpu.h b/target/riscv/cpu.h
-index 1619c3acb6..bd1499c054 100644
+index 1619c3acb666..bd1499c05484 100644
 --- a/target/riscv/cpu.h
 +++ b/target/riscv/cpu.h
 @@ -368,6 +368,9 @@ struct CPUArchState {
@@ -433,7 +445,7 @@ index 1619c3acb6..bd1499c054 100644
  void riscv_cpu_swap_hypervisor_regs(CPURISCVState *env);
  int riscv_cpu_claim_interrupts(RISCVCPU *cpu, uint64_t interrupts);
 diff --git a/target/riscv/cpu_bits.h b/target/riscv/cpu_bits.h
-index 32b068f18a..83ceb47d98 100644
+index 32b068f18aa5..83ceb47d98b6 100644
 --- a/target/riscv/cpu_bits.h
 +++ b/target/riscv/cpu_bits.h
 @@ -154,6 +154,15 @@
@@ -465,7 +477,7 @@ index 32b068f18a..83ceb47d98 100644
  } RISCVException;
  
 diff --git a/target/riscv/cpu_helper.c b/target/riscv/cpu_helper.c
-index 395a1d9140..111e7a2623 100644
+index 395a1d914061..111e7a26234c 100644
 --- a/target/riscv/cpu_helper.c
 +++ b/target/riscv/cpu_helper.c
 @@ -1720,6 +1720,11 @@ void riscv_cpu_do_interrupt(CPUState *cs)
@@ -481,7 +493,7 @@ index 395a1d9140..111e7a2623 100644
              tval = env->badaddr;
              if (cs->watchpoint_hit) {
 diff --git a/target/riscv/csr.c b/target/riscv/csr.c
-index ea3560342c..f4ccf1e577 100644
+index ea3560342c4f..f4ccf1e57771 100644
 --- a/target/riscv/csr.c
 +++ b/target/riscv/csr.c
 @@ -2254,6 +2254,52 @@ static RISCVException write_mcounteren(CPURISCVState *env, int csrno,
@@ -547,7 +559,7 @@ index ea3560342c..f4ccf1e577 100644
      [CSR_MSTATUSH]    = { "mstatush",   any32, read_mstatush,
                            write_mstatush                                   },
 diff --git a/target/riscv/helper.h b/target/riscv/helper.h
-index 451261ce5a..42082c125b 100644
+index 451261ce5a4f..42082c125b82 100644
 --- a/target/riscv/helper.h
 +++ b/target/riscv/helper.h
 @@ -139,6 +139,18 @@ DEF_HELPER_1(tlb_flush_all, void, env)
@@ -570,7 +582,7 @@ index 451261ce5a..42082c125b 100644
  #ifndef CONFIG_USER_ONLY
  DEF_HELPER_1(hyp_tlb_flush, void, env)
 diff --git a/target/riscv/insn32.decode b/target/riscv/insn32.decode
-index c45b8fa1d8..5ab24e6568 100644
+index c45b8fa1d802..5ab24e6568a2 100644
 --- a/target/riscv/insn32.decode
 +++ b/target/riscv/insn32.decode
 @@ -22,7 +22,7 @@
@@ -698,7 +710,7 @@ index c45b8fa1d8..5ab24e6568 100644
  flw        ............   ..... 010 ..... 0000111 @i
  fsw        .......  ..... ..... 010 ..... 0100111 @s
 diff --git a/target/riscv/insn_trans/trans_rva.c.inc b/target/riscv/insn_trans/trans_rva.c.inc
-index 39bbf60f3c..294920c05d 100644
+index 39bbf60f3c35..294920c05d7d 100644
 --- a/target/riscv/insn_trans/trans_rva.c.inc
 +++ b/target/riscv/insn_trans/trans_rva.c.inc
 @@ -96,6 +96,87 @@ static bool gen_sc(DisasContext *ctx, arg_atomic *a, MemOp mop)
@@ -798,7 +810,7 @@ index 39bbf60f3c..294920c05d 100644
  
  static bool trans_sc_d(DisasContext *ctx, arg_sc_d *a)
 diff --git a/target/riscv/insn_trans/trans_rvi.c.inc b/target/riscv/insn_trans/trans_rvi.c.inc
-index fab5c06719..81371727a2 100644
+index fab5c06719ed..81371727a202 100644
 --- a/target/riscv/insn_trans/trans_rvi.c.inc
 +++ b/target/riscv/insn_trans/trans_rvi.c.inc
 @@ -18,6 +18,10 @@
@@ -1438,7 +1450,7 @@ index fab5c06719..81371727a2 100644
  static bool trans_pause(DisasContext *ctx, arg_pause *a)
  {
 diff --git a/target/riscv/insn_trans/trans_rvm.c.inc b/target/riscv/insn_trans/trans_rvm.c.inc
-index 795f0ccf14..ae6da97568 100644
+index 795f0ccf1403..ae6da975688a 100644
 --- a/target/riscv/insn_trans/trans_rvm.c.inc
 +++ b/target/riscv/insn_trans/trans_rvm.c.inc
 @@ -359,42 +359,44 @@ static bool trans_remuw(DisasContext *ctx, arg_remuw *a)
@@ -1525,7 +1537,7 @@ index 795f0ccf14..ae6da97568 100644
 -    return gen_arith(ctx, a, EXT_ZERO, gen_remu, NULL);
 -}
 diff --git a/target/riscv/machine.c b/target/riscv/machine.c
-index 492c2c6d9d..2454313bcc 100644
+index 492c2c6d9d79..2454313bcc3d 100644
 --- a/target/riscv/machine.c
 +++ b/target/riscv/machine.c
 @@ -398,6 +398,8 @@ const VMStateDescription vmstate_riscv_cpu = {
@@ -1538,7 +1550,7 @@ index 492c2c6d9d..2454313bcc 100644
          VMSTATE_STRUCT_ARRAY(env.pmu_ctrs, RISCVCPU, RV_MAX_MHPMCOUNTERS, 0,
                               vmstate_pmu_ctr_state, PMUCTRState),
 diff --git a/target/riscv/meson.build b/target/riscv/meson.build
-index a4bd61e52a..3dfcf03b26 100644
+index a4bd61e52a94..3dfcf03b26e9 100644
 --- a/target/riscv/meson.build
 +++ b/target/riscv/meson.build
 @@ -22,7 +22,10 @@ riscv_ss.add(files(
@@ -1555,7 +1567,7 @@ index a4bd61e52a..3dfcf03b26 100644
  riscv_system_ss = ss.source_set()
 diff --git a/target/riscv/sensitive_data_protection.c b/target/riscv/sensitive_data_protection.c
 new file mode 100644
-index 0000000000..fe45e84303
+index 000000000000..fe45e843037e
 --- /dev/null
 +++ b/target/riscv/sensitive_data_protection.c
 @@ -0,0 +1,343 @@
@@ -1904,7 +1916,7 @@ index 0000000000..fe45e84303
 +}
 diff --git a/target/riscv/sensitive_data_protection.h b/target/riscv/sensitive_data_protection.h
 new file mode 100644
-index 0000000000..09fc162b8c
+index 000000000000..09fc162b8c49
 --- /dev/null
 +++ b/target/riscv/sensitive_data_protection.h
 @@ -0,0 +1,24 @@
@@ -1934,7 +1946,7 @@ index 0000000000..09fc162b8c
 +#endif
 \ No newline at end of file
 diff --git a/util/log.c b/util/log.c
-index 6219819855..60f9bea1e5 100644
+index 6219819855c2..60f9bea1e5ba 100644
 --- a/util/log.c
 +++ b/util/log.c
 @@ -503,6 +503,11 @@ const QEMULogItem qemu_log_items[] = {

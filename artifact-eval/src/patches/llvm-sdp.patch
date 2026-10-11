@@ -1,221 +1,17 @@
 diff --git a/.gitignore b/.gitignore
-index 20c4f52cd378..b6c10089e973 100644
+index 20c4f52cd3786..28e4b62a66f5c 100644
 --- a/.gitignore
 +++ b/.gitignore
-@@ -70,3 +70,8 @@ pythonenv*
+@@ -70,3 +70,5 @@ pythonenv*
  /clang/utils/analyzer/projects/*/RefScanBuildResults
  # automodapi puts generated documentation files here.
  /lldb/docs/python_api/
 +
 +test
-+testcases/ll
-+testcases/s
-+testcases/o
-\ No newline at end of file
-diff --git a/.vscode/launch.json b/.vscode/launch.json
-new file mode 100644
-index 000000000000..8c737f6a1861
---- /dev/null
-+++ b/.vscode/launch.json
-@@ -0,0 +1,194 @@
-+{
-+  "version": "0.2.0",
-+  "configurations": [
-+    {
-+      "name": "(gdb) Launch clang-19",
-+      "type": "cppdbg",
-+      "request": "launch",
-+      "program": "${workspaceFolder}/build_debug/bin/clang-19",
-+      // "program": "${workspaceFolder}/build/bin/clang-19",
-+      // "program": "${workspaceFolder}/build/bin/ld.lld",
-+      "args": [
-+        // Clang plugin
-+        // "-cc1",
-+        // "-load",
-+        // "${workspaceFolder}/build/lib/HeapSettagInstrumentation.so",
-+        // "-plugin",
-+        // "instrument-heap-settag",
-+        // "test.c"
-+        
-+        // IR code
-+        // "--sysroot=/opt/riscv/sysroot/",
-+        // "--target=riscv64-unknown-linux-gnu",
-+        // "-march=rv64gc",
-+        // "-S",
-+        // "-emit-llvm",
-+        // "test.c",
-+        // "-o",
-+        // "test.ll"
-+        
-+        // Assembly code
-+        // "--sysroot=/opt/riscv/sysroot/",
-+        // "--target=riscv64-unknown-linux-gnu",
-+        // "-march=rv64gc",
-+        // "-S",
-+        // "test.c",
-+        // "-o",
-+        // "test.s"
-+        
-+        // Assembly code with fsdp-perf-inst
-+        // "-fsdp-perf-inst",
-+        // "--sysroot=/opt/riscv/sysroot/",
-+        // "--target=riscv64-unknown-linux-gnu",
-+        // "-march=rv64gc",
-+        // "-S",
-+        // "test.c",
-+        // "-o",
-+        // "test.s"
-+        
-+        // Assembly code with fcount-ptrtype
-+        // "-fcount-ptrtype",
-+        // "--sysroot=/opt/riscv/sysroot/",
-+        // "--target=riscv64-unknown-linux-gnu",
-+        // "-march=rv64gc",
-+        // "-S",
-+        // "test.c",
-+        // "-o",
-+        // "test.s"
-+        
-+        // Assembly code with fsdp-perf-inst fsdp-cp
-+        // "-fsdp-perf-inst",
-+        // "-fsdp-fp",
-+        // "--sysroot=/opt/riscv/sysroot/",
-+        // "--target=riscv64-unknown-linux-gnu",
-+        // "-march=rv64gc",
-+        // "-O2",
-+        // "-S",
-+        // "test.c",
-+        // "-o",
-+        // "test.s"
-+        
-+        // Assembly code with fsdp-perf-inst fsdp-cp fdump-struct
-+        // "-fsdp-perf-inst",
-+        // "-fsdp-fp",
-+        // "-fdump-struct",
-+        // "--sysroot=/home/fzy/project/sensitive-data-protect/image/sysroot-mnt/",
-+        // "--target=riscv64-unknown-linux-gnu",
-+        // "-march=rv64gc",
-+        // "-O0",
-+        // "-S",
-+        // "test.c",
-+        // "-o",
-+        // "test.s"
-+        
-+        // Executable
-+        // "--sysroot=/opt/riscv/sysroot/",
-+        // "--target=riscv64-unknown-linux-gnu",
-+        // "-march=rv64gc",
-+        // "test.c",
-+        // "-fuse-ld=lld",
-+        // "-o",
-+        // "test"
-+        
-+        // Linkage
-+        // "--sysroot=/opt/riscv/sysroot/",
-+        // "--hash-style=gnu",
-+        // "--eh-frame-hdr",
-+        // "-m",
-+        // "elf64lriscv",
-+        // "-X",
-+        // "-pie",
-+        // "-dynamic-linker",
-+        // "/lib/ld-linux-riscv64-lp64d.so.1",
-+        // "-o",
-+        // "test",
-+        // "/opt/riscv/sysroot/usr/lib/Scrt1.o",
-+        // "/opt/riscv/sysroot/lib/gcc/riscv64-unknown-linux-gnu/14.2.0/crti.o",
-+        // "/opt/riscv/sysroot/lib/gcc/riscv64-unknown-linux-gnu/14.2.0/crtbeginS.o",
-+        // "-L/opt/riscv/sysroot/lib/gcc/riscv64-unknown-linux-gnu/14.2.0",
-+        // "-L/opt/riscv/sysroot/lib/gcc/riscv64-unknown-linux-gnu/14.2.0/../../../../riscv64-unknown-linux-gnu/lib",
-+        // "-L/opt/riscv/sysroot/lib",
-+        // "-L/opt/riscv/sysroot/usr/lib",
-+        // "test.o",
-+        // "-lgcc",
-+        // "--as-needed",
-+        // "-lgcc_s",
-+        // "--no-as-needed",
-+        // "-lc",
-+        // "-lgcc",
-+        // "--as-needed",
-+        // "-lgcc_s",
-+        // "--no-as-needed",
-+        // "/opt/riscv/sysroot/lib/gcc/riscv64-unknown-linux-gnu/14.2.0/crtendS.o",
-+        // "/opt/riscv/sysroot/lib/gcc/riscv64-unknown-linux-gnu/14.2.0/crtn.o",
-+      ],
-+      "stopAtEntry": true,
-+      "cwd": "${workspaceFolder}/test",
-+      // "cwd": "/home/fzy/project/sensitive-data-protect/sdp-linux-6.6",
-+      // "cwd": "/home/fzy/project/sensitive-data-protect/linux-6.6-unchanged",
-+      // "cwd": "/home/fzy/mnt/cpu2017/result-riscv-retfpifp-o2-1/benchspec/CPU/600.perlbench_s/build/build_base_retfpifp-o2.0000",
-+      // "cwd": "/home/fzy/mnt/cpu2017/result-riscv-retfpifp-o2-2/benchspec/CPU/602.gcc_s/build/build_base_retfpifp-o2.0000",
-+      // "cwd": "/home/fzy/mnt/cpu2017/result-riscv-retfpifp-o2/benchspec/CPU/625.x264_s/build/build_base_retfpifp-o2.0000",
-+      "environment": [],
-+      "externalConsole": false,
-+      "MIMode": "gdb",
-+      "setupCommands": [
-+        {
-+          "description": "Enable pretty-printing for gdb",
-+          "text": "-enable-pretty-printing",
-+          "ignoreFailures": true
-+        },
-+        {
-+          "description": "Set Disassembly Flavor to Intel",
-+          "text": "-gdb-set disassembly-flavor intel",
-+          "ignoreFailures": true
-+        },
-+        {
-+          "description": "In this mode GDB will be attached to both processes after a call to fork() or vfork().",
-+          "text": "-gdb-set detach-on-fork off",
-+          "ignoreFailures": true
-+        },
-+        {
-+          "description": "The new process is debugged after a fork. The parent process runs unimpeded.",
-+          "text": "-gdb-set follow-fork-mode child",
-+          "ignoreFailures": true
-+        }
-+      ]
-+    },
-+    {
-+      "type": "lldb",
-+      "request": "launch",
-+      "name": "LLDB Launch",
-+      "program": "${workspaceFolder}/build/bin/clang-19",
-+      "args": [
-+        "--sysroot=/opt/riscv/sysroot/",
-+        "--target=riscv64-unknown-linux-gnu",
-+        "-march=rv64gc",
-+        "-v",
-+        "test.c",
-+        "-o test"
-+      ],
-+      "cwd": "${workspaceFolder}/test",
-+      "stopOnEntry": true
-+    },
-+    {
-+      "name": "C/C++ Runner: Debug Session",
-+      "type": "cppdbg",
-+      "request": "launch",
-+      "args": [],
-+      "stopAtEntry": false,
-+      "externalConsole": false,
-+      "cwd": "/home/fzy/project/sensitive-data-protect/llvm-project",
-+      "program": "/home/fzy/project/sensitive-data-protect/llvm-project/build/Debug/outDebug",
-+      "MIMode": "gdb",
-+      "miDebuggerPath": "gdb",
-+      "setupCommands": [
-+        {
-+          "description": "Enable pretty-printing for gdb",
-+          "text": "-enable-pretty-printing",
-+          "ignoreFailures": true
-+        }
-+      ]
-+    }
-+  ]
-+}
 \ No newline at end of file
 diff --git a/analyze_struct_sensitivity.py b/analyze_struct_sensitivity.py
 new file mode 100644
-index 000000000000..e53bbf9a76de
+index 0000000000000..e53bbf9a76dea
 --- /dev/null
 +++ b/analyze_struct_sensitivity.py
 @@ -0,0 +1,375 @@
@@ -595,216 +391,17 @@ index 000000000000..e53bbf9a76de
 +if __name__ == '__main__':
 +    sys.exit(main())
 diff --git a/clang/examples/CMakeLists.txt b/clang/examples/CMakeLists.txt
-index 2396ecac16b2..d09527978208 100644
+index 2396ecac16b2d..75b8ce835c04b 100644
 --- a/clang/examples/CMakeLists.txt
 +++ b/clang/examples/CMakeLists.txt
-@@ -10,4 +10,8 @@ if(CLANG_PLUGIN_SUPPORT)
+@@ -10,4 +10,5 @@ if(CLANG_PLUGIN_SUPPORT)
    add_subdirectory(Attribute)
    add_subdirectory(CallSuperAttribute)
    add_subdirectory(PluginsOrder)
-+  
-+  # SDP: Add HeapSettagInstrumentation to instrument settag instructions for heap sensitive pointers
-+  # add_subdirectory(HeapSettagInstrumentation)
 +
  endif()
-diff --git a/clang/examples/HeapSettagInstrumentation/CMakeLists.txt b/clang/examples/HeapSettagInstrumentation/CMakeLists.txt
-new file mode 100644
-index 000000000000..5de3dafee5c3
---- /dev/null
-+++ b/clang/examples/HeapSettagInstrumentation/CMakeLists.txt
-@@ -0,0 +1,13 @@
-+add_llvm_library(HeapSettagInstrumentation MODULE HeapSettagInstrumentation.cpp PLUGIN_TOOL clang)
-+
-+if(WIN32 OR CYGWIN)
-+  set(LLVM_LINK_COMPONENTS
-+    Support
-+  )
-+  clang_target_link_libraries(HeapSettagInstrumentation PRIVATE
-+    clangAST
-+    clangBasic
-+    clangFrontend
-+    clangRewrite
-+    )
-+endif()
-diff --git a/clang/examples/HeapSettagInstrumentation/HeapSettagInstrumentation.cpp b/clang/examples/HeapSettagInstrumentation/HeapSettagInstrumentation.cpp
-new file mode 100644
-index 000000000000..7ff88013d0b0
---- /dev/null
-+++ b/clang/examples/HeapSettagInstrumentation/HeapSettagInstrumentation.cpp
-@@ -0,0 +1,170 @@
-+//===- HeapSettagInstrumentation.cpp
-+//---------------------------------------------===//
-+//
-+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
-+// See https://llvm.org/LICENSE.txt for license information
-+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-+//
-+//===----------------------------------------------------------------------===//
-+//
-+// Clang plugin instrumenting settag instructions for heap sensitive pointers.
-+//
-+//===----------------------------------------------------------------------===//
-+
-+#include "clang/AST/AST.h"
-+#include "clang/AST/ASTConsumer.h"
-+#include "clang/AST/RecursiveASTVisitor.h"
-+#include "clang/Frontend/CompilerInstance.h"
-+#include "clang/Frontend/FrontendPluginRegistry.h"
-+#include "clang/Rewrite/Core/Rewriter.h"
-+
-+#include <unordered_map>
-+
-+using namespace clang;
-+
-+struct AllocInfo {
-+  Expr *SizeExpr;
-+  SourceLocation CallLocation;
-+};
-+
-+class CountCollector : public RecursiveASTVisitor<CountCollector> {
-+private:
-+  ASTContext *Context;
-+  std::unordered_map<const Expr *, AllocInfo> &AllocCountMap;
-+
-+public:
-+  explicit CountCollector(
-+      ASTContext *Context, Rewriter &Rewriter,
-+      std::unordered_map<const Expr *, AllocInfo> &AllocCountMap)
-+      : Context(Context), AllocCountMap(AllocCountMap) {}
-+
-+  bool VisitCallExpr(CallExpr *Call) {
-+    if (const FunctionDecl *FD = Call->getDirectCallee()) {
-+
-+      QualType RetType = FD->getReturnType();
-+      if (RetType->isEmitSettagPointerType()) {
-+        if (Call->getNumArgs() > 1) {
-+          AllocInfo Info;
-+          Info.SizeExpr = Call->getArg(1);
-+          Info.CallLocation = Call->getBeginLoc();
-+          AllocCountMap[Call] = Info;
-+        }
-+      }
-+    }
-+    return true;
-+  }
-+};
-+
-+class BitcastInstrumenter : public RecursiveASTVisitor<BitcastInstrumenter> {
-+private:
-+  ASTContext *Context;
-+  Rewriter &TheRewriter;
-+  std::unordered_map<const Expr *, AllocInfo> &AllocCountMap;
-+
-+public:
-+  explicit BitcastInstrumenter(
-+      ASTContext *Context, Rewriter &TheRewriter,
-+      std::unordered_map<const Expr *, AllocInfo> &AllocCountMap)
-+      : Context(Context), TheRewriter(TheRewriter),
-+        AllocCountMap(AllocCountMap) {}
-+
-+  bool VisitCastExpr(CastExpr *Cast) {
-+    if (Cast->getCastKind() == CK_BitCast) {
-+
-+      QualType SrcType = Cast->getSubExpr()->getType();
-+      QualType DstType = Cast->getType();
-+      ASTContext &Context = *this->Context;
-+      if (SrcType->isEmitSettagPointerType() &&
-+          DstType->isSensitivePointerType(Context)) {
-+
-+        // Check if the pointee type contains any sensitive pointers
-+        QualType PointeeType = DstType->getPointeeType();
-+        if (PointeeType->isSensitivePointerType(Context)) { // TODO: Change it to check if any part of the type is sensitive
-+
-+          Expr *SubExpr = Cast->getSubExpr()->IgnoreParenImpCasts();
-+          if (const CallExpr *AllocCall = llvm::dyn_cast<CallExpr>(SubExpr)) {
-+
-+            auto It = AllocCountMap.find(AllocCall);
-+            if (It != AllocCountMap.end()) {
-+              AllocInfo &Info = It->second;
-+              SourceLocation AfterCast = Cast->getEndLoc().getLocWithOffset(1);
-+              SourceRange CountRange = Info.SizeExpr->getSourceRange();
-+              std::string CountText = TheRewriter.getRewrittenText(CountRange);
-+
-+              // address = base address + offset
-+              // settag_1 type_id, address
-+              std::string SettagOnePointer =  "    __asm__ __volatile__ (\n"
-+                                              "      \"add a1, a0, %0\\n\"\n"
-+                                              "      \"settag_1 type_id, 0(a1)\\n\"\n" // TODO: Repeat this if multiple sub-fields in the struct are sensitive, the 0 can be hardcoded according to the field offset 
-+                                              "      :\n"
-+                                              "      : \"r\"(offset)\n"
-+                                              "      : \"a0\", \"a1\", \"memory\"\n"
-+                                              "    );\n";
-+              
-+              std::string Instrumentation =   "\n{ // Settag for sensitive pointers on heap\n"
-+                                              "  unsigned long offset = 0;\n"
-+                                              "  for (unsigned long i = 0; i < " + CountText + "; i++) {\n"
-+                                              "    offset = i * 8;\n" // TODO: Change this to sizeof(PointeeType)
-+                                              + SettagOnePointer +
-+                                              "  }\n"
-+                                              "} // End of settag for sensitive pointers on heap";
-+
-+              bool Failed = TheRewriter.InsertTextAfterToken(AfterCast, Instrumentation);
-+              if (Failed) {
-+                llvm::errs()
-+                    << "Failed to insert instrumentation after bitcast at "
-+                    << AfterCast.printToString(TheRewriter.getSourceMgr())
-+                    << "\n";
-+              }
-+            }
-+          }
-+        }
-+      }
-+    }
-+    return true;
-+  }
-+};
-+
-+class HeapSettagInstrumentASTConsumer : public ASTConsumer {
-+private:
-+  ASTContext *Context;
-+  Rewriter &TheRewriter;
-+  std::unordered_map<const Expr *, AllocInfo> AllocCountMap;
-+
-+public:
-+  explicit HeapSettagInstrumentASTConsumer(ASTContext *Context,
-+                                           Rewriter &TheRewriter)
-+      : Context(Context), TheRewriter(TheRewriter) {}
-+
-+  virtual void HandleTranslationUnit(ASTContext &Context) override {
-+    CountCollector Collector(&Context, TheRewriter, AllocCountMap);
-+    Collector.TraverseDecl(Context.getTranslationUnitDecl());
-+
-+    BitcastInstrumenter Instrumenter(&Context, TheRewriter, AllocCountMap);
-+    Instrumenter.TraverseDecl(Context.getTranslationUnitDecl());
-+  }
-+};
-+
-+class HeapSettagInstrumentPluginAction : public PluginASTAction {
-+private:
-+  Rewriter TheRewriter;
-+
-+protected:
-+  std::unique_ptr<ASTConsumer>
-+  CreateASTConsumer(CompilerInstance &CI, llvm::StringRef file) override {
-+    TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
-+    return std::make_unique<HeapSettagInstrumentASTConsumer>(
-+        &CI.getASTContext(), TheRewriter);
-+  }
-+
-+  bool ParseArgs(const CompilerInstance &CI,
-+                 const std::vector<std::string> &args) override {
-+    return true;
-+  }
-+
-+  void EndSourceFileAction() override { TheRewriter.overwriteChangedFiles(); }
-+};
-+
-+static FrontendPluginRegistry::Add<HeapSettagInstrumentPluginAction>
-+    X("instrument-heap-settag",
-+      "instrument settag instructions for heap sensitive pointers");
-\ No newline at end of file
 diff --git a/clang/include/clang/AST/ASTContext.h b/clang/include/clang/AST/ASTContext.h
-index 16a19645d7f3..2235e1026d92 100644
+index 16a19645d7f36..2235e1026d92c 100644
 --- a/clang/include/clang/AST/ASTContext.h
 +++ b/clang/include/clang/AST/ASTContext.h
 @@ -1387,6 +1387,16 @@ public:
@@ -825,7 +422,7 @@ index 16a19645d7f3..2235e1026d92 100644
      return CanQualType::CreateUnsafe(getPointerType((QualType) T));
    }
 diff --git a/clang/include/clang/AST/Expr.h b/clang/include/clang/AST/Expr.h
-index 5b813bfc2faf..c7c68ca97a3b 100644
+index 5b813bfc2faf9..c7c68ca97a3b7 100644
 --- a/clang/include/clang/AST/Expr.h
 +++ b/clang/include/clang/AST/Expr.h
 @@ -110,6 +110,9 @@ struct SubobjectAdjustment {
@@ -854,7 +451,7 @@ index 5b813bfc2faf..c7c68ca97a3b 100644
    /// enumeration type under which said constant was declared.
    /// Otherwise return the expression's type.
 diff --git a/clang/include/clang/AST/Type.h b/clang/include/clang/AST/Type.h
-index 9a711030cff9..be8814808272 100644
+index 9a711030cff9c..be8814808272e 100644
 --- a/clang/include/clang/AST/Type.h
 +++ b/clang/include/clang/AST/Type.h
 @@ -622,7 +622,12 @@ public:
@@ -1029,7 +626,7 @@ index 9a711030cff9..be8814808272 100644
    return isPointerType() || isObjCObjectPointerType();
  }
 diff --git a/clang/include/clang/Basic/Attr.td b/clang/include/clang/Basic/Attr.td
-index 46d0a66d59c3..912cb7a48dbe 100644
+index 46d0a66d59c37..912cb7a48dbef 100644
 --- a/clang/include/clang/Basic/Attr.td
 +++ b/clang/include/clang/Basic/Attr.td
 @@ -4068,6 +4068,41 @@ def UPtr : TypeAttr {
@@ -1075,7 +672,7 @@ index 46d0a66d59c3..912cb7a48dbe 100644
    let LangOpts = [MicrosoftExt];
    let Args = [DefaultBoolArgument<"BestCase", /*default*/1, /*fake*/1>];
 diff --git a/clang/include/clang/Basic/AttrDocs.td b/clang/include/clang/Basic/AttrDocs.td
-index b5d468eb5ec9..3e51c8ef6412 100644
+index b5d468eb5ec95..3e51c8ef64121 100644
 --- a/clang/include/clang/Basic/AttrDocs.td
 +++ b/clang/include/clang/Basic/AttrDocs.td
 @@ -4128,6 +4128,67 @@ extended when converted to a 64-bit pointer.
@@ -1147,7 +744,7 @@ index b5d468eb5ec9..3e51c8ef6412 100644
  def NullabilityDocs : DocumentationCategory<"Nullability Attributes"> {
    let Content = [{
 diff --git a/clang/include/clang/Basic/CodeGenOptions.def b/clang/include/clang/Basic/CodeGenOptions.def
-index 12808eb275fa..f93d52380fd3 100644
+index 12808eb275fa4..f93d52380fd37 100644
 --- a/clang/include/clang/Basic/CodeGenOptions.def
 +++ b/clang/include/clang/Basic/CodeGenOptions.def
 @@ -115,6 +115,24 @@ CODEGENOPT(FunctionReturnThunks, 1, 0) ///< -mfunction-return={keep|thunk-extern
@@ -1176,7 +773,7 @@ index 12808eb275fa..f93d52380fd3 100644
                                             ///< enabled.
  CODEGENOPT(StackSizeSection  , 1, 0) ///< Set when -fstack-size-section is enabled.
 diff --git a/clang/include/clang/Basic/DiagnosticSemaKinds.td b/clang/include/clang/Basic/DiagnosticSemaKinds.td
-index 8a00fe21a08c..301f76fc6140 100644
+index 8a00fe21a08ce..301f76fc6140e 100644
 --- a/clang/include/clang/Basic/DiagnosticSemaKinds.td
 +++ b/clang/include/clang/Basic/DiagnosticSemaKinds.td
 @@ -3312,6 +3312,12 @@ def warn_attribute_pointers_only : Warning<
@@ -1221,7 +818,7 @@ index 8a00fe21a08c..301f76fc6140 100644
    "incompatible vector types "
    "%select{%diff{assigning to $ from $|assigning to different types}0,1"
 diff --git a/clang/include/clang/Basic/LangOptions.def b/clang/include/clang/Basic/LangOptions.def
-index 834a6f6cd43e..0e54e5f73759 100644
+index 834a6f6cd43e3..0e54e5f73759f 100644
 --- a/clang/include/clang/Basic/LangOptions.def
 +++ b/clang/include/clang/Basic/LangOptions.def
 @@ -523,6 +523,18 @@ BENIGN_LANGOPT(CheckConstexprFunctionBodies, 1, 1,
@@ -1244,7 +841,7 @@ index 834a6f6cd43e..0e54e5f73759 100644
  
  #undef LANGOPT
 diff --git a/clang/include/clang/Basic/SourceLocation.h b/clang/include/clang/Basic/SourceLocation.h
-index 7a0f5ba8d127..b0beb0df0992 100644
+index 7a0f5ba8d1270..b0beb0df09920 100644
 --- a/clang/include/clang/Basic/SourceLocation.h
 +++ b/clang/include/clang/Basic/SourceLocation.h
 @@ -55,6 +55,9 @@ public:
@@ -1258,7 +855,7 @@ index 7a0f5ba8d127..b0beb0df0992 100644
    friend class ASTWriter;
    friend class ASTReader;
 diff --git a/clang/include/clang/Basic/TokenKinds.def b/clang/include/clang/Basic/TokenKinds.def
-index 0526fbf51bd9..481595c479af 100644
+index 0526fbf51bd91..481595c479af4 100644
 --- a/clang/include/clang/Basic/TokenKinds.def
 +++ b/clang/include/clang/Basic/TokenKinds.def
 @@ -722,6 +722,15 @@ KEYWORD(_Null_unspecified        , KEYALL)
@@ -1278,7 +875,7 @@ index 0526fbf51bd9..481595c479af 100644
  KEYWORD(__ptr64                       , KEYMS)
  KEYWORD(__ptr32                       , KEYMS)
 diff --git a/clang/include/clang/Driver/Options.td b/clang/include/clang/Driver/Options.td
-index 15f9ee75492e..36b06d4ac476 100644
+index 15f9ee75492e3..36b06d4ac4769 100644
 --- a/clang/include/clang/Driver/Options.td
 +++ b/clang/include/clang/Driver/Options.td
 @@ -4041,6 +4041,50 @@ def fno_finite_loops: Flag<["-"], "fno-finite-loops">, Group<f_Group>,
@@ -1333,7 +930,7 @@ index 15f9ee75492e..36b06d4ac476 100644
    HelpText<"Process trigraph sequences">, Visibility<[ClangOption, CC1Option]>;
  def fno_trigraphs : Flag<["-"], "fno-trigraphs">, Group<f_Group>,
 diff --git a/clang/include/clang/Parse/Parser.h b/clang/include/clang/Parse/Parser.h
-index f256d603ae62..d6c45ac8ad77 100644
+index f256d603ae626..d6c45ac8ad774 100644
 --- a/clang/include/clang/Parse/Parser.h
 +++ b/clang/include/clang/Parse/Parser.h
 @@ -3066,6 +3066,16 @@ private:
@@ -1354,7 +951,7 @@ index f256d603ae62..d6c45ac8ad77 100644
    SourceLocation SkipExtendedMicrosoftTypeAttributes();
    void ParseMicrosoftInheritanceClassAttributes(ParsedAttributes &attrs);
 diff --git a/clang/include/clang/Sema/Sema.h b/clang/include/clang/Sema/Sema.h
-index 7bfdaaae45a9..6a5648d18bfd 100644
+index 7bfdaaae45a93..6a5648d18bfdc 100644
 --- a/clang/include/clang/Sema/Sema.h
 +++ b/clang/include/clang/Sema/Sema.h
 @@ -7626,6 +7626,9 @@ public:
@@ -1368,7 +965,7 @@ index 7bfdaaae45a9..6a5648d18bfd 100644
      /// changes address spaces in nested pointer types which is not allowed.
      /// For instance, converting __private int ** to __generic int ** is
 diff --git a/clang/lib/AST/ASTContext.cpp b/clang/lib/AST/ASTContext.cpp
-index 1064507f3461..d7d7a1574b25 100644
+index 1064507f34616..d7d7a1574b25b 100644
 --- a/clang/lib/AST/ASTContext.cpp
 +++ b/clang/lib/AST/ASTContext.cpp
 @@ -3651,7 +3651,149 @@ QualType ASTContext::getPointerType(QualType T) const {
@@ -1555,7 +1152,7 @@ index 1064507f3461..d7d7a1574b25 100644
  }
  
 diff --git a/clang/lib/AST/CMakeLists.txt b/clang/lib/AST/CMakeLists.txt
-index 70aecb781c2f..62168e351856 100644
+index 70aecb781c2ff..62168e3518566 100644
 --- a/clang/lib/AST/CMakeLists.txt
 +++ b/clang/lib/AST/CMakeLists.txt
 @@ -129,6 +129,9 @@ add_clang_library(clangAST
@@ -1570,7 +1167,7 @@ index 70aecb781c2f..62168e351856 100644
    clangLex
 diff --git a/clang/lib/AST/StructTypeTracker.cpp b/clang/lib/AST/StructTypeTracker.cpp
 new file mode 100644
-index 000000000000..e4f6603b8d82
+index 0000000000000..e4f6603b8d827
 --- /dev/null
 +++ b/clang/lib/AST/StructTypeTracker.cpp
 @@ -0,0 +1,294 @@
@@ -1871,7 +1468,7 @@ index 000000000000..e4f6603b8d82
 \ No newline at end of file
 diff --git a/clang/lib/AST/StructTypeTracker.h b/clang/lib/AST/StructTypeTracker.h
 new file mode 100644
-index 000000000000..b6271e6e96a1
+index 0000000000000..b6271e6e96a1a
 --- /dev/null
 +++ b/clang/lib/AST/StructTypeTracker.h
 @@ -0,0 +1,90 @@
@@ -1967,7 +1564,7 @@ index 000000000000..b6271e6e96a1
 +#endif // LLVM_CLANG_SEMA_STRUCTTYPETRACKER_H
 \ No newline at end of file
 diff --git a/clang/lib/AST/Type.cpp b/clang/lib/AST/Type.cpp
-index fdaab8e43459..62620f5205c7 100644
+index fdaab8e434593..62620f5205c7b 100644
 --- a/clang/lib/AST/Type.cpp
 +++ b/clang/lib/AST/Type.cpp
 @@ -55,6 +55,8 @@
@@ -2045,7 +1642,7 @@ index fdaab8e43459..62620f5205c7 100644
    // FIXME: Generate this with TableGen.
    switch (getAttrKind()) {
 diff --git a/clang/lib/AST/TypePrinter.cpp b/clang/lib/AST/TypePrinter.cpp
-index ffec3ef9d226..a8300249bef4 100644
+index ffec3ef9d2269..a8300249bef4a 100644
 --- a/clang/lib/AST/TypePrinter.cpp
 +++ b/clang/lib/AST/TypePrinter.cpp
 @@ -410,11 +410,22 @@ void TypePrinter::printPointerBefore(const PointerType *T, raw_ostream &OS) {
@@ -2119,7 +1716,7 @@ index ffec3ef9d226..a8300249bef4 100644
  
    case attr::NSReturnsRetained:
 diff --git a/clang/lib/CodeGen/CGBuilder.h b/clang/lib/CodeGen/CGBuilder.h
-index 5d59d5a4ae2c..d395d26fd240 100644
+index 5d59d5a4ae2c1..d395d26fd2408 100644
 --- a/clang/lib/CodeGen/CGBuilder.h
 +++ b/clang/lib/CodeGen/CGBuilder.h
 @@ -118,9 +118,22 @@ public:
@@ -2170,7 +1767,7 @@ index 5d59d5a4ae2c..d395d26fd240 100644
  
    using CGBuilderBaseTy::CreateAlignedStore;
 diff --git a/clang/lib/CodeGen/CGBuiltin.cpp b/clang/lib/CodeGen/CGBuiltin.cpp
-index 5639239359ab..856b04a6b51b 100644
+index 5639239359ab8..856b04a6b51b5 100644
 --- a/clang/lib/CodeGen/CGBuiltin.cpp
 +++ b/clang/lib/CodeGen/CGBuiltin.cpp
 @@ -4215,6 +4215,58 @@ RValue CodeGenFunction::EmitBuiltinExpr(const GlobalDecl GD, unsigned BuiltinID,
@@ -2269,7 +1866,7 @@ index 5639239359ab..856b04a6b51b 100644
      return RValue::get(Dest, *this);
    }
 diff --git a/clang/lib/CodeGen/CGDecl.cpp b/clang/lib/CodeGen/CGDecl.cpp
-index c3251bb5ab56..70b4ce64b835 100644
+index c3251bb5ab565..70b4ce64b8359 100644
 --- a/clang/lib/CodeGen/CGDecl.cpp
 +++ b/clang/lib/CodeGen/CGDecl.cpp
 @@ -1364,8 +1364,11 @@ llvm::Value *CodeGenFunction::EmitLifetimeStart(llvm::TypeSize Size,
@@ -2377,7 +1974,7 @@ index c3251bb5ab56..70b4ce64b835 100644
  
  namespace {
 diff --git a/clang/lib/CodeGen/CGExpr.cpp b/clang/lib/CodeGen/CGExpr.cpp
-index 3ef22b17f769..4e1fcb8c3bf0 100644
+index 3ef22b17f7691..4e1fcb8c3bf0c 100644
 --- a/clang/lib/CodeGen/CGExpr.cpp
 +++ b/clang/lib/CodeGen/CGExpr.cpp
 @@ -5440,6 +5440,108 @@ RValue CodeGenFunction::EmitRValueForField(LValue LV,
@@ -2604,7 +2201,7 @@ index 3ef22b17f769..4e1fcb8c3bf0 100644
    // in debug info about call sites.
    if (CGDebugInfo *DI = getDebugInfo()) {
 diff --git a/clang/lib/CodeGen/CGExprAgg.cpp b/clang/lib/CodeGen/CGExprAgg.cpp
-index d9f44f4be617..7256e4afcd2b 100644
+index d9f44f4be617e..7256e4afcd2b8 100644
 --- a/clang/lib/CodeGen/CGExprAgg.cpp
 +++ b/clang/lib/CodeGen/CGExprAgg.cpp
 @@ -1995,6 +1995,16 @@ static void CheckAggExprForMemSetUse(AggValueSlot &Slot, const Expr *E,
@@ -2971,7 +2568,7 @@ index d9f44f4be617..7256e4afcd2b 100644
    Address SrcPtr = Src.getAddress();
  
 diff --git a/clang/lib/CodeGen/CGExprScalar.cpp b/clang/lib/CodeGen/CGExprScalar.cpp
-index 6e212e74676e..f3306e1fc3ff 100644
+index 6e212e74676e8..f3306e1fc3ffa 100644
 --- a/clang/lib/CodeGen/CGExprScalar.cpp
 +++ b/clang/lib/CodeGen/CGExprScalar.cpp
 @@ -2308,6 +2308,108 @@ Value *ScalarExprEmitter::VisitCastExpr(CastExpr *CE) {
@@ -3092,7 +2689,7 @@ index 6e212e74676e..f3306e1fc3ff 100644
    }
    case CK_AddressSpaceConversion: {
 diff --git a/clang/lib/CodeGen/CodeGenFunction.cpp b/clang/lib/CodeGen/CodeGenFunction.cpp
-index 2b2e23f1e5d7..2c672095b46e 100644
+index 2b2e23f1e5d7f..2c672095b46e8 100644
 --- a/clang/lib/CodeGen/CodeGenFunction.cpp
 +++ b/clang/lib/CodeGen/CodeGenFunction.cpp
 @@ -2125,6 +2125,14 @@ CodeGenFunction::EmitNullInitialization(Address DestPtr, QualType Ty) {
@@ -3111,7 +2708,7 @@ index 2b2e23f1e5d7..2c672095b46e 100644
      DestPtr = DestPtr.withElementType(Int8Ty);
  
 diff --git a/clang/lib/CodeGen/CodeGenFunction.h b/clang/lib/CodeGen/CodeGenFunction.h
-index 60e6841e1b3d..ac4813f64917 100644
+index 60e6841e1b3d6..ac4813f649171 100644
 --- a/clang/lib/CodeGen/CodeGenFunction.h
 +++ b/clang/lib/CodeGen/CodeGenFunction.h
 @@ -3012,6 +3012,29 @@ public:
@@ -3145,7 +2742,7 @@ index 60e6841e1b3d..ac4813f64917 100644
    /// \c llvm.va_start or \c llvm.va_end.
    /// \param ArgValue A reference to the \c va_list as emitted by either
 diff --git a/clang/lib/CodeGen/CodeGenModule.cpp b/clang/lib/CodeGen/CodeGenModule.cpp
-index cf5e29e5a3db..fe7c6446d994 100644
+index cf5e29e5a3db8..fe7c6446d9944 100644
 --- a/clang/lib/CodeGen/CodeGenModule.cpp
 +++ b/clang/lib/CodeGen/CodeGenModule.cpp
 @@ -77,6 +77,9 @@
@@ -3216,7 +2813,7 @@ index cf5e29e5a3db..fe7c6446d994 100644
      // Function ID tables for EH Continuation Guard.
      getModule().addModuleFlag(llvm::Module::Warning, "ehcontguard", 1);
 diff --git a/clang/lib/CodeGen/CodeGenModule.h b/clang/lib/CodeGen/CodeGenModule.h
-index c58bb88035ca..11c2aec7440c 100644
+index c58bb88035ca8..11c2aec7440c1 100644
 --- a/clang/lib/CodeGen/CodeGenModule.h
 +++ b/clang/lib/CodeGen/CodeGenModule.h
 @@ -601,6 +601,10 @@ private:
@@ -3243,7 +2840,7 @@ index c58bb88035ca..11c2aec7440c 100644
    // Make sure that this type is translated.
    void UpdateCompletedType(const TagDecl *TD);
 diff --git a/clang/lib/CodeGen/CodeGenTypeCache.h b/clang/lib/CodeGen/CodeGenTypeCache.h
-index e273ebe3b060..b3cf4cbab8ab 100644
+index e273ebe3b060f..b3cf4cbab8ab3 100644
 --- a/clang/lib/CodeGen/CodeGenTypeCache.h
 +++ b/clang/lib/CodeGen/CodeGenTypeCache.h
 @@ -66,6 +66,15 @@ struct CodeGenTypeCache {
@@ -3263,7 +2860,7 @@ index e273ebe3b060..b3cf4cbab8ab 100644
    union {
      llvm::PointerType *GlobalsVoidPtrTy;
 diff --git a/clang/lib/CodeGen/CodeGenTypes.cpp b/clang/lib/CodeGen/CodeGenTypes.cpp
-index f5deccdc1ba7..335c7ad96459 100644
+index f5deccdc1ba75..335c7ad96459e 100644
 --- a/clang/lib/CodeGen/CodeGenTypes.cpp
 +++ b/clang/lib/CodeGen/CodeGenTypes.cpp
 @@ -21,10 +21,12 @@
@@ -3386,7 +2983,7 @@ index f5deccdc1ba7..335c7ad96459 100644
  }
  
 diff --git a/clang/lib/Driver/ToolChains/Clang.cpp b/clang/lib/Driver/ToolChains/Clang.cpp
-index 8858c318aba7..d316185d0df7 100644
+index 8858c318aba7a..d316185d0df7e 100644
 --- a/clang/lib/Driver/ToolChains/Clang.cpp
 +++ b/clang/lib/Driver/ToolChains/Clang.cpp
 @@ -6857,6 +6857,35 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
@@ -3426,7 +3023,7 @@ index 8858c318aba7..d316185d0df7 100644
                      options::OPT_mno_speculative_load_hardening);
  
 diff --git a/clang/lib/Frontend/CompilerInvocation.cpp b/clang/lib/Frontend/CompilerInvocation.cpp
-index 028fdb2cc6b9..b9470eb879bb 100644
+index 028fdb2cc6b9d..b9470eb879bb2 100644
 --- a/clang/lib/Frontend/CompilerInvocation.cpp
 +++ b/clang/lib/Frontend/CompilerInvocation.cpp
 @@ -1695,6 +1695,30 @@ void CompilerInvocationBase::GenerateCodeGenArgs(const CodeGenOptions &Opts,
@@ -3489,7 +3086,7 @@ index 028fdb2cc6b9..b9470eb879bb 100644
        options::OPT_mamdgpu_ieee, options::OPT_mno_amdgpu_ieee, true);
    if (!Opts.EmitIEEENaNCompliantInsts && !LangOptsRef.NoHonorNaNs)
 diff --git a/clang/lib/Parse/ParseDecl.cpp b/clang/lib/Parse/ParseDecl.cpp
-index 7ce9a9cea1c7..8370cc3ba781 100644
+index 7ce9a9cea1c7a..8370cc3ba781b 100644
 --- a/clang/lib/Parse/ParseDecl.cpp
 +++ b/clang/lib/Parse/ParseDecl.cpp
 @@ -1042,6 +1042,39 @@ void Parser::ParseWebAssemblyFuncrefTypeAttribute(ParsedAttributes &attrs) {
@@ -3577,7 +3174,7 @@ index 7ce9a9cea1c7..8370cc3ba781 100644
        if (AttrReqs & AR_VendorAttributesParsed) {
          ParseBorlandTypeAttributes(DS.getAttributes());
 diff --git a/clang/lib/Parse/ParseExpr.cpp b/clang/lib/Parse/ParseExpr.cpp
-index e82b56527283..6e74f1a10b08 100644
+index e82b565272831..6e74f1a10b080 100644
 --- a/clang/lib/Parse/ParseExpr.cpp
 +++ b/clang/lib/Parse/ParseExpr.cpp
 @@ -2377,6 +2377,16 @@ Parser::ParsePostfixExpressionSuffix(ExprResult LHS) {
@@ -3598,7 +3195,7 @@ index e82b56527283..6e74f1a10b08 100644
      }
      case tok::plusplus:    // postfix-expression: postfix-expression '++'
 diff --git a/clang/lib/Sema/CMakeLists.txt b/clang/lib/Sema/CMakeLists.txt
-index 2cee4f5ef6e9..6a4dab954c12 100644
+index 2cee4f5ef6e99..6a4dab954c128 100644
 --- a/clang/lib/Sema/CMakeLists.txt
 +++ b/clang/lib/Sema/CMakeLists.txt
 @@ -92,6 +92,9 @@ add_clang_library(clangSema
@@ -3613,7 +3210,7 @@ index 2cee4f5ef6e9..6a4dab954c12 100644
    omp_gen
 diff --git a/clang/lib/Sema/PointerTypeTracker.cpp b/clang/lib/Sema/PointerTypeTracker.cpp
 new file mode 100644
-index 000000000000..919736b09c68
+index 0000000000000..919736b09c68b
 --- /dev/null
 +++ b/clang/lib/Sema/PointerTypeTracker.cpp
 @@ -0,0 +1,322 @@
@@ -3942,7 +3539,7 @@ index 000000000000..919736b09c68
 \ No newline at end of file
 diff --git a/clang/lib/Sema/PointerTypeTracker.h b/clang/lib/Sema/PointerTypeTracker.h
 new file mode 100644
-index 000000000000..c5df8450dada
+index 0000000000000..c5df8450dada1
 --- /dev/null
 +++ b/clang/lib/Sema/PointerTypeTracker.h
 @@ -0,0 +1,66 @@
@@ -4014,7 +3611,7 @@ index 000000000000..c5df8450dada
 +#endif // LLVM_CLANG_AST_POINTERTYPETRACKER_H
 \ No newline at end of file
 diff --git a/clang/lib/Sema/SemaDecl.cpp b/clang/lib/Sema/SemaDecl.cpp
-index 717ddb833958..2ab50169fc9f 100644
+index 717ddb8339584..2ab50169fc9f7 100644
 --- a/clang/lib/Sema/SemaDecl.cpp
 +++ b/clang/lib/Sema/SemaDecl.cpp
 @@ -65,6 +65,9 @@
@@ -4187,7 +3784,7 @@ index 717ddb833958..2ab50169fc9f 100644
  }
  
 diff --git a/clang/lib/Sema/SemaDeclAttr.cpp b/clang/lib/Sema/SemaDeclAttr.cpp
-index e2eada24f9fc..ce297ce55e6e 100644
+index e2eada24f9fcc..ce297ce55e6ef 100644
 --- a/clang/lib/Sema/SemaDeclAttr.cpp
 +++ b/clang/lib/Sema/SemaDeclAttr.cpp
 @@ -596,6 +596,40 @@ static void handleAllocSizeAttr(Sema &S, Decl *D, const ParsedAttr &AL) {
@@ -4245,7 +3842,7 @@ index e2eada24f9fc..ce297ce55e6e 100644
      handleAlwaysInlineAttr(S, D, AL);
      break;
 diff --git a/clang/lib/Sema/SemaExpr.cpp b/clang/lib/Sema/SemaExpr.cpp
-index 687b1be94592..b5ca14681276 100644
+index 687b1be945921..b5ca146812765 100644
 --- a/clang/lib/Sema/SemaExpr.cpp
 +++ b/clang/lib/Sema/SemaExpr.cpp
 @@ -8869,6 +8869,7 @@ checkPointerTypesForAssignment(Sema &S, QualType LHSType, QualType RHSType,
@@ -4283,7 +3880,7 @@ index 687b1be94592..b5ca14681276 100644
      if (getLangOpts().CPlusPlus) {
        isInvalid = true;
 diff --git a/clang/lib/Sema/SemaType.cpp b/clang/lib/Sema/SemaType.cpp
-index 6fa39cdccef2..ea5096c77980 100644
+index 6fa39cdccef2b..ea5096c77980b 100644
 --- a/clang/lib/Sema/SemaType.cpp
 +++ b/clang/lib/Sema/SemaType.cpp
 @@ -51,6 +51,9 @@
@@ -4501,7 +4098,7 @@ index 6fa39cdccef2..ea5096c77980 100644
        attr.setUsedAsTypeAttr();
 diff --git a/cmake_clang.sh b/cmake_clang.sh
 new file mode 100755
-index 000000000000..faecd57814f5
+index 0000000000000..faecd57814f5f
 --- /dev/null
 +++ b/cmake_clang.sh
 @@ -0,0 +1,9 @@
@@ -4517,7 +4114,7 @@ index 000000000000..faecd57814f5
 \ No newline at end of file
 diff --git a/cmake_clang_debug.sh b/cmake_clang_debug.sh
 new file mode 100755
-index 000000000000..b32127ce9c8c
+index 0000000000000..b32127ce9c8cd
 --- /dev/null
 +++ b/cmake_clang_debug.sh
 @@ -0,0 +1,9 @@
@@ -4532,7 +4129,7 @@ index 000000000000..b32127ce9c8c
 +	-DCLANG_BUILD_EXAMPLES=ON
 \ No newline at end of file
 diff --git a/lld/ELF/Relocations.cpp b/lld/ELF/Relocations.cpp
-index 707768dee6d3..80de2d068052 100644
+index 707768dee6d38..80de2d0680521 100644
 --- a/lld/ELF/Relocations.cpp
 +++ b/lld/ELF/Relocations.cpp
 @@ -1472,7 +1472,7 @@ void RelocationScanner::scanOne(typename Relocs<RelTy>::const_iterator &i) {
@@ -4545,7 +4142,7 @@ index 707768dee6d3..80de2d068052 100644
    // marker relocations, e.g. R_*_NONE and R_ARM_V4BX. Don't error on them.
    if (sym.isUndefined() && symIndex != 0 &&
 diff --git a/llvm/include/llvm/CodeGen/MachineMemOperand.h b/llvm/include/llvm/CodeGen/MachineMemOperand.h
-index e2343abcc4ac..9eb79be3130d 100644
+index e2343abcc4ac1..9eb79be3130d5 100644
 --- a/llvm/include/llvm/CodeGen/MachineMemOperand.h
 +++ b/llvm/include/llvm/CodeGen/MachineMemOperand.h
 @@ -49,6 +49,9 @@ struct MachinePointerInfo {
@@ -4608,7 +4205,7 @@ index e2343abcc4ac..9eb79be3130d 100644
    /// unordered or higher, false otherwise.
    bool isAtomic() const {
 diff --git a/llvm/include/llvm/CodeGen/TargetInstrInfo.h b/llvm/include/llvm/CodeGen/TargetInstrInfo.h
-index 649711d8faf6..5f870154784f 100644
+index 649711d8faf65..5f870154784f0 100644
 --- a/llvm/include/llvm/CodeGen/TargetInstrInfo.h
 +++ b/llvm/include/llvm/CodeGen/TargetInstrInfo.h
 @@ -1136,6 +1136,17 @@ public:
@@ -4648,7 +4245,7 @@ index 649711d8faf6..5f870154784f 100644
    /// that remain after register allocation. Many pseudo instructions are
    /// created to help register allocation. This is the place to convert them
 diff --git a/llvm/include/llvm/CodeGen/TargetPassConfig.h b/llvm/include/llvm/CodeGen/TargetPassConfig.h
-index d00e0bed91a4..26703ca22fb9 100644
+index d00e0bed91a45..26703ca22fb9b 100644
 --- a/llvm/include/llvm/CodeGen/TargetPassConfig.h
 +++ b/llvm/include/llvm/CodeGen/TargetPassConfig.h
 @@ -444,6 +444,9 @@ protected:
@@ -4662,7 +4259,7 @@ index d00e0bed91a4..26703ca22fb9 100644
    /// prolog-epilog insertion and before the second instruction scheduling pass.
    virtual void addPreSched2() { }
 diff --git a/llvm/include/llvm/IR/DerivedTypes.h b/llvm/include/llvm/IR/DerivedTypes.h
-index 01f76d493278..98f36e422014 100644
+index 01f76d4932780..98f36e422014f 100644
 --- a/llvm/include/llvm/IR/DerivedTypes.h
 +++ b/llvm/include/llvm/IR/DerivedTypes.h
 @@ -657,6 +657,15 @@ public:
@@ -4712,7 +4309,7 @@ index 01f76d493278..98f36e422014 100644
  
  Type *Type::getExtendedType() const {
 diff --git a/llvm/include/llvm/IR/GlobalValue.h b/llvm/include/llvm/IR/GlobalValue.h
-index 53eddebdd6ae..32da74e9e3b8 100644
+index 53eddebdd6ae6..32da74e9e3b83 100644
 --- a/llvm/include/llvm/IR/GlobalValue.h
 +++ b/llvm/include/llvm/IR/GlobalValue.h
 @@ -271,6 +271,11 @@ public:
@@ -4728,7 +4325,7 @@ index 53eddebdd6ae..32da74e9e3b8 100644
    DLLStorageClassTypes getDLLStorageClass() const {
      return DLLStorageClassTypes(DllStorageClass);
 diff --git a/llvm/include/llvm/IR/IRBuilder.h b/llvm/include/llvm/IR/IRBuilder.h
-index 31a1fef32199..876bd22cc95b 100644
+index 31a1fef321995..876bd22cc95bf 100644
 --- a/llvm/include/llvm/IR/IRBuilder.h
 +++ b/llvm/include/llvm/IR/IRBuilder.h
 @@ -1825,7 +1825,7 @@ public:
@@ -4765,7 +4362,7 @@ index 31a1fef32199..876bd22cc95b 100644
                           SyncScope::ID SSID = SyncScope::System,
                           const Twine &Name = "") {
 diff --git a/llvm/include/llvm/IR/Instructions.h b/llvm/include/llvm/IR/Instructions.h
-index c07fee58e4bd..c01ad6ee078d 100644
+index c07fee58e4bdb..c01ad6ee078d4 100644
 --- a/llvm/include/llvm/IR/Instructions.h
 +++ b/llvm/include/llvm/IR/Instructions.h
 @@ -64,6 +64,10 @@ class AllocaInst : public UnaryInstruction {
@@ -4933,7 +4530,7 @@ index c07fee58e4bd..c01ad6ee078d 100644
  
  //===----------------------------------------------------------------------===//
 diff --git a/llvm/include/llvm/IR/Intrinsics.td b/llvm/include/llvm/IR/Intrinsics.td
-index b4e758136b39..54c328489d3a 100644
+index b4e758136b39f..54c328489d3af 100644
 --- a/llvm/include/llvm/IR/Intrinsics.td
 +++ b/llvm/include/llvm/IR/Intrinsics.td
 @@ -1440,6 +1440,14 @@ def int_ptr_annotation : DefaultAttrsIntrinsic<
@@ -4952,7 +4549,7 @@ index b4e758136b39..54c328489d3a 100644
      [llvm_anyint_ty],
      [LLVMMatchType<0>, llvm_anyptr_ty, LLVMMatchType<1>, llvm_i32_ty],
 diff --git a/llvm/include/llvm/IR/Type.h b/llvm/include/llvm/IR/Type.h
-index 1f0133c08e7d..72555065abcf 100644
+index 1f0133c08e7d6..72555065abcfe 100644
 --- a/llvm/include/llvm/IR/Type.h
 +++ b/llvm/include/llvm/IR/Type.h
 @@ -275,6 +275,15 @@ public:
@@ -4972,7 +4569,7 @@ index 1f0133c08e7d..72555065abcf 100644
    /// Return true if the type is "first class", meaning it is a valid type for a
    /// Value.
 diff --git a/llvm/lib/Analysis/InstructionSimplify.cpp b/llvm/lib/Analysis/InstructionSimplify.cpp
-index 3a7ae577bb06..9cc407c69a73 100644
+index 3a7ae577bb068..9cc407c69a731 100644
 --- a/llvm/lib/Analysis/InstructionSimplify.cpp
 +++ b/llvm/lib/Analysis/InstructionSimplify.cpp
 @@ -2720,7 +2720,14 @@ static bool haveNonOverlappingStorage(const Value *V1, const Value *V2) {
@@ -4992,7 +4589,7 @@ index 3a7ae577bb06..9cc407c69a73 100644
    const TargetLibraryInfo *TLI = Q.TLI;
  
 diff --git a/llvm/lib/Analysis/ValueTracking.cpp b/llvm/lib/Analysis/ValueTracking.cpp
-index 4b77c0046cc7..794ccf63f7fe 100644
+index 4b77c0046cc70..794ccf63f7fe4 100644
 --- a/llvm/lib/Analysis/ValueTracking.cpp
 +++ b/llvm/lib/Analysis/ValueTracking.cpp
 @@ -311,8 +311,16 @@ bool llvm::isKnownNonEqual(const Value *V1, const Value *V2,
@@ -5015,7 +4612,7 @@ index 4b77c0046cc7..794ccf63f7fe 100644
    APInt DemandedElts =
        FVTy ? APInt::getAllOnes(FVTy->getNumElements()) : APInt(1, 1);
 diff --git a/llvm/lib/CodeGen/GlobalISel/IRTranslator.cpp b/llvm/lib/CodeGen/GlobalISel/IRTranslator.cpp
-index eb010afd41b6..6128c6e828e6 100644
+index eb010afd41b6b..6128c6e828e67 100644
 --- a/llvm/lib/CodeGen/GlobalISel/IRTranslator.cpp
 +++ b/llvm/lib/CodeGen/GlobalISel/IRTranslator.cpp
 @@ -1398,6 +1398,11 @@ bool IRTranslator::translateLoad(const User &U, MachineIRBuilder &MIRBuilder) {
@@ -5043,7 +4640,7 @@ index eb010afd41b6..6128c6e828e6 100644
      auto MMO = MF->getMachineMemOperand(
          Ptr, Flags, MRI->getType(Vals[i]),
 diff --git a/llvm/lib/CodeGen/MachineOperand.cpp b/llvm/lib/CodeGen/MachineOperand.cpp
-index ace05902d5df..b6537c947da6 100644
+index ace05902d5df7..b6537c947da6a 100644
 --- a/llvm/lib/CodeGen/MachineOperand.cpp
 +++ b/llvm/lib/CodeGen/MachineOperand.cpp
 @@ -1145,6 +1145,11 @@ void MachineMemOperand::print(raw_ostream &OS, ModuleSlotTracker &MST,
@@ -5059,7 +4656,7 @@ index ace05902d5df..b6537c947da6 100644
      OS << "non-temporal ";
    if (isDereferenceable())
 diff --git a/llvm/lib/CodeGen/SelectionDAG/DAGCombiner.cpp b/llvm/lib/CodeGen/SelectionDAG/DAGCombiner.cpp
-index 7b1f1dc40211..67dc0c4f28ca 100644
+index 7b1f1dc40211d..67dc0c4f28cac 100644
 --- a/llvm/lib/CodeGen/SelectionDAG/DAGCombiner.cpp
 +++ b/llvm/lib/CodeGen/SelectionDAG/DAGCombiner.cpp
 @@ -27295,6 +27295,11 @@ bool DAGCombiner::SimplifySelectOps(SDNode *TheSelect, SDValue LHS,
@@ -5075,7 +4672,7 @@ index 7b1f1dc40211..67dc0c4f28ca 100644
      if (LHS.getOperand(0) != RHS.getOperand(0) ||
          // Do not let this transformation reduce the number of volatile loads.
 diff --git a/llvm/lib/CodeGen/SelectionDAG/SelectionDAGBuilder.cpp b/llvm/lib/CodeGen/SelectionDAG/SelectionDAGBuilder.cpp
-index 37b1131d2f8a..7698fbc8128f 100644
+index 37b1131d2f8a3..7698fbc8128f2 100644
 --- a/llvm/lib/CodeGen/SelectionDAG/SelectionDAGBuilder.cpp
 +++ b/llvm/lib/CodeGen/SelectionDAG/SelectionDAGBuilder.cpp
 @@ -4596,6 +4596,10 @@ void SelectionDAGBuilder::visitLoad(const LoadInst &I) {
@@ -5101,7 +4698,7 @@ index 37b1131d2f8a..7698fbc8128f 100644
      SDValue Val = SDValue(Src.getNode(), Src.getResNo() + i);
      if (MemVTs[i] != ValueVTs[i])
 diff --git a/llvm/lib/CodeGen/SelectionDAG/SelectionDAGISel.cpp b/llvm/lib/CodeGen/SelectionDAG/SelectionDAGISel.cpp
-index b961d3bb1fec..95df687577a9 100644
+index b961d3bb1fec7..95df687577a9f 100644
 --- a/llvm/lib/CodeGen/SelectionDAG/SelectionDAGISel.cpp
 +++ b/llvm/lib/CodeGen/SelectionDAG/SelectionDAGISel.cpp
 @@ -196,6 +196,11 @@ static const bool ViewDAGCombine1 = false, ViewLegalizeTypesDAGs = false,
@@ -5117,7 +4714,7 @@ index b961d3bb1fec..95df687577a9 100644
  ///
  /// RegisterScheduler class - Track the registration of instruction schedulers.
 diff --git a/llvm/lib/CodeGen/TargetLoweringBase.cpp b/llvm/lib/CodeGen/TargetLoweringBase.cpp
-index 2be7fc90a0e7..c3688448d134 100644
+index 2be7fc90a0e75..c3688448d1344 100644
 --- a/llvm/lib/CodeGen/TargetLoweringBase.cpp
 +++ b/llvm/lib/CodeGen/TargetLoweringBase.cpp
 @@ -2228,6 +2228,10 @@ MachineMemOperand::Flags TargetLoweringBase::getLoadMemOperandFlags(
@@ -5149,7 +4746,7 @@ index 2be7fc90a0e7..c3688448d134 100644
      Flags |= MachineMemOperand::MONonTemporal;
  
 diff --git a/llvm/lib/CodeGen/TargetPassConfig.cpp b/llvm/lib/CodeGen/TargetPassConfig.cpp
-index 3658e8320a0c..0c98a63ea934 100644
+index 3658e8320a0cc..0c98a63ea9349 100644
 --- a/llvm/lib/CodeGen/TargetPassConfig.cpp
 +++ b/llvm/lib/CodeGen/TargetPassConfig.cpp
 @@ -1158,6 +1158,9 @@ void TargetPassConfig::addMachinePasses() {
@@ -5174,7 +4771,7 @@ index 3658e8320a0c..0c98a63ea934 100644
  bool TargetPassConfig::addGCPasses() {
    addPass(&GCMachineCodeAnalysisID);
 diff --git a/llvm/lib/IR/AsmWriter.cpp b/llvm/lib/IR/AsmWriter.cpp
-index 6599730590de..a5c3eaf73518 100644
+index 6599730590de6..a5c3eaf735181 100644
 --- a/llvm/lib/IR/AsmWriter.cpp
 +++ b/llvm/lib/IR/AsmWriter.cpp
 @@ -615,6 +615,14 @@ void TypePrinting::print(Type *Ty, raw_ostream &OS) {
@@ -5220,7 +4817,7 @@ index 6599730590de..a5c3eaf73518 100644
    WriteOptimizationInfo(Out, &I);
  
 diff --git a/llvm/lib/IR/Function.cpp b/llvm/lib/IR/Function.cpp
-index 20871982afb0..d797d9070065 100644
+index 20871982afb06..d797d9070065c 100644
 --- a/llvm/lib/IR/Function.cpp
 +++ b/llvm/lib/IR/Function.cpp
 @@ -1000,7 +1000,13 @@ void Function::updateAfterNameChange() {
@@ -5239,7 +4836,7 @@ index 20871982afb0..d797d9070065 100644
      Result += "a" + utostr(ATyp->getNumElements()) +
                getMangledTypeStr(ATyp->getElementType(), HasUnnamedType);
 diff --git a/llvm/lib/IR/Instruction.cpp b/llvm/lib/IR/Instruction.cpp
-index 6f0f3f244c05..bea064cf49ff 100644
+index 6f0f3f244c050..bea064cf49ff9 100644
 --- a/llvm/lib/IR/Instruction.cpp
 +++ b/llvm/lib/IR/Instruction.cpp
 @@ -1311,5 +1311,21 @@ Instruction *Instruction::clone() const {
@@ -5265,7 +4862,7 @@ index 6f0f3f244c05..bea064cf49ff 100644
    return New;
  }
 diff --git a/llvm/lib/IR/Instructions.cpp b/llvm/lib/IR/Instructions.cpp
-index 7a8cf8c23049..2728a3393f54 100644
+index 7a8cf8c230498..2728a3393f545 100644
 --- a/llvm/lib/IR/Instructions.cpp
 +++ b/llvm/lib/IR/Instructions.cpp
 @@ -94,8 +94,12 @@ AllocaInst::getAllocationSizeInBits(const DataLayout &DL) const {
@@ -5322,7 +4919,7 @@ index 7a8cf8c23049..2728a3393f54 100644
  #endif
  
 diff --git a/llvm/lib/IR/LLVMContextImpl.h b/llvm/lib/IR/LLVMContextImpl.h
-index 937a87d68617..1838c7095ab8 100644
+index 937a87d686175..1838c7095ab82 100644
 --- a/llvm/lib/IR/LLVMContextImpl.h
 +++ b/llvm/lib/IR/LLVMContextImpl.h
 @@ -1611,6 +1611,18 @@ public:
@@ -5345,7 +4942,7 @@ index 937a87d68617..1838c7095ab8 100644
    /// watching a Value*.  The Value::HasValueHandle bit is used to know
    /// whether or not a value has an entry in this map.
 diff --git a/llvm/lib/IR/Type.cpp b/llvm/lib/IR/Type.cpp
-index 5c61ad9f000b..1045fb3aeaef 100644
+index 5c61ad9f000b0..1045fb3aeaefb 100644
 --- a/llvm/lib/IR/Type.cpp
 +++ b/llvm/lib/IR/Type.cpp
 @@ -163,6 +163,44 @@ bool Type::isEmptyTy() const {
@@ -5518,7 +5115,7 @@ index 5c61ad9f000b..1045fb3aeaef 100644
      : Type(C, PointerTyID) {
    setSubclassData(AddrSpace);
 diff --git a/llvm/lib/IR/Value.cpp b/llvm/lib/IR/Value.cpp
-index b2ee75811fbb..1c335fa62eeb 100644
+index b2ee75811fbb7..1c335fa62eeb4 100644
 --- a/llvm/lib/IR/Value.cpp
 +++ b/llvm/lib/IR/Value.cpp
 @@ -504,8 +504,14 @@ void Value::doRAUW(Value *New, ReplaceMetadataUses ReplaceMetaUses) {
@@ -5555,7 +5152,7 @@ index b2ee75811fbb..1c335fa62eeb 100644
    // Get the linked list base, which is guaranteed to exist since the
    // HasValueHandle flag is set.
 diff --git a/llvm/lib/IR/Verifier.cpp b/llvm/lib/IR/Verifier.cpp
-index c5c407637cbf..5d34a376d312 100644
+index c5c407637cbf3..5d34a376d3120 100644
 --- a/llvm/lib/IR/Verifier.cpp
 +++ b/llvm/lib/IR/Verifier.cpp
 @@ -3467,8 +3467,12 @@ void Verifier::visitPHINode(PHINode &PN) {
@@ -5611,7 +5208,7 @@ index c5c407637cbf..5d34a376d312 100644
    Check(Op0Ty->isIntOrIntVectorTy() || Op0Ty->isPtrOrPtrVectorTy(),
          "Invalid operand types for ICmp instruction", &IC);
 diff --git a/llvm/lib/Target/RISCV/CMakeLists.txt b/llvm/lib/Target/RISCV/CMakeLists.txt
-index f28a7092e3ce..c95d5a45a27a 100644
+index f28a7092e3cec..c95d5a45a27ae 100644
 --- a/llvm/lib/Target/RISCV/CMakeLists.txt
 +++ b/llvm/lib/Target/RISCV/CMakeLists.txt
 @@ -62,6 +62,28 @@ add_llvm_target(RISCVCodeGen
@@ -5644,7 +5241,7 @@ index f28a7092e3ce..c95d5a45a27a 100644
    LINK_COMPONENTS
    Analysis
 diff --git a/llvm/lib/Target/RISCV/RISCV.h b/llvm/lib/Target/RISCV/RISCV.h
-index 0d2473c7c5de..4d7543705973 100644
+index 0d2473c7c5de1..4d75437059738 100644
 --- a/llvm/lib/Target/RISCV/RISCV.h
 +++ b/llvm/lib/Target/RISCV/RISCV.h
 @@ -15,6 +15,7 @@
@@ -5698,7 +5295,7 @@ index 0d2473c7c5de..4d7543705973 100644
  void initializeRISCVCodeGenPreparePass(PassRegistry &);
  
 diff --git a/llvm/lib/Target/RISCV/RISCVFrameLowering.cpp b/llvm/lib/Target/RISCV/RISCVFrameLowering.cpp
-index e676c2f94583..96365337f8a0 100644
+index e676c2f94583d..96365337f8a0e 100644
 --- a/llvm/lib/Target/RISCV/RISCVFrameLowering.cpp
 +++ b/llvm/lib/Target/RISCV/RISCVFrameLowering.cpp
 @@ -23,6 +23,9 @@
@@ -5843,7 +5440,7 @@ index e676c2f94583..96365337f8a0 100644
      }
 diff --git a/llvm/lib/Target/RISCV/RISCVGlobalSettagInstrumentation.cpp b/llvm/lib/Target/RISCV/RISCVGlobalSettagInstrumentation.cpp
 new file mode 100644
-index 000000000000..b168fab3ccd2
+index 0000000000000..b168fab3ccd26
 --- /dev/null
 +++ b/llvm/lib/Target/RISCV/RISCVGlobalSettagInstrumentation.cpp
 @@ -0,0 +1,169 @@
@@ -6019,7 +5616,7 @@ index 000000000000..b168fab3ccd2
 \ No newline at end of file
 diff --git a/llvm/lib/Target/RISCV/RISCVHeapSettagInstrumentation.cpp b/llvm/lib/Target/RISCV/RISCVHeapSettagInstrumentation.cpp
 new file mode 100644
-index 000000000000..e6680ca1d994
+index 0000000000000..e6680ca1d9947
 --- /dev/null
 +++ b/llvm/lib/Target/RISCV/RISCVHeapSettagInstrumentation.cpp
 @@ -0,0 +1,936 @@
@@ -6961,7 +6558,7 @@ index 000000000000..e6680ca1d994
 +}
 \ No newline at end of file
 diff --git a/llvm/lib/Target/RISCV/RISCVInstrInfo.cpp b/llvm/lib/Target/RISCV/RISCVInstrInfo.cpp
-index 6c0cbeadebf4..b076ba0fb1aa 100644
+index 6c0cbeadebf43..b076ba0fb1aa3 100644
 --- a/llvm/lib/Target/RISCV/RISCVInstrInfo.cpp
 +++ b/llvm/lib/Target/RISCV/RISCVInstrInfo.cpp
 @@ -639,6 +639,94 @@ void RISCVInstrInfo::storeRegToStackSlot(MachineBasicBlock &MBB,
@@ -7153,7 +6750,7 @@ index 6c0cbeadebf4..b076ba0fb1aa 100644
      MachineFunction &MF, MachineInstr &MI, ArrayRef<unsigned> Ops,
      MachineBasicBlock::iterator InsertPt, int FrameIndex, LiveIntervals *LIS,
 diff --git a/llvm/lib/Target/RISCV/RISCVInstrInfo.h b/llvm/lib/Target/RISCV/RISCVInstrInfo.h
-index 025cc36d19eb..70ed67a7b6ff 100644
+index 025cc36d19eb7..70ed67a7b6ffb 100644
 --- a/llvm/lib/Target/RISCV/RISCVInstrInfo.h
 +++ b/llvm/lib/Target/RISCV/RISCVInstrInfo.h
 @@ -93,12 +93,27 @@ public:
@@ -7185,7 +6782,7 @@ index 025cc36d19eb..70ed67a7b6ff 100644
    MachineInstr *foldMemoryOperandImpl(MachineFunction &MF, MachineInstr &MI,
                                        ArrayRef<unsigned> Ops,
 diff --git a/llvm/lib/Target/RISCV/RISCVInstrInfo.td b/llvm/lib/Target/RISCV/RISCVInstrInfo.td
-index 04054d2c3fee..fa71ca7f2d68 100644
+index 04054d2c3feee..fa71ca7f2d683 100644
 --- a/llvm/lib/Target/RISCV/RISCVInstrInfo.td
 +++ b/llvm/lib/Target/RISCV/RISCVInstrInfo.td
 @@ -542,6 +542,40 @@ class HStore_rr<bits<7> funct7, string opcodestr>
@@ -7278,7 +6875,7 @@ index 04054d2c3fee..fa71ca7f2d68 100644
  let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in
  def ADDIW : RVInstI<0b000, OPC_OP_IMM_32, (outs GPR:$rd),
 diff --git a/llvm/lib/Target/RISCV/RISCVInstrInfoA.td b/llvm/lib/Target/RISCV/RISCVInstrInfoA.td
-index 493e1a5fdc74..7899d8b9afd2 100644
+index 493e1a5fdc74a..7899d8b9afd26 100644
 --- a/llvm/lib/Target/RISCV/RISCVInstrInfoA.td
 +++ b/llvm/lib/Target/RISCV/RISCVInstrInfoA.td
 @@ -43,6 +43,35 @@ multiclass SC_r_aq_rl<bits<3> funct3, string opcodestr> {
@@ -7332,7 +6929,7 @@ index 493e1a5fdc74..7899d8b9afd2 100644
  
  let Predicates = [HasStdExtAOrZaamo, IsRV64] in {
 diff --git a/llvm/lib/Target/RISCV/RISCVMergeBaseOffset.cpp b/llvm/lib/Target/RISCV/RISCVMergeBaseOffset.cpp
-index b6ac3384e7d3..88d2e83e4ab9 100644
+index b6ac3384e7d3e..88d2e83e4ab94 100644
 --- a/llvm/lib/Target/RISCV/RISCVMergeBaseOffset.cpp
 +++ b/llvm/lib/Target/RISCV/RISCVMergeBaseOffset.cpp
 @@ -383,20 +383,31 @@ bool RISCVMergeBaseOffsetOpt::foldIntoMemoryOps(MachineInstr &Hi,
@@ -7371,7 +6968,7 @@ index b6ac3384e7d3..88d2e83e4ab9 100644
      case RISCV::FSD: {
 diff --git a/llvm/lib/Target/RISCV/RISCVSDPLoadStoreTagone.cpp b/llvm/lib/Target/RISCV/RISCVSDPLoadStoreTagone.cpp
 new file mode 100644
-index 000000000000..d4349d4a09dd
+index 0000000000000..d4349d4a09dd0
 --- /dev/null
 +++ b/llvm/lib/Target/RISCV/RISCVSDPLoadStoreTagone.cpp
 @@ -0,0 +1,233 @@
@@ -7611,7 +7208,7 @@ index 000000000000..d4349d4a09dd
 \ No newline at end of file
 diff --git a/llvm/lib/Target/RISCV/RISCVSDPSettag.cpp b/llvm/lib/Target/RISCV/RISCVSDPSettag.cpp
 new file mode 100644
-index 000000000000..617a004f6218
+index 0000000000000..617a004f6218e
 --- /dev/null
 +++ b/llvm/lib/Target/RISCV/RISCVSDPSettag.cpp
 @@ -0,0 +1,70 @@
@@ -7688,7 +7285,7 @@ index 000000000000..617a004f6218
 \ No newline at end of file
 diff --git a/llvm/lib/Target/RISCV/RISCVSettagUtils.cpp b/llvm/lib/Target/RISCV/RISCVSettagUtils.cpp
 new file mode 100644
-index 000000000000..49a1164c86ce
+index 0000000000000..49a1164c86ce5
 --- /dev/null
 +++ b/llvm/lib/Target/RISCV/RISCVSettagUtils.cpp
 @@ -0,0 +1,193 @@
@@ -7888,7 +7485,7 @@ index 000000000000..49a1164c86ce
 \ No newline at end of file
 diff --git a/llvm/lib/Target/RISCV/RISCVSettagUtils.h b/llvm/lib/Target/RISCV/RISCVSettagUtils.h
 new file mode 100644
-index 000000000000..d163938e33e2
+index 0000000000000..d163938e33e24
 --- /dev/null
 +++ b/llvm/lib/Target/RISCV/RISCVSettagUtils.h
 @@ -0,0 +1,38 @@
@@ -7933,7 +7530,7 @@ index 000000000000..d163938e33e2
 \ No newline at end of file
 diff --git a/llvm/lib/Target/RISCV/RISCVStackSettagInstrumentation.cpp b/llvm/lib/Target/RISCV/RISCVStackSettagInstrumentation.cpp
 new file mode 100644
-index 000000000000..60635cf3d1a8
+index 0000000000000..60635cf3d1a88
 --- /dev/null
 +++ b/llvm/lib/Target/RISCV/RISCVStackSettagInstrumentation.cpp
 @@ -0,0 +1,138 @@
@@ -8078,7 +7675,7 @@ index 000000000000..60635cf3d1a8
 \ No newline at end of file
 diff --git a/llvm/lib/Target/RISCV/RISCVTagonePointerCollect.cpp b/llvm/lib/Target/RISCV/RISCVTagonePointerCollect.cpp
 new file mode 100644
-index 000000000000..dd9b0a43cfe4
+index 0000000000000..dd9b0a43cfe43
 --- /dev/null
 +++ b/llvm/lib/Target/RISCV/RISCVTagonePointerCollect.cpp
 @@ -0,0 +1,128 @@
@@ -8213,7 +7810,7 @@ index 000000000000..dd9b0a43cfe4
 \ No newline at end of file
 diff --git a/llvm/lib/Target/RISCV/RISCVTagonePointerTracker.cpp b/llvm/lib/Target/RISCV/RISCVTagonePointerTracker.cpp
 new file mode 100644
-index 000000000000..d4a37567dfcf
+index 0000000000000..d4a37567dfcfd
 --- /dev/null
 +++ b/llvm/lib/Target/RISCV/RISCVTagonePointerTracker.cpp
 @@ -0,0 +1,293 @@
@@ -8512,7 +8109,7 @@ index 000000000000..d4a37567dfcf
 +}
 diff --git a/llvm/lib/Target/RISCV/RISCVTagonePointerTracker.h b/llvm/lib/Target/RISCV/RISCVTagonePointerTracker.h
 new file mode 100644
-index 000000000000..ed12c243c51f
+index 0000000000000..ed12c243c51fd
 --- /dev/null
 +++ b/llvm/lib/Target/RISCV/RISCVTagonePointerTracker.h
 @@ -0,0 +1,76 @@
@@ -8593,7 +8190,7 @@ index 000000000000..ed12c243c51f
 +
 +#endif // LLVM_LIB_TARGET_RISCV_RISCVTAGONEPOINTERTRACKER_H
 diff --git a/llvm/lib/Target/RISCV/RISCVTargetMachine.cpp b/llvm/lib/Target/RISCV/RISCVTargetMachine.cpp
-index 21fbf47875e6..119b74734520 100644
+index 21fbf47875e68..119b747345200 100644
 --- a/llvm/lib/Target/RISCV/RISCVTargetMachine.cpp
 +++ b/llvm/lib/Target/RISCV/RISCVTargetMachine.cpp
 @@ -373,6 +373,8 @@ public:
@@ -8661,7 +8258,7 @@ index 21fbf47875e6..119b74734520 100644
  
  yaml::MachineFunctionInfo *
 diff --git a/llvm/lib/Target/TargetLoweringObjectFile.cpp b/llvm/lib/Target/TargetLoweringObjectFile.cpp
-index 7d9b926f4c42..4f549a818a91 100644
+index 7d9b926f4c42b..4f549a818a913 100644
 --- a/llvm/lib/Target/TargetLoweringObjectFile.cpp
 +++ b/llvm/lib/Target/TargetLoweringObjectFile.cpp
 @@ -249,7 +249,9 @@ SectionKind TargetLoweringObjectFile::getKindForGlobal(const GlobalObject *GO,
@@ -8676,7 +8273,7 @@ index 7d9b926f4c42..4f549a818a91 100644
      // relocation, then we may have to drop this into a writable data section
      // even though it is marked const.
 diff --git a/llvm/lib/Transforms/InstCombine/InstCombineCasts.cpp b/llvm/lib/Transforms/InstCombine/InstCombineCasts.cpp
-index 8f8304702093..a96a35983079 100644
+index 8f83047020936..a96a35983079f 100644
 --- a/llvm/lib/Transforms/InstCombine/InstCombineCasts.cpp
 +++ b/llvm/lib/Transforms/InstCombine/InstCombineCasts.cpp
 @@ -2524,6 +2524,12 @@ Instruction *InstCombinerImpl::optimizeBitCastFromPhi(CastInst &CI,
@@ -8693,7 +8290,7 @@ index 8f8304702093..a96a35983079 100644
          // value is used as address of later load instruction, bitcast is
          // necessary to change the value type, don't optimize it. For
 diff --git a/llvm/lib/Transforms/InstCombine/InstCombineLoadStoreAlloca.cpp b/llvm/lib/Transforms/InstCombine/InstCombineLoadStoreAlloca.cpp
-index 1661fa564c65..79098e94229e 100644
+index 1661fa564c65c..79098e94229ef 100644
 --- a/llvm/lib/Transforms/InstCombine/InstCombineLoadStoreAlloca.cpp
 +++ b/llvm/lib/Transforms/InstCombine/InstCombineLoadStoreAlloca.cpp
 @@ -649,6 +649,11 @@ static Instruction *combineLoadToOperationType(InstCombinerImpl &IC,
@@ -8765,7 +8362,7 @@ index 1661fa564c65..79098e94229e 100644
      auto *OSVTy = OtherStore->getValueOperand()->getType();
      return CastInst::isBitOrNoopPointerCastable(OSVTy, SIVTy, DL) &&
 diff --git a/llvm/lib/Transforms/InstCombine/InstCombinePHI.cpp b/llvm/lib/Transforms/InstCombine/InstCombinePHI.cpp
-index 86411320ab24..a065caf9f30c 100644
+index 86411320ab248..a065caf9f30c6 100644
 --- a/llvm/lib/Transforms/InstCombine/InstCombinePHI.cpp
 +++ b/llvm/lib/Transforms/InstCombine/InstCombinePHI.cpp
 @@ -673,12 +673,19 @@ Instruction *InstCombinerImpl::foldPHIArgLoadIntoPHI(PHINode &PN) {
@@ -8805,7 +8402,7 @@ index 86411320ab24..a065caf9f30c 100644
      if (LI->isVolatile() != IsVolatile ||
          LI->getPointerAddressSpace() != LoadAddrSpace)
 diff --git a/llvm/lib/Transforms/Scalar/GVN.cpp b/llvm/lib/Transforms/Scalar/GVN.cpp
-index db39d8621d07..194b19ec811e 100644
+index db39d8621d077..194b19ec811e8 100644
 --- a/llvm/lib/Transforms/Scalar/GVN.cpp
 +++ b/llvm/lib/Transforms/Scalar/GVN.cpp
 @@ -2465,7 +2465,10 @@ bool GVNPass::propagateEquality(Value *LHS, Value *RHS,
@@ -8832,7 +8429,7 @@ index db39d8621d07..194b19ec811e 100644
  
      unsigned Num = VN.lookupOrAdd(Load);
 diff --git a/llvm/lib/Transforms/Scalar/JumpThreading.cpp b/llvm/lib/Transforms/Scalar/JumpThreading.cpp
-index 7a0b661a0779..1d30051b62c9 100644
+index 7a0b661a07799..1d30051b62c99 100644
 --- a/llvm/lib/Transforms/Scalar/JumpThreading.cpp
 +++ b/llvm/lib/Transforms/Scalar/JumpThreading.cpp
 @@ -1224,6 +1224,10 @@ bool JumpThreadingPass::simplifyPartiallyRedundantLoad(LoadInst *LoadI) {
@@ -8847,7 +8444,7 @@ index 7a0b661a0779..1d30051b62c9 100644
    // partially redundant.
    BasicBlock *LoadBB = LoadI->getParent();
 diff --git a/llvm/lib/Transforms/Scalar/LICM.cpp b/llvm/lib/Transforms/Scalar/LICM.cpp
-index 91ef2b4b7c18..be8119edcd06 100644
+index 91ef2b4b7c183..be8119edcd06e 100644
 --- a/llvm/lib/Transforms/Scalar/LICM.cpp
 +++ b/llvm/lib/Transforms/Scalar/LICM.cpp
 @@ -2078,6 +2078,10 @@ bool llvm::promoteLoopAccessesToScalars(
@@ -8873,7 +8470,7 @@ index 91ef2b4b7c18..be8119edcd06 100644
          SawNotAtomic |= !Store->isAtomic();
  
 diff --git a/llvm/lib/Transforms/Scalar/MemCpyOptimizer.cpp b/llvm/lib/Transforms/Scalar/MemCpyOptimizer.cpp
-index cee34f0a6da1..0bb6793f043d 100644
+index cee34f0a6da1f..0bb6793f043d3 100644
 --- a/llvm/lib/Transforms/Scalar/MemCpyOptimizer.cpp
 +++ b/llvm/lib/Transforms/Scalar/MemCpyOptimizer.cpp
 @@ -404,6 +404,11 @@ Instruction *MemCpyOptPass::tryMergingIntoMemset(Instruction *StartInst,
@@ -8901,7 +8498,7 @@ index cee34f0a6da1..0bb6793f043d 100644
    // memcpy/memset would not be able to preserve the nontemporal hint.
    // In theory we could teach how to propagate the !nontemporal metadata to
 diff --git a/llvm/lib/Transforms/Utils/SimplifyCFG.cpp b/llvm/lib/Transforms/Utils/SimplifyCFG.cpp
-index f23e28888931..49542b0e2dca 100644
+index f23e28888931d..49542b0e2dca2 100644
 --- a/llvm/lib/Transforms/Utils/SimplifyCFG.cpp
 +++ b/llvm/lib/Transforms/Utils/SimplifyCFG.cpp
 @@ -4083,6 +4083,10 @@ static bool mergeConditionalStoreToAddress(
@@ -8917,7 +8514,7 @@ index f23e28888931..49542b0e2dca 100644
        PStore->getValueOperand()->getType() !=
 diff --git a/scripts/get_typeid.py b/scripts/get_typeid.py
 new file mode 100644
-index 000000000000..732b6cada8d4
+index 0000000000000..732b6cada8d43
 --- /dev/null
 +++ b/scripts/get_typeid.py
 @@ -0,0 +1,30 @@
@@ -8952,729 +8549,3 @@ index 000000000000..732b6cada8d4
 +if __name__ == "__main__":
 +    main()
 \ No newline at end of file
-diff --git a/testcases/c/1_sl_primitive.c b/testcases/c/1_sl_primitive.c
-new file mode 100644
-index 000000000000..7eb2b3d8c2a1
---- /dev/null
-+++ b/testcases/c/1_sl_primitive.c
-@@ -0,0 +1,149 @@
-+// stack (local variables), primitive types, no specifiers, load/store
-+// 1. Pointers to primitive data types
-+// - Pointers to integer types (signed/unsigned: char, short, int, long, long
-+// long)
-+// - Pointers to floating point types (float, double, long double)
-+// - Pointers to void
-+
-+#include <stdio.h>
-+
-+int main() {
-+
-+  // Sensitive data
-+  int i;
-+  unsigned int u;
-+  char c;
-+  unsigned char uc;
-+  short s;
-+  unsigned short us;
-+  long l;
-+  unsigned long ul;
-+  long long ll;
-+  unsigned long long ull;
-+  float f;
-+  double d;
-+  long double ld;
-+  void *v;
-+
-+  // Direct pointers to sensitive data
-+  int *__tag1 i_dptr = &i;                    // sd_tag1(i_dptr)
-+  *i_dptr = 1;                                  // ld_tag1(i_dptr)
-+  unsigned int *__tag1 u_dptr = &u;           // sd_tag1(u_dptr)
-+  char *__tag1 c_dptr = &c;                   // sd_tag1(c_dptr)
-+  unsigned char *__tag1 uc_dptr = &uc;        // sd_tag1(uc_dptr)
-+  short *__tag1 s_dptr = &s;                  // sd_tag1(s_dptr)
-+  unsigned short *__tag1 us_dptr = &us;       // sd_tag1(us_dptr)
-+  long *__tag1 l_dptr = &l;                   // sd_tag1(l_dptr)
-+  unsigned long *__tag1 ul_dptr = &ul;        // sd_tag1(ul_dptr)
-+  long long *__tag1 ll_dptr = &ll;            // sd_tag1(ll_dptr)
-+  unsigned long long *__tag1 ull_dptr = &ull; // sd_tag1(ull_dptr)
-+  float *__tag1 f_dptr = &f;                  // sd_tag1(f_dptr)
-+  double *__tag1 d_dptr = &d;                 // sd_tag1(d_dptr)
-+  long double *__tag1 ld_dptr = &ld;          // sd_tag1(ld_dptr)
-+  void **__tag1 v_dptr = &v;                  // sd_tag1(v_dptr)
-+
-+  *i_dptr = 1;     // ld_tag1(i_dptr)
-+  *u_dptr = 2;     // ld_tag1(u_dptr)
-+  *c_dptr = '3';   // ld_tag1(c_dptr)
-+  *uc_dptr = '4';  // ld_tag1(uc_dptr)
-+  *s_dptr = 5;     // ld_tag1(s_dptr)
-+  *us_dptr = 6;    // ld_tag1(us_dptr)
-+  *l_dptr = 7;     // ld_tag1(l_dptr)
-+  *ul_dptr = 8;    // ld_tag1(ul_dptr)
-+  *ll_dptr = 9;    // ld_tag1(ll_dptr)
-+  *ull_dptr = 10;  // ld_tag1(ull_dptr)
-+  *f_dptr = 11.1;  // ld_tag1(f_dptr)
-+  *d_dptr = 12.2;  // ld_tag1(d_dptr)
-+  *ld_dptr = 13.3; // ld_tag1(ld_dptr)
-+  *v_dptr = NULL;  // ld_tag1(v_dptr)
-+
-+  // Indirect pointers to sensitive data
-+  int *__tag1 *__tag1 i_iptr = &i_dptr;              // sd_tag1(i_iptr)
-+  unsigned int *__tag1 *__tag1 u_iptr = &u_dptr;     // sd_tag1(u_iptr)
-+  char *__tag1 *__tag1 c_iptr = &c_dptr;             // sd_tag1(c_iptr)
-+  unsigned char *__tag1 *__tag1 uc_iptr = &uc_dptr;  // sd_tag1(uc_iptr)
-+  short *__tag1 *__tag1 s_iptr = &s_dptr;            // sd_tag1(s_iptr)
-+  unsigned short *__tag1 *__tag1 us_iptr = &us_dptr; // sd_tag1(us_iptr)
-+  long *__tag1 *__tag1 l_iptr = &l_dptr;             // sd_tag1(l_iptr)
-+  unsigned long *__tag1 *__tag1 ul_iptr = &ul_dptr;  // sd_tag1(ul_iptr)
-+  long long *__tag1 *__tag1 ll_iptr = &ll_dptr;      // sd_tag1(ll_iptr)
-+  unsigned long long *__tag1 *__tag1 ull_iptr =
-+      &ull_dptr;                                      // sd_tag1(ull_iptr)
-+  float *__tag1 *__tag1 f_iptr = &f_dptr;         // sd_tag1(f_iptr)
-+  double *__tag1 *__tag1 d_iptr = &d_dptr;        // sd_tag1(d_iptr)
-+  long double *__tag1 *__tag1 ld_iptr = &ld_dptr; // sd_tag1(ld_iptr)
-+  void **__tag1 *__tag1 v_iptr = &v_dptr;         // sd_tag1(v_iptr)
-+
-+  printf("i: %d, i_dptr: %p, i_iptr: %p\n",
-+         *i_dptr, // ld_tag1(i_dptr)
-+         *i_iptr, // ld_tag1(i_iptr), ld_tag1(*i_iptr)
-+         i_iptr   // ld_tag1(i_iptr)
-+  );
-+  printf("u: %u, u_dptr: %p, u_iptr: %p\n",
-+         *u_dptr, // ld_tag1(u_dptr)
-+         *u_iptr, // ld_tag1(u_iptr), ld_tag1(*u_iptr)
-+         u_iptr   // ld_tag1(u_iptr)
-+  );
-+  printf("c: %c, c_dptr: %p, c_iptr: %p\n",
-+         *c_dptr, // ld_tag1(c_dptr)
-+         *c_iptr, // ld_tag1(c_iptr), ld_tag1(*c_iptr)
-+         c_iptr   // ld_tag1(c_iptr)
-+  );
-+  printf("uc: %u, uc_dptr: %p, uc_iptr: %p\n",
-+         *uc_dptr, // ld_tag1(uc_dptr)
-+         *uc_iptr, // ld_tag1(uc_iptr), ld_tag1(*uc_iptr)
-+         uc_iptr   // ld_tag1(uc_iptr)
-+  );
-+  printf("s: %d, s_dptr: %p, s_iptr: %p\n",
-+         *s_dptr, // ld_tag1(s_dptr)
-+         *s_iptr, // ld_tag1(s_iptr), ld_tag1(*s_iptr)
-+         s_iptr   // ld_tag1(s_iptr)
-+  );
-+  printf("us: %u, us_dptr: %p, us_iptr: %p\n",
-+         *us_dptr, // ld_tag1(us_dptr)
-+         *us_iptr, // ld_tag1(us_iptr), ld_tag1(*us_iptr)
-+         us_iptr   // ld_tag1(us_iptr)
-+  );
-+  printf("l: %ld, l_dptr: %p, l_iptr: %p\n",
-+         *l_dptr, // ld_tag1(l_dptr)
-+         *l_iptr, // ld_tag1(l_iptr), ld_tag1(*l_iptr)
-+         l_iptr   // ld_tag1(l_iptr)
-+  );
-+  printf("ul: %lu, ul_dptr: %p, ul_iptr: %p\n",
-+         *ul_dptr, // ld_tag1(ul_dptr)
-+         *ul_iptr, // ld_tag1(ul_iptr), ld_tag1(*ul_iptr)
-+         ul_iptr   // ld_tag1(ul_iptr)
-+  );
-+  printf("ll: %lld, ll_dptr: %p, ll_iptr: %p\n",
-+         *ll_dptr, // ld_tag1(ll_dptr)
-+         *ll_iptr, // ld_tag1(ll_iptr), ld_tag1(*ll_iptr)
-+         ll_iptr   // ld_tag1(ll_iptr)
-+  );
-+  printf("ull: %llu, ull_dptr: %p, ull_iptr: %p\n",
-+         *ull_dptr, // ld_tag1(ull_dptr)
-+         *ull_iptr, // ld_tag1(ull_iptr), ld_tag1(*ull_iptr)
-+         ull_iptr   // ld_tag1(ull_iptr)
-+  );
-+  printf("f: %f, f_dptr: %p, f_iptr: %p\n",
-+         *f_dptr, // ld_tag1(f_dptr)
-+         *f_iptr, // ld_tag1(f_iptr), ld_tag1(*f_iptr)
-+         f_iptr   // ld_tag1(f_iptr)
-+  );
-+  printf("d: %lf, d_dptr: %p, d_iptr: %p\n",
-+         *d_dptr, // ld_tag1(d_dptr)
-+         *d_iptr, // ld_tag1(d_iptr), ld_tag1(*d_iptr)
-+         d_iptr   // ld_tag1(d_iptr)
-+  );
-+  printf("ld: %Lf, ld_dptr: %p, ld_iptr: %p\n",
-+         *ld_dptr, // ld_tag1(ld_dptr)
-+         *ld_iptr, // ld_tag1(ld_iptr), ld_tag1(*ld_iptr)
-+         ld_iptr   // ld_tag1(ld_iptr)
-+  );
-+  printf("v: %p, v_dptr: %p, v_iptr: %p\n",
-+         *v_dptr, // ld_tag1(v_dptr)
-+         *v_iptr, // ld_tag1(v_iptr), ld_tag1(*v_iptr)
-+         v_iptr   // ld_tag1(v_iptr)
-+  );
-+
-+  return 0;
-+}
-\ No newline at end of file
-diff --git a/testcases/c/2_sl_complex.c b/testcases/c/2_sl_complex.c
-new file mode 100644
-index 000000000000..b391b76dd78a
---- /dev/null
-+++ b/testcases/c/2_sl_complex.c
-@@ -0,0 +1,95 @@
-+// stack (local variables), complex types, no specifiers, load/store
-+// 2. Pointers to complex data types
-+// - Pointers to structs
-+// - Pointers to unions
-+// - Pointers to arrays (T(\*)[])
-+// - Fixed-size arrays
-+// - Variable-length arrays
-+// - Function pointers
-+
-+#include <stdio.h>
-+
-+struct st_t {
-+  int a;
-+  int b;
-+};
-+
-+union un_t {
-+  int c;
-+  float d;
-+};
-+
-+int f(int a, int b) { return a + b; }
-+
-+int main() {
-+
-+  // Sensitive data
-+  struct st_t st; // Struct
-+  union un_t un;  // Union
-+  int arr_fix[2]; // Fixed-size array
-+
-+  int arr_var_size;
-+  scanf("%d", &arr_var_size);
-+  int arr_var[arr_var_size]; // Variable-length array
-+
-+  int (*__tag1 f_dptr)(
-+      int, int); // Function pointer, consider it as a direct sensitive pointer
-+
-+  // Direct pointers to sensitive data
-+  struct st_t *__tag1 st_dptr = &st;  // sd_tag1(st_dptr)
-+  union un_t *__tag1 un_dptr = &un;   // sd_tag1(un_dptr)
-+  int *__tag1 arr_fix_dptr = arr_fix; // sd_tag1(arr_fix_dptr)
-+  int *__tag1 arr_var_dptr = arr_var; // sd_tag1(arr_var_dptr)
-+  f_dptr = f;                           // sd_tag1(f_dptr)
-+
-+  st_dptr->a = 1;      // ld_tag1(st_dptr)
-+  st_dptr->b = 2;      // ld_tag1(st_dptr)
-+  un_dptr->c = 3;      // ld_tag1(un_dptr)
-+  un_dptr->d = 4.4;    // ld_tag1(un_dptr)
-+  arr_fix_dptr[0] = 5; // ld_tag1(arr_fix_dptr)
-+  arr_fix_dptr[1] = 6; // ld_tag1(arr_fix_dptr)
-+  for (int i = 0; i < arr_var_size; i++) {
-+    arr_var_dptr[i] = 7 + i; // ld_tag1(arr_var_dptr)
-+  }
-+
-+  // Indirect pointers to sensitive data
-+  struct st_t *__tag1 *__tag1 st_iptr = &st_dptr;   // sd_tag1(st_iptr)
-+  union un_t *__tag1 *__tag1 un_iptr = &un_dptr;    // sd_tag1(un_iptr)
-+  int *__tag1 *__tag1 arr_fix_iptr = &arr_fix_dptr; // sd_tag1(arr_fix_iptr)
-+  int *__tag1 *__tag1 arr_var_iptr = &arr_var_dptr; // sd_tag1(arr_var_iptr)
-+  int (*__tag1 * __tag1 f_iptr)(int, int) = &f_dptr; // sd_tag1(f_iptr)
-+
-+  printf("st: %d, %d, st_dptr: %p, st_iptr: %p\n",
-+         st_dptr->a, // ld_tag1(st_dptr)
-+         st_dptr->b, // ld_tag1(st_dptr)
-+         *st_iptr,   // ld_tag1(st_iptr), ld_tag1(*st_iptr)
-+         st_iptr     // ld_tag1(st_iptr)
-+  );
-+  printf("un: %d, %f, un_dptr: %p, un_iptr: %p\n",
-+         un_dptr->c, // ld_tag1(un_dptr)
-+         un_dptr->d, // ld_tag1(un_dptr)
-+         *un_iptr,   // ld_tag1(un_iptr), ld_tag1(*un_iptr)
-+         un_iptr     // ld_tag1(un_iptr)
-+  );
-+  printf("arr_fix: %d, %d, arr_fix_dptr: %p, arr_fix_iptr: %p\n",
-+         arr_fix_dptr[0], // ld_tag1(arr_fix_dptr)
-+         arr_fix_dptr[1], // ld_tag1(arr_fix_dptr)
-+         *arr_fix_iptr,   // ld_tag1(arr_fix_iptr), ld_tag1(*arr_fix_iptr)
-+         arr_fix_iptr     // ld_tag1(arr_fix_iptr)
-+  );
-+  printf("arr_var: ");
-+  for (int i = 0; i < arr_var_size; i++) {
-+    printf("%d ", arr_var_dptr[i]); // ld_tag1(arr_var_dptr)
-+  }
-+  printf(", arr_var_dptr: %p, arr_var_iptr: %p\n",
-+         *arr_var_iptr, // ld_tag1(arr_var_iptr), ld_tag1(*arr_var_iptr)
-+         arr_var_iptr   // ld_tag1(arr_var_iptr)
-+  );
-+  printf("f_dptr(1, 2): %d, f_dptr: %p, f_iptr: %p\n",
-+         f_dptr(1, 2), // ld_tag1(f_dptr)
-+         *f_iptr,      // ld_tag1(f_iptr), ld_tag1(*f_iptr)
-+         f_iptr        // ld_tag1(f_iptr)
-+  );
-+
-+  return 0;
-+}
-\ No newline at end of file
-diff --git a/testcases/c/3_sl_member.c b/testcases/c/3_sl_member.c
-new file mode 100644
-index 000000000000..47a92b360e68
---- /dev/null
-+++ b/testcases/c/3_sl_member.c
-@@ -0,0 +1,79 @@
-+// stack (local variables), as members , no specifiers, load/store
-+// 3. Pointer as members
-+// - Struct members
-+// - Union members
-+// - Array elements
-+// - Function prototype members
-+
-+#include <stdio.h>
-+
-+struct st_t {
-+  int a;
-+  int *__tag1 b;
-+};
-+
-+union un_t {
-+  int c;
-+  float *__tag1 d;
-+};
-+
-+int fsa(int a, int *__tag1 b) { // ld_tag1(b), sd_tag1(b)
-+  return *b;                      // ld_tag1(b)
-+}
-+
-+int *__tag1 fsr(int a, int b) {
-+  int c = 0;
-+  return &c; // sd_tag1(ret)
-+}
-+
-+int main() {
-+
-+  // Sensitive data
-+  int a;
-+  float f;
-+
-+  // Direct pointers to sensitive data
-+  struct st_t st;           // Struct member
-+  union un_t un;            // Union member
-+  int *__tag1 arr_fix[2]; // Fixed-size array element
-+
-+  // int arr_var_size;
-+  // scanf("%d", &arr_var_size);
-+  // int *__tag1 arr_var[arr_var_size]; // Variable-length array element
-+
-+  int (*__tag1 fsa_dptr)(
-+      int, int *__tag1); // Function prototype member, sensitive argument
-+
-+  int *__tag1 (*__tag1 fsr_dptr)(
-+      int, int); // Function prototype member, sensitive return value
-+
-+  st.a = 1;
-+  st.b = &a; // st_tag1(st_dptr->b)
-+  un.c = 3;
-+  un.d = &f;       // st_tag1(un_dptr->d)
-+  arr_fix[0] = &a; // ld_tag1(arr_fix), st_tag1(arr_fix[0])
-+  arr_fix[1] = &a; // ld_tag1(arr_fix), st_tag1(arr_fix[1])
-+  fsa_dptr = fsa; // st_tag1(fsa_dptr)
-+  fsr_dptr = fsr; // st_tag1(fsr_dptr)
-+
-+  // Indirect pointers to sensitive data
-+  struct st_t *__tag1 st_dptr = &st;  // sd_tag1(st_dptr)
-+  union un_t *__tag1 un_dptr = &un;   // sd_tag1(un_dptr)
-+
-+  printf("*st.b %d, st.b %p, st_dptr: %p\n",
-+         *st.b, // ld_tag1(st.b)
-+         st_dptr->b, // ld_tag1(st_dptr), ld_tag1(st_dptr->b)
-+         st_dptr     // ld_tag1(st_dptr)
-+  );
-+  printf("*un.d %f, un.d %p, un_dptr: %p\n",
-+         *un.d, // ld_tag1(un.d)
-+         un_dptr->d, // ld_tag1(un_dptr), ld_tag1(un_dptr->d)
-+         un_dptr     // ld_tag1(un_dptr)
-+  );
-+  printf("*arr_fix[0] %d, arr_fix[0] %p\n",
-+         *arr_fix[0], // ld_tag1(arr_fix[0])
-+         arr_fix[0] // ld_tag1(arr_fix), ld_tag1(arr_fix[0])
-+  );
-+
-+  return 0;
-+}
-\ No newline at end of file
-diff --git a/testcases/compile.py b/testcases/compile.py
-new file mode 100644
-index 000000000000..4e23f1965861
---- /dev/null
-+++ b/testcases/compile.py
-@@ -0,0 +1,98 @@
-+import os
-+import subprocess
-+import shutil
-+import sys
-+
-+# Directories
-+C_DIR = "c/"
-+LL_DIR = "ll/"
-+S_DIR = "s/"
-+O_DIR = "o/"
-+
-+# CMD1-3 compile test.c to test.ll (-S -emit-llvm), test.s (-S) and test
-+
-+CMD1 = "../build_debug/bin/clang --sysroot=/opt/riscv/sysroot/ --target=riscv64-unknown-linux-gnu -march=rv64gc -S -emit-llvm"
-+CMD2 = "../build_debug/bin/clang --sysroot=/opt/riscv/sysroot/ --target=riscv64-unknown-linux-gnu -march=rv64gc -S"
-+CMD3 = "../build_debug/bin/clang --sysroot=/opt/riscv/sysroot/ --target=riscv64-unknown-linux-gnu -march=rv64gc"
-+
-+def clean_directory(directory):
-+    """
-+    Removes all contents of a directory and recreates it.
-+    """
-+    if os.path.exists(directory):
-+        shutil.rmtree(directory)
-+    os.makedirs(directory, exist_ok=True)
-+
-+def run_command(command):
-+    """
-+    Runs a shell command. Prints the command only if it fails.
-+    """
-+    try:
-+        subprocess.run(command, shell=True, check=True)
-+    except subprocess.CalledProcessError as e:
-+        # print(f"Command failed: {command}")
-+        # print(f"Error: {e}")
-+        return False
-+    return True
-+
-+def compile_file(filename):
-+    """
-+    Compiles a single .c file in the C_DIR to .ll, .s, and .o files,
-+    placing them in LL_DIR, S_DIR, and O_DIR respectively.
-+    """
-+    c_file = os.path.join(C_DIR, filename)
-+    if not os.path.isfile(c_file):
-+        print(f"Error: {filename} does not exist in {C_DIR}")
-+        return
-+    base_name = filename.split(".")[0]
-+
-+    # Generate .ll file
-+    ll_file = os.path.join(LL_DIR, f"{base_name}.ll")
-+    if os.path.exists(ll_file):
-+        os.remove(ll_file)
-+    cmd = f"{CMD1} {c_file} -o {ll_file}"
-+    print(f"\n{cmd}")
-+    run_command(cmd)
-+
-+    # Generate .s file
-+    s_file = os.path.join(S_DIR, f"{base_name}.s")
-+    if os.path.exists(s_file):
-+        os.remove(s_file)
-+    cmd = f"{CMD2} {c_file} -o {s_file}"
-+    print(f"\n{cmd}")
-+    run_command(cmd)
-+
-+    # Generate .o file
-+    o_file = os.path.join(O_DIR, f"{base_name}")
-+    if os.path.exists(o_file):
-+        os.remove(o_file)
-+    cmd = f"{CMD3} {c_file} -o {o_file}"
-+    print(f"\n{cmd}")
-+    run_command(cmd)
-+
-+def compile_files(filename=None):
-+    """
-+    Compiles all .c files in the C_DIR to .ll, .s, and .o files,
-+    placing them in LL_DIR, S_DIR, and O_DIR respectively.
-+    """
-+
-+    # Process each .c file in the C_DIR
-+    for file in os.listdir(C_DIR):
-+        if file.endswith(".c"):
-+            compile_file(file)
-+
-+def main():
-+    """
-+    Main function to clean directories and compile .c files.
-+    """
-+    if len(sys.argv) > 1:
-+        filename = sys.argv[1]
-+        compile_file(filename)
-+    else:
-+        clean_directory(LL_DIR)
-+        clean_directory(S_DIR)
-+        clean_directory(O_DIR)
-+        compile_files()
-+
-+if __name__ == "__main__":
-+    main()
-\ No newline at end of file
-diff --git a/testcases/old/1_slv_b_ls.c b/testcases/old/1_slv_b_ls.c
-new file mode 100644
-index 000000000000..09fa25419b61
---- /dev/null
-+++ b/testcases/old/1_slv_b_ls.c
-@@ -0,0 +1,19 @@
-+// stack, local variable, basic type, load/store
-+
-+int main() {
-+    // sensitive data
-+    int i1 = 1;
-+
-+    // direct pointer to sensitive data
-+    int* __tag1 p1;
-+    p1 = &i1; // store_1(p1)
-+    int i2 = *p1; // load_1(p1)
-+
-+    // indirect pointer to sensitive data
-+    int* __tag1 * __tag1 p2;
-+    p2 = &p1; // store_1(p2)
-+    int* __tag1 p3;
-+    p3 = *p2; // load_1(p2), load_1(p2*), store_1(p3)
-+
-+    return 0;
-+}
-\ No newline at end of file
-diff --git a/testcases/old/2_sfa_b_ls.c b/testcases/old/2_sfa_b_ls.c
-new file mode 100644
-index 000000000000..3c749406d6f1
---- /dev/null
-+++ b/testcases/old/2_sfa_b_ls.c
-@@ -0,0 +1,33 @@
-+// stack, fixed argument, basic type, load/store
-+
-+// direct pointer
-+int func_1 (int* __tag1 p1) { // store_1(p1)
-+    int i;
-+    i = *p1; // load_1(p1)
-+    return i;
-+}
-+
-+// indirect pointer
-+int func_2 (int* __tag1 * __tag1 p2) { // store_1(p2)
-+    int i;
-+    i = **p2; // load_1(p2), load_1(p2*)    
-+    return i;
-+}
-+
-+int main() {
-+    // sensitive data
-+    int i1 = 1;
-+
-+    // direct pointer
-+    int* __tag1 p1;
-+    p1 = &i1; // store_1(p1)
-+    int i2 = func_1(p1); // load_1(p1)
-+
-+    // indirect pointer
-+    int* __tag1 * __tag1 p2;
-+    p2 = &p1; // store_1(p2)
-+    int i3; 
-+    i3 = func_2(p2); // load_1(p2)
-+
-+    return 0;
-+}
-diff --git a/testcases/old/3_sva_b_ls.c.c b/testcases/old/3_sva_b_ls.c.c
-new file mode 100644
-index 000000000000..3e9be8bffa55
---- /dev/null
-+++ b/testcases/old/3_sva_b_ls.c.c
-@@ -0,0 +1,33 @@
-+// stack, variadic argument, basic type, load/store
-+
-+// direct pointer
-+int func_1 (int* __tag1 p1) { // store_1(p1)
-+    int i;
-+    i = *p1; // load_1(p1)
-+    return i;
-+}
-+
-+// indirect pointer
-+int func_2 (int* __tag1 * __tag1 p2) { // store_1(p2)
-+    int i;
-+    i = **p2; // load_1(p2), load_1(p2*)    
-+    return i;
-+}
-+
-+int main() {
-+    // sensitive data
-+    int i1 = 1;
-+
-+    // direct pointer
-+    int* __tag1 p1;
-+    p1 = &i1; // store_1(p1)
-+    int i2 = func_1(p1); // load_1(p1)
-+
-+    // indirect pointer
-+    int* __tag1 * __tag1 p2;
-+    p2 = &p1; // store_1(p2)
-+    int i3; 
-+    i3 = func_2(p2); // load_1(p2)
-+
-+    return 0;
-+}
-diff --git a/testcases/testcases.md b/testcases/testcases.md
-new file mode 100644
-index 000000000000..9c3502460f87
---- /dev/null
-+++ b/testcases/testcases.md
-@@ -0,0 +1,167 @@
-+## Categories of test cases
-+
-+### I. Pointer levels
-+
-+- Single-level pointers (T\*)
-+- Multi-level pointers (T**, T\***, etc.)
-+
-+### II. Scope of sensitive pointers
-+
-+1. Local (function) scope
-+   - Local variables
-+   - Function arguments
-+     - Fixed arguments
-+     - Variable arguments
-+   - Function return values
-+2. Global scope
-+   - Initialized
-+   - Uninitialized
-+3. Heap scope
-+4. Thread-local storage
-+
-+### III. Pointer types
-+
-+1. Pointers to primitive data types
-+   - Pointers to integer types (signed/unsigned: char, short, int, long, long long)
-+   - Pointers to floating point types (float, double, long double)
-+   - Pointers to void
-+2. Pointers to complex data types
-+   - Pointers to structs
-+   - Pointers to unions
-+   - Pointers to arrays (T(\*)[])
-+     - Fixed-size arrays
-+     - Variable-length arrays
-+   - Function pointers
-+3. Pointer as members
-+   - Struct members
-+   - Union members
-+   - Array elements
-+   - Function prototype members
-+
-+### IV. Compatibility with C qualifiers/specifiers
-+
-+1. No qualifiers
-+2. Type qualifiers
-+   - const
-+   - volatile
-+   - restrict
-+   - \_Atomic
-+3. Storage class specifiers
-+   - register
-+   - static
-+   - extern
-+   - typedef
-+   - auto
-+4. Function specifiers
-+   - inline
-+
-+### V. Pointer operations
-+
-+1. Assignment/Dereference
-+2. Arithmetic
-+   - Increment/decrement
-+   - Array indexing
-+3. AddrOf
-+4. Arrow, period
-+5. Comparison (==, !=, <, >, <=, >=)
-+6. Type casting
-+   - Implicit and explicit conversions
-+   - From/to void \*
-+   - From/to pointer types
-+     - Sensitive from/to sensitive pointers
-+     - Sensitive from/to insensitive pointers
-+7. Macro expansion
-+
-+### VI. Optimization levels
-+
-+1. O0
-+2. O1
-+3. O2
-+4. O3
-+5. Ofast
-+6. Os
-+7. Oz
-+8. Og
-+
-+### VII. Inline assembly
-+
-+1. Inline assembly code
-+
-+### Test case details
-+
-+| Pass | ID  | Filename                | Scope                   | Pointer Type    | Specifier | Operation  |
-+| ---- | --- | ----------------------- | ----------------------- | --------------- | --------- | ---------- |
-+| [ ]  |     | \_sl_primitive.c        | stack (local variables) | primitive types | no        | load/store |
-+| [ ]  |     | \_sl_complex.c          | stack (local variables) | complex types   | no        | load/store |
-+| [ ]  |     | \_sl_member.c           | stack (local variables) | as members      | no        | load/store |
-+| [ ]  |     | \_sa_primitive.c        | stack (arguments)       | primitive types | no        | load/store |
-+| [ ]  |     | \_sa_complex.c          | stack (arguments)       | complex types   | no        | load/store |
-+| [ ]  |     | \_sa_member.c           | stack (arguments)       | as members      | no        | load/store |
-+| [ ]  |     | \_sr_primitive.c        | stack (return values)   | primitive types | no        | load/store |
-+| [ ]  |     | \_sr_complex.c          | stack (return values)   | complex types   | no        | load/store |
-+| [ ]  |     | \_sr_member.c           | stack (return values)   | as members      | no        | load/store |
-+| [ ]  |     | \_g_primitive.c         | global                  | primitive types | no        | load/store |
-+| [ ]  |     | \_g_complex.c           | global                  | complex types   | no        | load/store |
-+| [ ]  |     | \_g_member.c            | global                  | as members      | no        | load/store |
-+| [ ]  |     | \_h_primitive.c         | heap                    | primitive types | no        | load/store |
-+| [ ]  |     | \_h_complex.c           | heap                    | complex types   | no        | load/store |
-+| [ ]  |     | \_h_member.c            | heap                    | as members      | no        | load/store |
-+| [ ]  |     | \_t_primitive.c         | thread-local storage    | primitive types | no        | load/store |
-+| [ ]  |     | \_t_complex.c           | thread-local storage    | complex types   | no        | load/store |
-+| [ ]  |     | \_t_member.c            | thread-local storage    | as members      | no        | load/store |
-+| ---- | --- | ----------------        | ----------------------  | --------------- | --------- | ---------- |
-+| [ ]  |     | \_sl_spe_primitive.c    | stack (local variables) | primitive types | yes       | load/store |
-+| [ ]  |     | \_sl_spe_complex.c      | stack (local variables) | complex types   | yes       | load/store |
-+| [ ]  |     | \_sl_spe_member.c       | stack (local variables) | as members      | yes       | load/store |
-+| [ ]  |     | \_sa_spe_primitive.c    | stack (arguments)       | primitive types | yes       | load/store |
-+| [ ]  |     | \_sa_spe_complex.c      | stack (arguments)       | complex types   | yes       | load/store |
-+| [ ]  |     | \_sa_spe_member.c       | stack (arguments)       | as members      | yes       | load/store |
-+| [ ]  |     | \_sr_spe_primitive.c    | stack (return values)   | primitive types | yes       | load/store |
-+| [ ]  |     | \_sr_spe_complex.c      | stack (return values)   | complex types   | yes       | load/store |
-+| [ ]  |     | \_sr_spe_member.c       | stack (return values)   | as members      | yes       | load/store |
-+| [ ]  |     | \_g_spe_primitive.c     | global                  | primitive types | yes       | load/store |
-+| [ ]  |     | \_g_spe_complex.c       | global                  | complex types   | yes       | load/store |
-+| [ ]  |     | \_g_spe_member.c        | global                  | as members      | yes       | load/store |
-+| [ ]  |     | \_h_spe_primitive.c     | heap                    | primitive types | yes       | load/store |
-+| [ ]  |     | \_h_spe_complex.c       | heap                    | complex types   | yes       | load/store |
-+| [ ]  |     | \_h_spe_member.c        | heap                    | as members      | yes       | load/store |
-+| [ ]  |     | \_t_spe_primitive.c     | thread-local storage    | primitive types | yes       | load/store |
-+| [ ]  |     | \_t_spe_complex.c       | thread-local storage    | complex types   | yes       | load/store |
-+| [ ]  |     | \_t_spe_member.c        | thread-local storage    | as members      | yes       | load/store |
-+| ---- | --- | ----------------        | ----------------------  | --------------- | --------- | ---------- |
-+| [ ]  |     | \_sl_op_primitive.c     | stack (local variables) | primitive types | no        | others     |
-+| [ ]  |     | \_sl_op_complex.c       | stack (local variables) | complex types   | no        | others     |
-+| [ ]  |     | \_sl_op_member.c        | stack (local variables) | as members      | no        | others     |
-+| [ ]  |     | \_sa_op_primitive.c     | stack (arguments)       | primitive types | no        | others     |
-+| [ ]  |     | \_sa_op_complex.c       | stack (arguments)       | complex types   | no        | others     |
-+| [ ]  |     | \_sa_op_member.c        | stack (arguments)       | as members      | no        | others     |
-+| [ ]  |     | \_sr_op_primitive.c     | stack (return values)   | primitive types | no        | others     |
-+| [ ]  |     | \_sr_op_complex.c       | stack (return values)   | complex types   | no        | others     |
-+| [ ]  |     | \_sr_op_member.c        | stack (return values)   | as members      | no        | others     |
-+| [ ]  |     | \_g_op_primitive.c      | global                  | primitive types | no        | others     |
-+| [ ]  |     | \_g_op_complex.c        | global                  | complex types   | no        | others     |
-+| [ ]  |     | \_g_op_member.c         | global                  | as members      | no        | others     |
-+| [ ]  |     | \_h_op_primitive.c      | heap                    | primitive types | no        | others     |
-+| [ ]  |     | \_h_op_complex.c        | heap                    | complex types   | no        | others     |
-+| [ ]  |     | \_h_op_member.c         | heap                    | as members      | no        | others     |
-+| [ ]  |     | \_t_op_primitive.c      | thread-local storage    | primitive types | no        | others     |
-+| [ ]  |     | \_t_op_complex.c        | thread-local storage    | complex types   | no        | others     |
-+| [ ]  |     | \_t_op_member.c         | thread-local storage    | as members      | no        | others     |
-+| [ ]  |     | \_sl_spe_op_primitive.c | stack (local variables) | primitive types | yes       | others     |
-+| [ ]  |     | \_sl_spe_op_complex.c   | stack (local variables) | complex types   | yes       | others     |
-+| [ ]  |     | \_sl_spe_op_member.c    | stack (local variables) | as members      | yes       | others     |
-+| [ ]  |     | \_sa_spe_op_primitive.c | stack (arguments)       | primitive types | yes       | others     |
-+| [ ]  |     | \_sa_spe_op_complex.c   | stack (arguments)       | complex types   | yes       | others     |
-+| [ ]  |     | \_sa_spe_op_member.c    | stack (arguments)       | as members      | yes       | others     |
-+| [ ]  |     | \_sr_spe_op_primitive.c | stack (return values)   | primitive types | yes       | others     |
-+| [ ]  |     | \_sr_spe_op_complex.c   | stack (return values)   | complex types   | yes       | others     |
-+| [ ]  |     | \_sr_spe_op_member.c    | stack (return values)   | as members      | yes       | others     |
-+| [ ]  |     | \_g_spe_op_primitive.c  | global                  | primitive types | yes       | others     |
-+| [ ]  |     | \_g_spe_op_complex.c    | global                  | complex types   | yes       | others     |
-+| [ ]  |     | \_g_spe_op_member.c     | global                  | as members      | yes       | others     |
-+| [ ]  |     | \_h_spe_op_primitive.c  | heap                    | primitive types | yes       | others     |
-+| [ ]  |     | \_h_spe_op_complex.c    | heap                    | complex types   | yes       | others     |
-+| [ ]  |     | \_h_spe_op_member.c     | heap                    | as members      | yes       | others     |
-+| [ ]  |     | \_t_spe_op_primitive.c  | thread-local storage    | primitive types | yes       | others     |
-+| [ ]  |     | \_t_spe_op_complex.c    | thread-local storage    | complex types   | yes       | others     |
-+| [ ]  |     | \_t_spe_op_member.c     | thread-local storage    | as members      | yes       | others     |

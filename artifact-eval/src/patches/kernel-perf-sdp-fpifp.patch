@@ -1398,60 +1398,6 @@ index 3de5cc497465..000000000000
 -#comment_width = 100
 -#wrap_comments = true
 -#normalize_comments = true
-diff --git a/.vscode/launch.json b/.vscode/launch.json
-new file mode 100644
-index 000000000000..19879ba9321c
---- /dev/null
-+++ b/.vscode/launch.json
-@@ -0,0 +1,47 @@
-+{
-+  "version": "0.2.0",
-+  "configurations": [
-+    {
-+      "name": "Kernel Debug",
-+      "type": "cppdbg",
-+      "request": "launch",
-+      "program": "/home/fzy/project/sensitive-data-protect/sdp-linux-6.6/vmlinux",
-+      "miDebuggerServerAddress": "localhost:1234",
-+      "stopAtEntry": true,
-+      "cwd": "/home/fzy/project/sensitive-data-protect/sdp-linux-6.6",
-+      "MIMode": "gdb",
-+      "miDebuggerPath": "/usr/bin/riscv64-linux-gnu-gdb",
-+      "setupCommands": [
-+        {
-+          "description": "Set architecture",
-+          "text": "set architecture riscv:rv64",
-+          "ignoreFailures": false
-+        },
-+        {
-+          "description": "Load kernel debugging helpers",
-+          "text": "source /home/fzy/project/sensitive-data-protect/sdp-linux-6.6/scripts/gdb/vmlinux-gdb.py",
-+          "ignoreFailures": true
-+        }
-+      ]
-+    },
-+    {
-+      "name": "C/C++ Runner: Debug Session",
-+      "type": "cppdbg",
-+      "request": "launch",
-+      "args": [],
-+      "stopAtEntry": false,
-+      "externalConsole": false,
-+      "cwd": "/home/fzy/project/sensitive-data-protect/sdp-linux-6.6",
-+      "program": "/home/fzy/project/sensitive-data-protect/sdp-linux-6.6/build/Debug/outDebug",
-+      "MIMode": "gdb",
-+      "miDebuggerPath": "gdb",
-+      "setupCommands": [
-+        {
-+          "description": "Enable pretty-printing for gdb",
-+          "text": "-enable-pretty-printing",
-+          "ignoreFailures": true
-+        }
-+      ]
-+    }
-+  ]
-+}
-\ No newline at end of file
 diff --git a/arch/riscv/include/asm/csr.h b/arch/riscv/include/asm/csr.h
 index 777cb8299551..fec700f16cf2 100644
 --- a/arch/riscv/include/asm/csr.h
@@ -1785,10 +1731,10 @@ index 000000000000..453572700661
 +  LLVM=1
 diff --git a/current.config b/current.config
 new file mode 100644
-index 000000000000..fe52aedd8b57
+index 000000000000..1b6a91d36dd9
 --- /dev/null
 +++ b/current.config
-@@ -0,0 +1,101 @@
+@@ -0,0 +1,100 @@
 +# Core system features
 +CONFIG_CGROUPS=y
 +CONFIG_SECCOMP_FILTER=y
@@ -1889,33 +1835,28 @@ index 000000000000..fe52aedd8b57
 +CONFIG_MODULES=y
 +CONFIG_MODULE_SIG=y
 +CONFIG_MODULE_SIG_FORCE=y
-+CONFIG_TEST_MODULE=m
 \ No newline at end of file
 diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
-index cadd4a820c03..403bddd648d9 100644
+index cadd4a820c03..cc6492539c00 100644
 --- a/drivers/misc/Kconfig
 +++ b/drivers/misc/Kconfig
-@@ -579,4 +579,8 @@ source "drivers/misc/cardreader/Kconfig"
+@@ -579,4 +579,6 @@ source "drivers/misc/cardreader/Kconfig"
  source "drivers/misc/uacce/Kconfig"
  source "drivers/misc/pvpanic/Kconfig"
  source "drivers/misc/mchp_pci1xxxx/Kconfig"
 +# SDP: Compile the arbitrary read/write driver for mitigation testing
 +source "drivers/misc/arbrw/Kconfig"
  endmenu
-+# SDP: Compile the hello world test module
-+source "drivers/misc/testmod/Kconfig"
 diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
-index f2a4d1ff65d4..57f71f626983 100644
+index f2a4d1ff65d4..cbdbdd8afa57 100644
 --- a/drivers/misc/Makefile
 +++ b/drivers/misc/Makefile
-@@ -67,3 +67,7 @@ obj-$(CONFIG_TMR_MANAGER)      += xilinx_tmr_manager.o
+@@ -67,3 +67,5 @@ obj-$(CONFIG_TMR_MANAGER)      += xilinx_tmr_manager.o
  obj-$(CONFIG_TMR_INJECT)	+= xilinx_tmr_inject.o
  obj-$(CONFIG_TPS6594_ESM)	+= tps6594-esm.o
  obj-$(CONFIG_TPS6594_PFSM)	+= tps6594-pfsm.o
 +# SDP: Compile the arbitrary read/write driver for mitigation testing
 +obj-$(CONFIG_ARB_RW_DEVICE) += arbrw/
-+# SDP: Compile the hello world test module
-+obj-$(CONFIG_TEST_MODULE) += testmod/
 \ No newline at end of file
 diff --git a/drivers/misc/arbrw/Kconfig b/drivers/misc/arbrw/Kconfig
 new file mode 100644
@@ -5735,55 +5676,6 @@ index 000000000000..3518cad53669
 +    printf("Tip: run 'dmesg | grep sdp_cache' for kernel-side details.\n");
 +    return EXIT_SUCCESS;
 +}
-diff --git a/drivers/misc/testmod/Kconfig b/drivers/misc/testmod/Kconfig
-new file mode 100644
-index 000000000000..ae2ff5d2e360
---- /dev/null
-+++ b/drivers/misc/testmod/Kconfig
-@@ -0,0 +1,7 @@
-+# SDP: Config for the simple test module
-+config TEST_MODULE
-+	tristate "Hello World Module"
-+	help
-+	  A simple hello world kernel module.
-+	  
-+	  If unsure, say N.
-diff --git a/drivers/misc/testmod/Makefile b/drivers/misc/testmod/Makefile
-new file mode 100644
-index 000000000000..534732b99416
---- /dev/null
-+++ b/drivers/misc/testmod/Makefile
-@@ -0,0 +1,2 @@
-+# SDP: Add the test module to Makefile
-+obj-$(CONFIG_TEST_MODULE) += hello.o
-\ No newline at end of file
-diff --git a/drivers/misc/testmod/hello.c b/drivers/misc/testmod/hello.c
-new file mode 100644
-index 000000000000..e48c44631a9f
---- /dev/null
-+++ b/drivers/misc/testmod/hello.c
-@@ -0,0 +1,20 @@
-+// SDP: A simple unsigned hello world module for testing sig_enforce bypass
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("SDP");
-+MODULE_DESCRIPTION("A simple Hello World module");
-+
-+static int __init hello_init(void) {
-+    printk(KERN_INFO "Hello: Module loaded\n");
-+    return 0;
-+}
-+
-+static void __exit hello_exit(void) {
-+    printk(KERN_INFO "Hello: Module unloaded\n");
-+}
-+
-+module_init(hello_init);
-+module_exit(hello_exit);
-\ No newline at end of file
 diff --git a/drivers/tty/tty_io.c b/drivers/tty/tty_io.c
 index 8a94e5a43c6d..6109de08e594 100644
 --- a/drivers/tty/tty_io.c
@@ -7681,10 +7573,10 @@ index 3e84b31c355a..532e4580d6e3 100644
  }
 diff --git a/sifive_orilinux.config b/sifive_orilinux.config
 new file mode 100644
-index 000000000000..84a27e70881e
+index 000000000000..a016bf1b6216
 --- /dev/null
 +++ b/sifive_orilinux.config
-@@ -0,0 +1,164 @@
+@@ -0,0 +1,163 @@
 +# Core system features
 +CONFIG_CGROUPS=y
 +CONFIG_SECCOMP_FILTER=y
@@ -7822,7 +7714,6 @@ index 000000000000..84a27e70881e
 +CONFIG_MODULES=y
 +CONFIG_MODULE_SIG=y
 +CONFIG_MODULE_SIG_FORCE=y
-+CONFIG_TEST_MODULE=m
 +
 +# Partition support (needed for EFI partition detection)
 +CONFIG_PARTITION_ADVANCED=y
@@ -7852,10 +7743,10 @@ index 000000000000..84a27e70881e
 \ No newline at end of file
 diff --git a/sifive_sdpfpifp_full.config b/sifive_sdpfpifp_full.config
 new file mode 100644
-index 000000000000..91703db7c04a
+index 000000000000..025707e37d2e
 --- /dev/null
 +++ b/sifive_sdpfpifp_full.config
-@@ -0,0 +1,3319 @@
+@@ -0,0 +1,3317 @@
 +#
 +# Automatically generated file; DO NOT EDIT.
 +# Linux/riscv 6.6.0 Kernel Configuration
@@ -8889,8 +8780,6 @@ index 000000000000..91703db7c04a
 +# CONFIG_PVPANIC is not set
 +# CONFIG_ARB_RW_DEVICE is not set
 +# end of Misc devices
-+
-+# CONFIG_TEST_MODULE is not set
 +
 +#
 +# SCSI device support
