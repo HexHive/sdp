@@ -818,7 +818,7 @@ index 0000000000000..1bae622f82a98
 +      "instrument settag instructions for heap sensitive pointers");
 \ No newline at end of file
 diff --git a/clang/include/clang/AST/ASTContext.h b/clang/include/clang/AST/ASTContext.h
-index 16a19645d7f36..504a3dafc2e1c 100644
+index 16a19645d7f36..a0eccef4f5572 100644
 --- a/clang/include/clang/AST/ASTContext.h
 +++ b/clang/include/clang/AST/ASTContext.h
 @@ -1387,6 +1387,16 @@ public:
@@ -829,7 +829,7 @@ index 16a19645d7f36..504a3dafc2e1c 100644
 +  // FZY: Declare getSensitivePointerType to get a uniqued QualType reference to a sensitive pointer type
 +  QualType getSensitivePointerType(QualType T) const;
 +
-+  // FZY: Declare getInsensitivePointerType to get a uniqued QualType reference to a __tagzero pointer type
++  // FZY: Declare getInsensitivePointerType to get a uniqued QualType reference to a __tag0 pointer type
 +  QualType getInsensitivePointerType(QualType T) const;
 +
 +  // FZY: Declare getPointerType with EmitSettagAttr to get a uniqued QualType reference to a __emit_settag void pointer type
@@ -868,7 +868,7 @@ index 5b813bfc2faf9..ffe2a1479fca0 100644
    /// enumeration type under which said constant was declared.
    /// Otherwise return the expression's type.
 diff --git a/clang/include/clang/AST/Type.h b/clang/include/clang/AST/Type.h
-index 9a711030cff9c..573e2f3798fb1 100644
+index 9a711030cff9c..faced39ba7231 100644
 --- a/clang/include/clang/AST/Type.h
 +++ b/clang/include/clang/AST/Type.h
 @@ -622,7 +622,12 @@ public:
@@ -921,7 +921,7 @@ index 9a711030cff9c..573e2f3798fb1 100644
 +  // FZY: Add EmitSettagAttrValue field to PointerType to store the __emit_settag attribute
 +  bool EmitSettagAttrValue;
 +
-+  // FZY: Add TagzeroAttrValue field to PointerType to store the __tagzero attribute
++  // FZY: Add TagzeroAttrValue field to PointerType to store the __tag0 attribute
 +  bool TagzeroAttrValue;
  
    PointerType(QualType Pointee, QualType CanonicalPtr)
@@ -939,7 +939,7 @@ index 9a711030cff9c..573e2f3798fb1 100644
 +    TagzeroAttrValue = false;
 +  }
 +
-+  // FZY: Add a constructor for PointerType to initialize the sensitive, __emit_settag and __tagzero attributes
++  // FZY: Add a constructor for PointerType to initialize the sensitive, __emit_settag and __tag0 attributes
 +  PointerType(QualType Pointee, QualType CanonicalPtr, bool SensitiveAttrValue, bool EmitSettagAttrValue, bool TagzeroAttrValue)
 +      : Type(Pointer, CanonicalPtr, Pointee->getDependence()),
 +        PointeeType(Pointee), SensitiveAttrValue(SensitiveAttrValue), EmitSettagAttrValue(EmitSettagAttrValue), TagzeroAttrValue(TagzeroAttrValue) {}
@@ -977,7 +977,7 @@ index 9a711030cff9c..573e2f3798fb1 100644
    bool isSugared() const { return false; }
    QualType desugar() const { return QualType(this, 0); }
  
-+  // FZY: Profile PointerType with the __tagone, __emit_settag and __tagzero attributes
++  // FZY: Profile PointerType with the __tag1, __emit_settag and __tag0 attributes
    void Profile(llvm::FoldingSetNodeID &ID) {
 -    Profile(ID, getPointeeType());
 +    Profile(ID, getPointeeType(), getSensitiveAttr(), getEmitSettagAttr(), getTagzeroAttr());
@@ -987,7 +987,7 @@ index 9a711030cff9c..573e2f3798fb1 100644
 +  static void Profile(llvm::FoldingSetNodeID &ID, QualType Pointee, bool SensitiveAttr, bool EmitSettagAttr, bool TagzeroAttr) {
      ID.AddPointer(Pointee.getAsOpaquePtr());
 +
-+    // FZY: Add the __tagone, __emit_settag and __tagzero attributes to the profile
++    // FZY: Add the __tag1, __emit_settag and __tag0 attributes to the profile
 +    ID.AddBoolean(SensitiveAttr);
 +    ID.AddBoolean(EmitSettagAttr);
 +    ID.AddBoolean(TagzeroAttr);
@@ -1043,7 +1043,7 @@ index 9a711030cff9c..573e2f3798fb1 100644
    return isPointerType() || isObjCObjectPointerType();
  }
 diff --git a/clang/include/clang/Basic/Attr.td b/clang/include/clang/Basic/Attr.td
-index 46d0a66d59c37..70f1cdbdc1ed9 100644
+index 46d0a66d59c37..b87b1606db9d2 100644
 --- a/clang/include/clang/Basic/Attr.td
 +++ b/clang/include/clang/Basic/Attr.td
 @@ -4068,6 +4068,52 @@ def UPtr : TypeAttr {
@@ -1052,13 +1052,13 @@ index 46d0a66d59c37..70f1cdbdc1ed9 100644
  
 +// FZY: Add the sensitive attribute
 +def Tagone : TypeAttr {
-+  let Spellings = [CustomKeyword<"__tagone">];
++  let Spellings = [CustomKeyword<"__tag1">];
 +  let Documentation = [TagoneDocs];
 +}
 +
-+// FZY: Add the forcibly-insensitive attribute (inverse of __tagone)
++// FZY: Add the forcibly-insensitive attribute (inverse of __tag1)
 +def Tagzero : TypeAttr {
-+  let Spellings = [CustomKeyword<"__tagzero">];
++  let Spellings = [CustomKeyword<"__tag0">];
 +  let Documentation = [TagzeroDocs];
 +}
 +
@@ -1100,7 +1100,7 @@ index 46d0a66d59c37..70f1cdbdc1ed9 100644
    let LangOpts = [MicrosoftExt];
    let Args = [DefaultBoolArgument<"BestCase", /*default*/1, /*fake*/1>];
 diff --git a/clang/include/clang/Basic/AttrDocs.td b/clang/include/clang/Basic/AttrDocs.td
-index b5d468eb5ec95..3135da99ddb83 100644
+index b5d468eb5ec95..12dbd5375a9ba 100644
 --- a/clang/include/clang/Basic/AttrDocs.td
 +++ b/clang/include/clang/Basic/AttrDocs.td
 @@ -4128,6 +4128,67 @@ extended when converted to a 64-bit pointer.
@@ -1111,7 +1111,7 @@ index b5d468eb5ec95..3135da99ddb83 100644
 +def TagoneDocs : Documentation {
 +  let Category = DocCatType;
 +  let Content = [{
-+The ``__tagone`` qualifier specifies that the type of data requires confidentiality and interity gaurantee.
++The ``__tag1`` qualifier specifies that the type of data requires confidentiality and interity gaurantee.
 +  }];
 +}
 +
@@ -1119,7 +1119,7 @@ index b5d468eb5ec95..3135da99ddb83 100644
 +def TagzeroDocs : Documentation {
 +  let Category = DocCatType;
 +  let Content = [{
-+The ``__tagzero`` qualifier forces a pointer to be treated as non-sensitive even when the automatic propagation rules (e.g. ``-fsdp-fp``/``-fsdp-fpifp``) would otherwise mark it as sensitive. Loads and stores through a ``__tagzero`` pointer are emitted as plain memory accesses (no ``ld_tag1``/``sd_tag1``). It is the inverse of ``__tagone`` and cannot be combined with it on the same pointer.
++The ``__tag0`` qualifier forces a pointer to be treated as non-sensitive even when the automatic propagation rules (e.g. ``-fsdp-fp``/``-fsdp-fpifp``) would otherwise mark it as sensitive. Loads and stores through a ``__tag0`` pointer are emitted as plain memory accesses (no ``ld_tag1``/``sd_tag1``). It is the inverse of ``__tag1`` and cannot be combined with it on the same pointer.
 +  }];
 +}
 +
@@ -1201,7 +1201,7 @@ index 12808eb275fa4..ce05253b3a041 100644
                                             ///< enabled.
  CODEGENOPT(StackSizeSection  , 1, 0) ///< Set when -fstack-size-section is enabled.
 diff --git a/clang/include/clang/Basic/DiagnosticSemaKinds.td b/clang/include/clang/Basic/DiagnosticSemaKinds.td
-index 8a00fe21a08ce..b20dde6cbb8ff 100644
+index 8a00fe21a08ce..1e38622775312 100644
 --- a/clang/include/clang/Basic/DiagnosticSemaKinds.td
 +++ b/clang/include/clang/Basic/DiagnosticSemaKinds.td
 @@ -3312,6 +3312,12 @@ def warn_attribute_pointers_only : Warning<
@@ -1226,9 +1226,9 @@ index 8a00fe21a08ce..b20dde6cbb8ff 100644
 +def err_attribute_multiple_emit_settag : Error<
 +  "multiple __emit_settag attributes specified for type">;
 +
-+// FZY: Diagnose mixing __tagzero with __tagone on the same pointer
++// FZY: Diagnose mixing __tag0 with __tag1 on the same pointer
 +def err_attribute_tagzero_conflicts_tagone : Error<
-+  "__tagzero cannot be combined with __tagone on the same pointer">;
++  "__tag0 cannot be combined with __tag1 on the same pointer">;
 +
  def err_catch_param_not_objc_type : Error<
    "@catch parameter is not a pointer to an interface type">;
@@ -1283,7 +1283,7 @@ index 7a0f5ba8d1270..2331c12a0a694 100644
    friend class ASTWriter;
    friend class ASTReader;
 diff --git a/clang/include/clang/Basic/TokenKinds.def b/clang/include/clang/Basic/TokenKinds.def
-index 0526fbf51bd91..3377b1e65536f 100644
+index 0526fbf51bd91..a3324f13f1e63 100644
 --- a/clang/include/clang/Basic/TokenKinds.def
 +++ b/clang/include/clang/Basic/TokenKinds.def
 @@ -722,6 +722,15 @@ KEYWORD(_Null_unspecified        , KEYALL)
@@ -1291,10 +1291,10 @@ index 0526fbf51bd91..3377b1e65536f 100644
  KEYWORD(__funcref                     , KEYALL)
  
 +// FZY: Sensitive attributes
-+KEYWORD(__tagone                     , KEYALL)
++KEYWORD(__tag1                     , KEYALL)
 +
-+// FZY: Forcibly insensitive pointer (inverse of __tagone)
-+KEYWORD(__tagzero                    , KEYALL)
++// FZY: Forcibly insensitive pointer (inverse of __tag1)
++KEYWORD(__tag0                    , KEYALL)
 +
 +// FZY: __emit_settag flag
 +KEYWORD(__emit_settag                , KEYALL)
@@ -1358,7 +1358,7 @@ index 15f9ee75492e3..3e2ed5d7a513b 100644
    HelpText<"Process trigraph sequences">, Visibility<[ClangOption, CC1Option]>;
  def fno_trigraphs : Flag<["-"], "fno-trigraphs">, Group<f_Group>,
 diff --git a/clang/include/clang/Parse/Parser.h b/clang/include/clang/Parse/Parser.h
-index f256d603ae626..62190ce547592 100644
+index f256d603ae626..259020292a6b9 100644
 --- a/clang/include/clang/Parse/Parser.h
 +++ b/clang/include/clang/Parse/Parser.h
 @@ -3066,6 +3066,16 @@ private:
@@ -1369,7 +1369,7 @@ index f256d603ae626..62190ce547592 100644
 +  // FZY: Declare the function to parse the attribute
 +  void ParseTagoneTypeAttribute(ParsedAttributes &Attrs);
 +
-+  // FZY: Declare the function to parse __tagzero attribute
++  // FZY: Declare the function to parse __tag0 attribute
 +  void ParseTagzeroTypeAttribute(ParsedAttributes &Attrs);
 +
 +  // FZY: Declare the function to parse __emit_settag attribute
@@ -1393,7 +1393,7 @@ index 7bfdaaae45a93..1464350065f81 100644
      /// changes address spaces in nested pointer types which is not allowed.
      /// For instance, converting __private int ** to __generic int ** is
 diff --git a/clang/lib/AST/ASTContext.cpp b/clang/lib/AST/ASTContext.cpp
-index 1064507f34616..65d940a7c2d93 100644
+index 1064507f34616..cdb86949b1534 100644
 --- a/clang/lib/AST/ASTContext.cpp
 +++ b/clang/lib/AST/ASTContext.cpp
 @@ -3651,7 +3651,149 @@ QualType ASTContext::getPointerType(QualType T) const {
@@ -1406,7 +1406,7 @@ index 1064507f34616..65d940a7c2d93 100644
 +  // FZY: Profile for PointerType according to the pointee's sensitive attribute
 +  uint8_t isPointeeSensitive = T->isSensitiveType(*this);
 +
-+  // FZY: Under -fsdp-fp, only __tagone propagates up the pointer chain
++  // FZY: Under -fsdp-fp, only __tag1 propagates up the pointer chain
 +  if (isPointeeSensitive == 2 && getLangOpts().SDPFPProtect) {
 +    const auto *PT = T->getAs<PointerType>();
 +    bool FromAnnotation = PT && PT->getSensitiveAttr();
@@ -1507,7 +1507,7 @@ index 1064507f34616..65d940a7c2d93 100644
 +  // Unique pointers, to guarantee there is only one pointer of a particular
 +  // structure.
 +  llvm::FoldingSetNodeID ID;
-+  // Pointer with __emit_settag must not be with __tagone or __tagzero
++  // Pointer with __emit_settag must not be with __tag1 or __tag0
 +  bool SAttr = false;
 +  bool EAttr = true;
 +  bool TZAttr = false;
@@ -1535,7 +1535,7 @@ index 1064507f34616..65d940a7c2d93 100644
 +  return QualType(New, 0);
 +}
 +
-+// FZY: Add getInsensitivePointerType to return the uniqued reference to a __tagzero pointer type
++// FZY: Add getInsensitivePointerType to return the uniqued reference to a __tag0 pointer type
 +QualType ASTContext::getInsensitivePointerType(QualType T) const {
 +  QualType Plain = getPointerType(T);
 +  if (!Plain->isSensitivePointerType(*this))
@@ -1999,7 +1999,7 @@ index 0000000000000..559eca291406d
 +#endif // LLVM_CLANG_SEMA_STRUCTTYPETRACKER_H
 \ No newline at end of file
 diff --git a/clang/lib/AST/Type.cpp b/clang/lib/AST/Type.cpp
-index fdaab8e434593..3353c48410846 100644
+index fdaab8e434593..4c0b4c86f6a83 100644
 --- a/clang/lib/AST/Type.cpp
 +++ b/clang/lib/AST/Type.cpp
 @@ -55,6 +55,8 @@
@@ -2018,7 +2018,7 @@ index fdaab8e434593..3353c48410846 100644
 +// FZY: Add isSensitive function for PointerType to determine the sensitivity
 +uint8_t PointerType::isSensitive(const ASTContext &Context) const {
 +
-+  // FZY: __tagzero forcibly suppresses sensitivity regardless of pointee type
++  // FZY: __tag0 forcibly suppresses sensitivity regardless of pointee type
 +  if (getTagzeroAttr())
 +    return 0;
 +
@@ -2079,7 +2079,7 @@ index fdaab8e434593..3353c48410846 100644
    // FIXME: Generate this with TableGen.
    switch (getAttrKind()) {
 diff --git a/clang/lib/AST/TypePrinter.cpp b/clang/lib/AST/TypePrinter.cpp
-index ffec3ef9d2269..8d61124df02bf 100644
+index ffec3ef9d2269..e0a8db3edfa61 100644
 --- a/clang/lib/AST/TypePrinter.cpp
 +++ b/clang/lib/AST/TypePrinter.cpp
 @@ -410,11 +410,22 @@ void TypePrinter::printPointerBefore(const PointerType *T, raw_ostream &OS) {
@@ -2087,14 +2087,14 @@ index ffec3ef9d2269..8d61124df02bf 100644
      OS << '(';
    OS << '*';
 +
-+  // FZY: Print __tagone for sensitive pointer types
++  // FZY: Print __tag1 for sensitive pointer types
 +  if (T->getSensitiveAttr()) {
-+    OS << "__tagone ";
++    OS << "__tag1 ";
 +  }
 +
-+  // FZY: Print __tagzero for forcibly-insensitive pointer types
++  // FZY: Print __tag0 for forcibly-insensitive pointer types
 +  if (T->getTagzeroAttr()) {
-+    OS << "__tagzero ";
++    OS << "__tag0 ";
 +  }
  }
  
@@ -2111,11 +2111,11 @@ index ffec3ef9d2269..8d61124df02bf 100644
  
 +  // FZY: Print sensitive attribute
 +  if (T->getAttrKind() == attr::Tagone)
-+    OS << "__tagone";
++    OS << "__tag1";
 +
 +  // FZY: Print forcibly-insensitive attribute
 +  if (T->getAttrKind() == attr::Tagzero)
-+    OS << "__tagzero";
++    OS << "__tag0";
 +
 +  // FZY: Print __emit_settag attribute
 +  if (T->getAttrKind() == attr::EmitSettag)
@@ -2702,7 +2702,7 @@ index 3ef22b17f7691..2bdb109eda7c6 100644
    // in debug info about call sites.
    if (CGDebugInfo *DI = getDebugInfo()) {
 diff --git a/clang/lib/CodeGen/CGExprAgg.cpp b/clang/lib/CodeGen/CGExprAgg.cpp
-index d9f44f4be617e..9b59be5531801 100644
+index d9f44f4be617e..5f67ede77fbd5 100644
 --- a/clang/lib/CodeGen/CGExprAgg.cpp
 +++ b/clang/lib/CodeGen/CGExprAgg.cpp
 @@ -1995,6 +1995,21 @@ static void CheckAggExprForMemSetUse(AggValueSlot &Slot, const Expr *E,
@@ -2733,7 +2733,7 @@ index d9f44f4be617e..9b59be5531801 100644
  
 +// FZY: Recursively emit a field/element-wise copy or zero-init for an aggregate
 +// type. Use this in place of llvm.memcpy / llvm.memset when the type contains
-+// __tagone pointers. A byte-level memcpy lowers to plain `ld`/`sd` in the
++// __tag1 pointers. A byte-level memcpy lowers to plain `ld`/`sd` in the
 +// backend, which strip the high tag bits when reading tagged memory; per-field
 +// typed load/store via CGBuilderTy::CreateLoad/CreateStore picks up the tagone
 +// flag from the field's pointer type and lowers to `ld_tag1`/`sd_tag1`.
@@ -3071,7 +3071,7 @@ index d9f44f4be617e..9b59be5531801 100644
 +}
 +
 +// FZY: Without -fsdp-fp/-fsdp-fpifp the sensitivity json is unused, so records
-+// with only hand-written `__tagone` fields must be named here to stay sensitive.
++// with only hand-written `__tag1` fields must be named here to stay sensitive.
 +bool CodeGenFunction::isSecEvalTagoneRecord(QualType Ty) {
 +  if (getLangOpts().SDPFPProtect || getLangOpts().SDPFPIFPProtect) // Comment out for sdp-sdretfp
 +    return false; // Comment out for sdp-sdretfp
@@ -3100,7 +3100,7 @@ index d9f44f4be617e..9b59be5531801 100644
    Address SrcPtr = Src.getAddress();
  
 diff --git a/clang/lib/CodeGen/CGExprScalar.cpp b/clang/lib/CodeGen/CGExprScalar.cpp
-index 6e212e74676e8..9c82128b8fed6 100644
+index 6e212e74676e8..00640f87acee2 100644
 --- a/clang/lib/CodeGen/CGExprScalar.cpp
 +++ b/clang/lib/CodeGen/CGExprScalar.cpp
 @@ -2308,6 +2308,144 @@ Value *ScalarExprEmitter::VisitCastExpr(CastExpr *CE) {
@@ -3136,7 +3136,7 @@ index 6e212e74676e8..9c82128b8fed6 100644
 +              Pointee->isFunctionType())
 +            return QualType();
 +          // FZY: In security-evaluation mode records with only hand-written
-+          // __tagone fields aren't isSensitiveType() but still need the marker.
++          // __tag1 fields aren't isSensitiveType() but still need the marker.
 +          if (!Pointee->isSensitiveType(CGF.getContext()) &&
 +              !CGF.isSecEvalTagoneRecord(Pointee))
 +            return QualType();
@@ -3278,7 +3278,7 @@ index 2b2e23f1e5d7f..c6bdd43eb60b9 100644
      DestPtr = DestPtr.withElementType(Int8Ty);
  
 diff --git a/clang/lib/CodeGen/CodeGenFunction.h b/clang/lib/CodeGen/CodeGenFunction.h
-index 60e6841e1b3d6..0a2d9c1a3b71a 100644
+index 60e6841e1b3d6..a55d8f22e6649 100644
 --- a/clang/lib/CodeGen/CodeGenFunction.h
 +++ b/clang/lib/CodeGen/CodeGenFunction.h
 @@ -3012,6 +3012,36 @@ public:
@@ -3294,7 +3294,7 @@ index 60e6841e1b3d6..0a2d9c1a3b71a 100644
 +  /// FZY: Counterpart of EmitTagoneAwareAggregateCopy for zero-init (memset 0).
 +  void EmitTagoneAwareAggregateZero(LValue Dest, QualType Ty, bool isVolatile);
 +
-+  // FZY: Name-match records whose only tagone slots are hand-written `__tagone`
++  // FZY: Name-match records whose only tagone slots are hand-written `__tag1`
 +  // fields, so bulk copies/zeroes still take the tagone-aware per-field path.
 +  bool isSecEvalTagoneRecord(QualType Ty);
 +
@@ -3670,7 +3670,7 @@ index 028fdb2cc6b9d..066140ca5bafa 100644
        options::OPT_mamdgpu_ieee, options::OPT_mno_amdgpu_ieee, true);
    if (!Opts.EmitIEEENaNCompliantInsts && !LangOptsRef.NoHonorNaNs)
 diff --git a/clang/lib/Parse/ParseDecl.cpp b/clang/lib/Parse/ParseDecl.cpp
-index 7ce9a9cea1c7a..31769b6685563 100644
+index 7ce9a9cea1c7a..e208c2b83ccbb 100644
 --- a/clang/lib/Parse/ParseDecl.cpp
 +++ b/clang/lib/Parse/ParseDecl.cpp
 @@ -1042,6 +1042,39 @@ void Parser::ParseWebAssemblyFuncrefTypeAttribute(ParsedAttributes &attrs) {
@@ -3679,24 +3679,24 @@ index 7ce9a9cea1c7a..31769b6685563 100644
  
 +// FZY: Add parser function for the sensitive attribute
 +void Parser::ParseTagoneTypeAttribute(ParsedAttributes &attrs) {
-+  assert(Tok.is(tok::kw___tagone));
++  assert(Tok.is(tok::kw___tag1));
 +
 +  IdentifierInfo *AttrName = Tok.getIdentifierInfo();
 +  SourceLocation AttrNameLoc = ConsumeToken();
 +  attrs.addNew(AttrName, AttrNameLoc, /*ScopeName=*/nullptr,
 +               /*ScopeLoc=*/SourceLocation{}, /*Args=*/nullptr, /*numArgs=*/0,
-+               tok::kw___tagone);
++               tok::kw___tag1);
 +}
 +
 +// FZY: Add parser function for the forcibly-insensitive attribute
 +void Parser::ParseTagzeroTypeAttribute(ParsedAttributes &attrs) {
-+  assert(Tok.is(tok::kw___tagzero));
++  assert(Tok.is(tok::kw___tag0));
 +
 +  IdentifierInfo *AttrName = Tok.getIdentifierInfo();
 +  SourceLocation AttrNameLoc = ConsumeToken();
 +  attrs.addNew(AttrName, AttrNameLoc, /*ScopeName=*/nullptr,
 +               /*ScopeLoc=*/SourceLocation{}, /*Args=*/nullptr, /*numArgs=*/0,
-+               tok::kw___tagzero);
++               tok::kw___tag0);
 +}
 +
 +// FZY: Add parser function for the __emit_settag attribute
@@ -3718,12 +3718,12 @@ index 7ce9a9cea1c7a..31769b6685563 100644
        continue;
  
 +    // FZY: Parse the sensitive attributes
-+    case tok::kw___tagone:
++    case tok::kw___tag1:
 +      ParseTagoneTypeAttribute(DS.getAttributes());
 +      continue;
 +
 +    // FZY: Parse the forcibly-insensitive attribute
-+    case tok::kw___tagzero:
++    case tok::kw___tag0:
 +      ParseTagzeroTypeAttribute(DS.getAttributes());
 +      continue;
 +
@@ -3740,12 +3740,12 @@ index 7ce9a9cea1c7a..31769b6685563 100644
        goto DoneWithTypeQuals;
  
 +    // FZY: Parse __sensitive type attribute
-+    case tok::kw___tagone:
++    case tok::kw___tag1:
 +      ParseTagoneTypeAttribute(DS.getAttributes());
 +      continue;
 +
-+    // FZY: Parse __tagzero type attribute (inverse of __tagone)
-+    case tok::kw___tagzero:
++    // FZY: Parse __tag0 type attribute (inverse of __tag1)
++    case tok::kw___tag0:
 +      ParseTagzeroTypeAttribute(DS.getAttributes());
 +      continue;
 +
@@ -4220,7 +4220,7 @@ index 0000000000000..51aa3e90bf674
 +#endif // LLVM_CLANG_AST_POINTERTYPETRACKER_H
 \ No newline at end of file
 diff --git a/clang/lib/Sema/SemaDecl.cpp b/clang/lib/Sema/SemaDecl.cpp
-index 717ddb8339584..46bde4988fe7e 100644
+index 717ddb8339584..4f4b3b37ce305 100644
 --- a/clang/lib/Sema/SemaDecl.cpp
 +++ b/clang/lib/Sema/SemaDecl.cpp
 @@ -65,6 +65,9 @@
@@ -4365,7 +4365,7 @@ index 717ddb8339584..46bde4988fe7e 100644
 +// members (e.g. `struct callback_head` embedded in `struct file`'s union as
 +// `f_rcuhead`): mutating those would globally affect their other uses.
 +
-+// Detect an explicit `__tagone` annotation on the field's type — mirrors
++// Detect an explicit `__tag1` annotation on the field's type — mirrors
 +// the conflict check in SemaType.cpp::handleTagzeroAttr. Auto-propagated
 +// sensitivity from -fsdp-fp/-fsdp-fpifp does NOT appear as an
 +// AttributedType layer, which is exactly the case we want to override.
@@ -4569,7 +4569,7 @@ index 687b1be945921..75732be57b365 100644
      if (getLangOpts().CPlusPlus) {
        isInvalid = true;
 diff --git a/clang/lib/Sema/SemaType.cpp b/clang/lib/Sema/SemaType.cpp
-index 6fa39cdccef2b..1965a7d4495f6 100644
+index 6fa39cdccef2b..fd9372a08ad2b 100644
 --- a/clang/lib/Sema/SemaType.cpp
 +++ b/clang/lib/Sema/SemaType.cpp
 @@ -51,6 +51,9 @@
@@ -4668,7 +4668,7 @@ index 6fa39cdccef2b..1965a7d4495f6 100644
 +    return false;
 +  }
 +
-+  // FZY: __tagone conflicts with __tagzero on the same pointer
++  // FZY: __tag1 conflicts with __tag0 on the same pointer
 +  ASTContext &Context = S.Context;
 +  if (const auto *PT = type->getAs<PointerType>()) {
 +    if (PT->getTagzeroAttr()) {
@@ -4707,9 +4707,9 @@ index 6fa39cdccef2b..1965a7d4495f6 100644
 +    return false;
 +  }
 +
-+  // FZY: __tagzero conflicts with explicit __tagone annotation on
++  // FZY: __tag0 conflicts with explicit __tag1 annotation on
 +  // the same declarator. Auto-marked sensitivity (from -fsdp-fp/-fsdp-fpifp
-+  // FP-type check or struct-pointee propagation) is exactly what __tagzero
++  // FP-type check or struct-pointee propagation) is exactly what __tag0
 +  // exists to override
 +  for (const Type *T = type.getTypePtr();;) {
 +    const auto *AT = dyn_cast<AttributedType>(T);
@@ -4723,7 +4723,7 @@ index 6fa39cdccef2b..1965a7d4495f6 100644
 +    T = AT->getEquivalentType().getTypePtr();
 +  }
 +
-+  // FZY: Idempotent — repeated __tagzero on an already-tagzero pointer is fine
++  // FZY: Idempotent — repeated __tag0 on an already-tagzero pointer is fine
 +  if (const auto *PT = type->getAs<PointerType>()) {
 +    if (PT->getTagzeroAttr())
 +      return true;
@@ -5497,7 +5497,7 @@ index 3658e8320a0cc..88d3e84d00461 100644
  bool TargetPassConfig::addGCPasses() {
    addPass(&GCMachineCodeAnalysisID);
 diff --git a/llvm/lib/IR/AsmWriter.cpp b/llvm/lib/IR/AsmWriter.cpp
-index 6599730590de6..ff1ecc0ca82f2 100644
+index 6599730590de6..889a5f5ade729 100644
 --- a/llvm/lib/IR/AsmWriter.cpp
 +++ b/llvm/lib/IR/AsmWriter.cpp
 @@ -615,6 +615,14 @@ void TypePrinting::print(Type *Ty, raw_ostream &OS) {
@@ -5522,7 +5522,7 @@ index 6599730590de6..ff1ecc0ca82f2 100644
 +  
 +  // FZY: Print the sensitivive attribute of the global variable pointer. The pointer is sensitive if any part it points to is sensitive 
 +  if (GV->isSensitive()) {
-+    Out << "__tagone ";
++    Out << "__tag1 ";
 +  }
 +  
    TypePrinter.print(GV->getValueType(), Out);
@@ -5537,7 +5537,7 @@ index 6599730590de6..ff1ecc0ca82f2 100644
 +  if ((isa<LoadInst>(I)  && cast<LoadInst>(I).isTagone()) ||
 +      (isa<StoreInst>(I) && cast<StoreInst>(I).isTagone()) ||
 +      (isa<AllocaInst>(I) && cast<AllocaInst>(I).isTagone()))
-+    Out << " __tagone";
++    Out << " __tag1";
 +
    // Print out optimization information.
    WriteOptimizationInfo(Out, &I);
@@ -6350,7 +6350,7 @@ index 0000000000000..1f8a12d18c094
 \ No newline at end of file
 diff --git a/llvm/lib/Target/RISCV/RISCVHeapSettagInstrumentation.cpp b/llvm/lib/Target/RISCV/RISCVHeapSettagInstrumentation.cpp
 new file mode 100644
-index 0000000000000..d6ef4b594d0f6
+index 0000000000000..0891978d899bf
 --- /dev/null
 +++ b/llvm/lib/Target/RISCV/RISCVHeapSettagInstrumentation.cpp
 @@ -0,0 +1,1162 @@
@@ -7183,7 +7183,7 @@ index 0000000000000..d6ef4b594d0f6
 +                }
 +              }
 +            } else { // Security evaluation for the kernel
-+              // FZY: Slab caches whose objects carry __tagone fields; their
++              // FZY: Slab caches whose objects carry __tag1 fields; their
 +              // wrappers are inlined away, so match on the cachep global.
 +              static const struct {
 +                const char *CachepName;
@@ -8302,7 +8302,7 @@ index 0000000000000..dc6dd053655a6
 \ No newline at end of file
 diff --git a/llvm/lib/Target/RISCV/RISCVSettagUtils.cpp b/llvm/lib/Target/RISCV/RISCVSettagUtils.cpp
 new file mode 100644
-index 0000000000000..98a1da65839c3
+index 0000000000000..b159652582f7a
 --- /dev/null
 +++ b/llvm/lib/Target/RISCV/RISCVSettagUtils.cpp
 @@ -0,0 +1,239 @@
@@ -8334,7 +8334,7 @@ index 0000000000000..98a1da65839c3
 +  TypeStr = std::regex_replace(TypeStr, AnonRe, "$1struct.anon");
 +
 +  // Strip pointee-type detail and tagone markers from pointer prints:
-+  //   "__tagone ptr <%struct.X>" -> "ptr"
++  //   "__tag1 ptr <%struct.X>" -> "ptr"
 +  //   "ptr <%struct.X>"          -> "ptr"
 +  // Clang CodeGen can asymmetrically annotate one parameter of a function
 +  // type with its pointee while leaving sibling parameters as plain "ptr"
@@ -8345,7 +8345,7 @@ index 0000000000000..98a1da65839c3
 +  // for what is the same C-level type, producing object_ttag != subject_ttag
 +  // traps. The TTag should identify the underlying type only, so strip the
 +  // annotation before hashing.
-+  static const std::regex TagonePtrRe(R"(__tagone\s+ptr)");
++  static const std::regex TagonePtrRe(R"(__tag1\s+ptr)");
 +  TypeStr = std::regex_replace(TypeStr, TagonePtrRe, "ptr");
 +  static const std::regex TypedPtrRe(R"(ptr\s*<[^<>]+>)");
 +  TypeStr = std::regex_replace(TypeStr, TypedPtrRe, "ptr");
@@ -9627,7 +9627,7 @@ index 0000000000000..732b6cada8d43
 \ No newline at end of file
 diff --git a/testcases/c/1_sl_primitive.c b/testcases/c/1_sl_primitive.c
 new file mode 100644
-index 0000000000000..b89a7b4196fca
+index 0000000000000..261cd668f537e
 --- /dev/null
 +++ b/testcases/c/1_sl_primitive.c
 @@ -0,0 +1,151 @@
@@ -9661,21 +9661,21 @@ index 0000000000000..b89a7b4196fca
 +  void *v;
 +
 +  // Direct pointers to sensitive data
-+  int *__tagone i_dptr = &i;                    // sd_tag1(i_dptr)
++  int *__tag1 i_dptr = &i;                    // sd_tag1(i_dptr)
 +  *i_dptr = 1;                                  // ld_tag1(i_dptr)
-+  unsigned int *__tagone u_dptr = &u;           // sd_tag1(u_dptr)
-+  char *__tagone c_dptr = &c;                   // sd_tag1(c_dptr)
-+  unsigned char *__tagone uc_dptr = &uc;        // sd_tag1(uc_dptr)
-+  short *__tagone s_dptr = &s;                  // sd_tag1(s_dptr)
-+  unsigned short *__tagone us_dptr = &us;       // sd_tag1(us_dptr)
-+  long *__tagone l_dptr = &l;                   // sd_tag1(l_dptr)
-+  unsigned long *__tagone ul_dptr = &ul;        // sd_tag1(ul_dptr)
-+  long long *__tagone ll_dptr = &ll;            // sd_tag1(ll_dptr)
-+  unsigned long long *__tagone ull_dptr = &ull; // sd_tag1(ull_dptr)
-+  float *__tagone f_dptr = &f;                  // sd_tag1(f_dptr)
-+  double *__tagone d_dptr = &d;                 // sd_tag1(d_dptr)
-+  long double *__tagone ld_dptr = &ld;          // sd_tag1(ld_dptr)
-+  void **__tagone v_dptr = &v;                  // sd_tag1(v_dptr)
++  unsigned int *__tag1 u_dptr = &u;           // sd_tag1(u_dptr)
++  char *__tag1 c_dptr = &c;                   // sd_tag1(c_dptr)
++  unsigned char *__tag1 uc_dptr = &uc;        // sd_tag1(uc_dptr)
++  short *__tag1 s_dptr = &s;                  // sd_tag1(s_dptr)
++  unsigned short *__tag1 us_dptr = &us;       // sd_tag1(us_dptr)
++  long *__tag1 l_dptr = &l;                   // sd_tag1(l_dptr)
++  unsigned long *__tag1 ul_dptr = &ul;        // sd_tag1(ul_dptr)
++  long long *__tag1 ll_dptr = &ll;            // sd_tag1(ll_dptr)
++  unsigned long long *__tag1 ull_dptr = &ull; // sd_tag1(ull_dptr)
++  float *__tag1 f_dptr = &f;                  // sd_tag1(f_dptr)
++  double *__tag1 d_dptr = &d;                 // sd_tag1(d_dptr)
++  long double *__tag1 ld_dptr = &ld;          // sd_tag1(ld_dptr)
++  void **__tag1 v_dptr = &v;                  // sd_tag1(v_dptr)
 +
 +  *i_dptr = 1;     // ld_tag1(i_dptr)
 +  *u_dptr = 2;     // ld_tag1(u_dptr)
@@ -9693,21 +9693,21 @@ index 0000000000000..b89a7b4196fca
 +  *v_dptr = NULL;  // ld_tag1(v_dptr)
 +
 +  // Indirect pointers to sensitive data
-+  int *__tagone *__tagone i_iptr = &i_dptr;              // sd_tag1(i_iptr)
-+  unsigned int *__tagone *__tagone u_iptr = &u_dptr;     // sd_tag1(u_iptr)
-+  char *__tagone *__tagone c_iptr = &c_dptr;             // sd_tag1(c_iptr)
-+  unsigned char *__tagone *__tagone uc_iptr = &uc_dptr;  // sd_tag1(uc_iptr)
-+  short *__tagone *__tagone s_iptr = &s_dptr;            // sd_tag1(s_iptr)
-+  unsigned short *__tagone *__tagone us_iptr = &us_dptr; // sd_tag1(us_iptr)
-+  long *__tagone *__tagone l_iptr = &l_dptr;             // sd_tag1(l_iptr)
-+  unsigned long *__tagone *__tagone ul_iptr = &ul_dptr;  // sd_tag1(ul_iptr)
-+  long long *__tagone *__tagone ll_iptr = &ll_dptr;      // sd_tag1(ll_iptr)
-+  unsigned long long *__tagone *__tagone ull_iptr =
++  int *__tag1 *__tag1 i_iptr = &i_dptr;              // sd_tag1(i_iptr)
++  unsigned int *__tag1 *__tag1 u_iptr = &u_dptr;     // sd_tag1(u_iptr)
++  char *__tag1 *__tag1 c_iptr = &c_dptr;             // sd_tag1(c_iptr)
++  unsigned char *__tag1 *__tag1 uc_iptr = &uc_dptr;  // sd_tag1(uc_iptr)
++  short *__tag1 *__tag1 s_iptr = &s_dptr;            // sd_tag1(s_iptr)
++  unsigned short *__tag1 *__tag1 us_iptr = &us_dptr; // sd_tag1(us_iptr)
++  long *__tag1 *__tag1 l_iptr = &l_dptr;             // sd_tag1(l_iptr)
++  unsigned long *__tag1 *__tag1 ul_iptr = &ul_dptr;  // sd_tag1(ul_iptr)
++  long long *__tag1 *__tag1 ll_iptr = &ll_dptr;      // sd_tag1(ll_iptr)
++  unsigned long long *__tag1 *__tag1 ull_iptr =
 +      &ull_dptr;                                      // sd_tag1(ull_iptr)
-+  float *__tagone *__tagone f_iptr = &f_dptr;         // sd_tag1(f_iptr)
-+  double *__tagone *__tagone d_iptr = &d_dptr;        // sd_tag1(d_iptr)
-+  long double *__tagone *__tagone ld_iptr = &ld_dptr; // sd_tag1(ld_iptr)
-+  void **__tagone *__tagone v_iptr = &v_dptr;         // sd_tag1(v_iptr)
++  float *__tag1 *__tag1 f_iptr = &f_dptr;         // sd_tag1(f_iptr)
++  double *__tag1 *__tag1 d_iptr = &d_dptr;        // sd_tag1(d_iptr)
++  long double *__tag1 *__tag1 ld_iptr = &ld_dptr; // sd_tag1(ld_iptr)
++  void **__tag1 *__tag1 v_iptr = &v_dptr;         // sd_tag1(v_iptr)
 +
 +  printf("i: %d, i_dptr: %p, i_iptr: %p\n",
 +         *i_dptr, // ld_tag1(i_dptr)
@@ -9785,7 +9785,7 @@ index 0000000000000..b89a7b4196fca
 \ No newline at end of file
 diff --git a/testcases/c/2_sl_complex.c b/testcases/c/2_sl_complex.c
 new file mode 100644
-index 0000000000000..054e68b995f64
+index 0000000000000..671b138292c09
 --- /dev/null
 +++ b/testcases/c/2_sl_complex.c
 @@ -0,0 +1,97 @@
@@ -9825,14 +9825,14 @@ index 0000000000000..054e68b995f64
 +  scanf("%d", &arr_var_size);
 +  int arr_var[arr_var_size]; // Variable-length array
 +
-+  int (*__tagone f_dptr)(
++  int (*__tag1 f_dptr)(
 +      int, int); // Function pointer, consider it as a direct sensitive pointer
 +
 +  // Direct pointers to sensitive data
-+  struct st_t *__tagone st_dptr = &st;  // sd_tag1(st_dptr)
-+  union un_t *__tagone un_dptr = &un;   // sd_tag1(un_dptr)
-+  int *__tagone arr_fix_dptr = arr_fix; // sd_tag1(arr_fix_dptr)
-+  int *__tagone arr_var_dptr = arr_var; // sd_tag1(arr_var_dptr)
++  struct st_t *__tag1 st_dptr = &st;  // sd_tag1(st_dptr)
++  union un_t *__tag1 un_dptr = &un;   // sd_tag1(un_dptr)
++  int *__tag1 arr_fix_dptr = arr_fix; // sd_tag1(arr_fix_dptr)
++  int *__tag1 arr_var_dptr = arr_var; // sd_tag1(arr_var_dptr)
 +  f_dptr = f;                           // sd_tag1(f_dptr)
 +
 +  st_dptr->a = 1;      // ld_tag1(st_dptr)
@@ -9846,11 +9846,11 @@ index 0000000000000..054e68b995f64
 +  }
 +
 +  // Indirect pointers to sensitive data
-+  struct st_t *__tagone *__tagone st_iptr = &st_dptr;   // sd_tag1(st_iptr)
-+  union un_t *__tagone *__tagone un_iptr = &un_dptr;    // sd_tag1(un_iptr)
-+  int *__tagone *__tagone arr_fix_iptr = &arr_fix_dptr; // sd_tag1(arr_fix_iptr)
-+  int *__tagone *__tagone arr_var_iptr = &arr_var_dptr; // sd_tag1(arr_var_iptr)
-+  int (*__tagone * __tagone f_iptr)(int, int) = &f_dptr; // sd_tag1(f_iptr)
++  struct st_t *__tag1 *__tag1 st_iptr = &st_dptr;   // sd_tag1(st_iptr)
++  union un_t *__tag1 *__tag1 un_iptr = &un_dptr;    // sd_tag1(un_iptr)
++  int *__tag1 *__tag1 arr_fix_iptr = &arr_fix_dptr; // sd_tag1(arr_fix_iptr)
++  int *__tag1 *__tag1 arr_var_iptr = &arr_var_dptr; // sd_tag1(arr_var_iptr)
++  int (*__tag1 * __tag1 f_iptr)(int, int) = &f_dptr; // sd_tag1(f_iptr)
 +
 +  printf("st: %d, %d, st_dptr: %p, st_iptr: %p\n",
 +         st_dptr->a, // ld_tag1(st_dptr)
@@ -9889,7 +9889,7 @@ index 0000000000000..054e68b995f64
 \ No newline at end of file
 diff --git a/testcases/c/3_sl_member.c b/testcases/c/3_sl_member.c
 new file mode 100644
-index 0000000000000..b106bd57ba426
+index 0000000000000..0643d84b96232
 --- /dev/null
 +++ b/testcases/c/3_sl_member.c
 @@ -0,0 +1,90 @@
@@ -9906,19 +9906,19 @@ index 0000000000000..b106bd57ba426
 +
 +struct st_t {
 +  int a;
-+  int *__tagone b;
++  int *__tag1 b;
 +};
 +
 +union un_t {
 +  int c;
-+  float *__tagone d;
++  float *__tag1 d;
 +};
 +
-+int fsa(int a, int *__tagone b) { // ld_tag1(b), sd_tag1(b)
++int fsa(int a, int *__tag1 b) { // ld_tag1(b), sd_tag1(b)
 +  return *b;                      // ld_tag1(b)
 +}
 +
-+int *__tagone fsr(int a, int b) {
++int *__tag1 fsr(int a, int b) {
 +  int c = 0;
 +  return &c; // sd_tag1(ret)
 +}
@@ -9932,16 +9932,16 @@ index 0000000000000..b106bd57ba426
 +  // Direct pointers to sensitive data
 +  struct st_t st;           // Struct member
 +  union un_t un;            // Union member
-+  int *__tagone arr_fix[2]; // Fixed-size array element
++  int *__tag1 arr_fix[2]; // Fixed-size array element
 +
 +  // int arr_var_size;
 +  // scanf("%d", &arr_var_size);
-+  // int *__tagone arr_var[arr_var_size]; // Variable-length array element
++  // int *__tag1 arr_var[arr_var_size]; // Variable-length array element
 +
-+  int (*__tagone fsa_dptr)(
-+      int, int *__tagone); // Function prototype member, sensitive argument
++  int (*__tag1 fsa_dptr)(
++      int, int *__tag1); // Function prototype member, sensitive argument
 +
-+  int *__tagone (*__tagone fsr_dptr)(
++  int *__tag1 (*__tag1 fsr_dptr)(
 +      int, int); // Function prototype member, sensitive return value
 +
 +  st.a = 1;
@@ -9957,8 +9957,8 @@ index 0000000000000..b106bd57ba426
 +  fsr_dptr = fsr; // st_tag1(fsr_dptr)
 +
 +  // Indirect pointers to sensitive data
-+  struct st_t *__tagone st_dptr = &st;  // sd_tag1(st_dptr)
-+  union un_t *__tagone un_dptr = &un;   // sd_tag1(un_dptr)
++  struct st_t *__tag1 st_dptr = &st;  // sd_tag1(st_dptr)
++  union un_t *__tag1 un_dptr = &un;   // sd_tag1(un_dptr)
 +
 +  printf("*st.b %d, st.b %p, st_dptr: %p\n",
 +         *st.b, // ld_tag1(st.b)
@@ -10094,7 +10094,7 @@ index 0000000000000..4c1312fe8093f
 \ No newline at end of file
 diff --git a/testcases/old/1_slv_b_ls.c b/testcases/old/1_slv_b_ls.c
 new file mode 100644
-index 0000000000000..36e1918ec0c33
+index 0000000000000..90d122570aa2f
 --- /dev/null
 +++ b/testcases/old/1_slv_b_ls.c
 @@ -0,0 +1,19 @@
@@ -10105,14 +10105,14 @@ index 0000000000000..36e1918ec0c33
 +    int i1 = 1;
 +
 +    // direct pointer to sensitive data
-+    int* __tagone p1;
++    int* __tag1 p1;
 +    p1 = &i1; // store_1(p1)
 +    int i2 = *p1; // load_1(p1)
 +
 +    // indirect pointer to sensitive data
-+    int* __tagone * __tagone p2;
++    int* __tag1 * __tag1 p2;
 +    p2 = &p1; // store_1(p2)
-+    int* __tagone p3;
++    int* __tag1 p3;
 +    p3 = *p2; // load_1(p2), load_1(p2*), store_1(p3)
 +
 +    return 0;
@@ -10120,21 +10120,21 @@ index 0000000000000..36e1918ec0c33
 \ No newline at end of file
 diff --git a/testcases/old/2_sfa_b_ls.c b/testcases/old/2_sfa_b_ls.c
 new file mode 100644
-index 0000000000000..7aeab33c69e92
+index 0000000000000..cb1dd8084b840
 --- /dev/null
 +++ b/testcases/old/2_sfa_b_ls.c
 @@ -0,0 +1,33 @@
 +/* stack, fixed argument, basic type, load/store */
 +
 +// direct pointer
-+int func_1 (int* __tagone p1) { // store_1(p1)
++int func_1 (int* __tag1 p1) { // store_1(p1)
 +    int i;
 +    i = *p1; // load_1(p1)
 +    return i;
 +}
 +
 +// indirect pointer
-+int func_2 (int* __tagone * __tagone p2) { // store_1(p2)
++int func_2 (int* __tag1 * __tag1 p2) { // store_1(p2)
 +    int i;
 +    i = **p2; // load_1(p2), load_1(p2*)    
 +    return i;
@@ -10145,12 +10145,12 @@ index 0000000000000..7aeab33c69e92
 +    int i1 = 1;
 +
 +    // direct pointer
-+    int* __tagone p1;
++    int* __tag1 p1;
 +    p1 = &i1; // store_1(p1)
 +    int i2 = func_1(p1); // load_1(p1)
 +
 +    // indirect pointer
-+    int* __tagone * __tagone p2;
++    int* __tag1 * __tag1 p2;
 +    p2 = &p1; // store_1(p2)
 +    int i3; 
 +    i3 = func_2(p2); // load_1(p2)
@@ -10159,21 +10159,21 @@ index 0000000000000..7aeab33c69e92
 +}
 diff --git a/testcases/old/3_sva_b_ls.c.c b/testcases/old/3_sva_b_ls.c.c
 new file mode 100644
-index 0000000000000..f46ca8badd3fe
+index 0000000000000..978ff9641f55c
 --- /dev/null
 +++ b/testcases/old/3_sva_b_ls.c.c
 @@ -0,0 +1,33 @@
 +/* stack, variadic argument, basic type, load/store */
 +
 +// direct pointer
-+int func_1 (int* __tagone p1) { // store_1(p1)
++int func_1 (int* __tag1 p1) { // store_1(p1)
 +    int i;
 +    i = *p1; // load_1(p1)
 +    return i;
 +}
 +
 +// indirect pointer
-+int func_2 (int* __tagone * __tagone p2) { // store_1(p2)
++int func_2 (int* __tag1 * __tag1 p2) { // store_1(p2)
 +    int i;
 +    i = **p2; // load_1(p2), load_1(p2*)    
 +    return i;
@@ -10184,12 +10184,12 @@ index 0000000000000..f46ca8badd3fe
 +    int i1 = 1;
 +
 +    // direct pointer
-+    int* __tagone p1;
++    int* __tag1 p1;
 +    p1 = &i1; // store_1(p1)
 +    int i2 = func_1(p1); // load_1(p1)
 +
 +    // indirect pointer
-+    int* __tagone * __tagone p2;
++    int* __tag1 * __tag1 p2;
 +    p2 = &p1; // store_1(p2)
 +    int i3; 
 +    i3 = func_2(p2); // load_1(p2)

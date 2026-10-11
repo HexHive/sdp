@@ -6284,7 +6284,7 @@ index 0bd581003cd5..c3cd18c5c345 100644
  extern struct gen_pool *of_gen_pool_get(struct device_node *np,
  	const char *propname, int index);
 diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 77f01ac385f7..ad8d07230e55 100644
+index 77f01ac385f7..19d0d3f37d64 100644
 --- a/include/linux/sched.h
 +++ b/include/linux/sched.h
 @@ -1061,7 +1061,9 @@ struct task_struct {
@@ -6293,8 +6293,8 @@ index 77f01ac385f7..ad8d07230e55 100644
  	/* Effective (overridable) subjective task credentials (COW): */
 -	const struct cred __rcu		*cred;
 +
-+	// FZY: Protect task_struct.cred with __tagone
-+	const struct cred __rcu		*__tagone cred;
++	// FZY: Protect task_struct.cred with __tag1
++	const struct cred __rcu		*__tag1 cred;
  
  #ifdef CONFIG_KEYS
  	/* Cached requested key. */

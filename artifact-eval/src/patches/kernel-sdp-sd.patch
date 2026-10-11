@@ -1692,7 +1692,7 @@ index d169a4f41a2e..0607cb3c6e4b 100644
  
  #endif /* _ASM_RISCV_PGALLOC_H */
 diff --git a/arch/riscv/include/asm/pgtable-64.h b/arch/riscv/include/asm/pgtable-64.h
-index 7a5097202e15..490fbafbc0d8 100644
+index 7a5097202e15..de6a2dad1775 100644
 --- a/arch/riscv/include/asm/pgtable-64.h
 +++ b/arch/riscv/include/asm/pgtable-64.h
 @@ -43,6 +43,28 @@ extern bool pgtable_l5_enabled;
@@ -1701,7 +1701,7 @@ index 7a5097202e15..490fbafbc0d8 100644
  
 +#ifdef CONFIG_SDP_PGTABLE
 +// FZY: Address conversion for pool page tables, plain arithmetic on the
-+// __tagone pool base. Defined here because virt_to_pfn() needs PGDIR_SIZE.
++// __tag1 pool base. Defined here because virt_to_pfn() needs PGDIR_SIZE.
 +static inline unsigned long sdp_pt_virt_to_pfn(const void *va)
 +{
 +	if (sdp_pt_is_pool_va(va))
@@ -1757,7 +1757,7 @@ index 7a5097202e15..490fbafbc0d8 100644
  	return (p4d_t *)p4d_pgtable((p4d_t) { pgd_val(pgd) });
  }
 diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
-index b2ba3f79cfe9..bccc7258d906 100644
+index b2ba3f79cfe9..ab8fc4ad3a82 100644
 --- a/arch/riscv/include/asm/pgtable.h
 +++ b/arch/riscv/include/asm/pgtable.h
 @@ -118,6 +118,16 @@
@@ -1771,7 +1771,7 @@ index b2ba3f79cfe9..bccc7258d906 100644
 +// FZY: Defined in arch/riscv/mm/init.c, repointed into the pool by
 +// sdp_pt_switch() in arch/riscv/mm/sdp_pgtable.c once the kernel page tables
 +// have been migrated
-+extern pte_t *__sdp_tagone fixmap_pte_ptr;
++extern pte_t *__sdp_tag1 fixmap_pte_ptr;
 +#endif
 +
  #define __page_val_to_pfn(_val)  (((_val) & _PAGE_PFN_MASK) >> _PAGE_PFN_SHIFT)
@@ -2937,7 +2937,7 @@ index 90d4ba36d1d0..777025a4dd7d 100644
  		return;
  	}
 diff --git a/arch/riscv/mm/init.c b/arch/riscv/mm/init.c
-index 0798bd861dcb..5a9d216a6724 100644
+index 0798bd861dcb..72daf4dcac2f 100644
 --- a/arch/riscv/mm/init.c
 +++ b/arch/riscv/mm/init.c
 @@ -36,6 +36,9 @@
@@ -2955,10 +2955,10 @@ index 0798bd861dcb..5a9d216a6724 100644
  #endif /* CONFIG_XIP_KERNEL */
  
 +// FZY: The fixmap pte page moves into the sdp pool on migration, so
-+// __set_fixmap() reaches it through a __tagone pointer, not the boot array.
++// __set_fixmap() reaches it through a __tag1 pointer, not the boot array.
 +// The boot time users all run before the migration and keep using the array.
 +// Not static: sdp_pt_switch() in sdp_pgtable.c repoints it after the migration.
-+pte_t *__sdp_tagone fixmap_pte_ptr = fixmap_pte;
++pte_t *__sdp_tag1 fixmap_pte_ptr = fixmap_pte;
 +
  static const pgprot_t protection_map[16] = {
  	[VM_NONE]					= PAGE_NONE,
@@ -3040,7 +3040,7 @@ index 20a9f991a6d7..ea5a241f8405 100644
  	for (i = 0; i < ARRAY_SIZE(pg_level); i++)
 diff --git a/arch/riscv/mm/sdp_pgtable.c b/arch/riscv/mm/sdp_pgtable.c
 new file mode 100644
-index 000000000000..2411234b0ca9
+index 000000000000..7a5d51be3277
 --- /dev/null
 +++ b/arch/riscv/mm/sdp_pgtable.c
 @@ -0,0 +1,279 @@
@@ -3048,7 +3048,7 @@ index 000000000000..2411234b0ca9
 +// The pool is reserved from memblock in setup_bootmem() and kept out of the
 +// linear mapping; sdp_pt_init() maps it at a random kernel virtual address and
 +// migrates the kernel page tables into it, so that the page tables can only be
-+// reached through the __tagone pointers sdp_pt_va_base and mm_struct::pgd.
++// reached through the __tag1 pointers sdp_pt_va_base and mm_struct::pgd.
 +
 +#include <linux/atomic.h>
 +#include <linux/init.h>
@@ -3068,9 +3068,9 @@ index 000000000000..2411234b0ca9
 +#include <asm/tlbflush.h>
 +
 +// Hidden page table pool: physically contiguous, out of the linear
-+// mapping, at a random va reachable only through __tagone pointers
++// mapping, at a random va reachable only through __tag1 pointers
 +phys_addr_t sdp_pt_pa_base __ro_after_init;
-+void *__tagone sdp_pt_va_base;
++void *__tag1 sdp_pt_va_base;
 +
 +static DEFINE_RAW_SPINLOCK(sdp_pt_lock);
 +static void *sdp_pt_freelist;
@@ -5614,7 +5614,7 @@ index 000000000000..dd06cddf676e
 +}
 diff --git a/drivers/misc/arbrw/poc/init_mm_poc.c b/drivers/misc/arbrw/poc/init_mm_poc.c
 new file mode 100644
-index 000000000000..8db67d384b23
+index 000000000000..e44fac2cbe1f
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/init_mm_poc.c
 @@ -0,0 +1,406 @@
@@ -5628,10 +5628,10 @@ index 000000000000..8db67d384b23
 +// permissions of any kernel mapping.
 +//
 +// Under CONFIG_SDP_CACHE init_mm lives in the sdp cache and is only reachable
-+// through the __tagone pointer __init_mm_ptr. Under CONFIG_SDP_PGTABLE every
++// through the __tag1 pointer __init_mm_ptr. Under CONFIG_SDP_PGTABLE every
 +// page table page is allocated from a hidden pool that is kept out of the
 +// linear mapping and mapped at a random kernel virtual address; the pool is
-+// reachable only through the __tagone pointers mm_struct::pgd and
++// reachable only through the __tag1 pointers mm_struct::pgd and
 +// sdp_pt_va_base, so each next-level physical address has to be translated
 +// through the pool base instead of through the linear mapping.
 +
@@ -5681,7 +5681,7 @@ index 000000000000..8db67d384b23
 +#define SDP_PT_POOL_MB 256
 +#define SDP_PT_POOL_SIZE ((unsigned long)SDP_PT_POOL_MB << 20)
 +
-+// FZY: A plain load of a __tagone slot returns the pointer with its upper 16
++// FZY: A plain load of a __tag1 slot returns the pointer with its upper 16
 +// bits cleared. Restoring the kernel VA prefix bypasses the mitigation, so set
 +// this to 1 only to evaluate whether the rest of the steps work; at 0 (the
 +// default) the walk fails on the protected pointer, which is the point.
@@ -5719,7 +5719,7 @@ index 000000000000..8db67d384b23
 +  }
 +}
 +
-+// FZY: Undo the masking a plain load applies to a __tagone slot
++// FZY: Undo the masking a plain load applies to a __tag1 slot
 +static unsigned long untag(unsigned long val) {
 +#if SDP_BYPASS_TAG
 +  return val | 0xFFFF000000000000UL;
@@ -5814,7 +5814,7 @@ index 000000000000..8db67d384b23
 +  unsigned long target_va = strtoul(argv[4], NULL, 16);
 +
 +  // Step 1: locate init_mm. Under CONFIG_SDP_CACHE it lives in the sdp cache
-+  // and only the __tagone pointer __init_mm_ptr reaches it.
++  // and only the __tag1 pointer __init_mm_ptr reaches it.
 +  if (mode != 0) {
 +    unsigned long ptr_val;
 +    arb_read(fd, init_mm_addr, &ptr_val, sizeof(ptr_val));
@@ -5825,7 +5825,7 @@ index 000000000000..8db67d384b23
 +  printf("[+] init_mm:         0x%lx\n", init_mm_addr);
 +
 +  // Step 2: read init_mm.pgd, the root of the kernel page table. Under
-+  // CONFIG_SDP_PGTABLE this field is __tagone and points into the hidden pool.
++  // CONFIG_SDP_PGTABLE this field is __tag1 and points into the hidden pool.
 +  unsigned long pgd_field = init_mm_addr + pgd_offset;
 +  unsigned long pgd_va;
 +  arb_read(fd, pgd_field, &pgd_va, sizeof(pgd_va));
@@ -5839,7 +5839,7 @@ index 000000000000..8db67d384b23
 +  struct pt_map map = {0};
 +  if (mode != 0) {
 +    // Page tables are in the sdp pool, outside the linear mapping.
-+    // sdp_pt_va_base is __tagone, sdp_pt_pa_base is useless without it.
++    // sdp_pt_va_base is __tag1, sdp_pt_pa_base is useless without it.
 +    unsigned long va_base_addr = strtoul(argv[5], NULL, 16);
 +    unsigned long pa_base_addr = strtoul(argv[6], NULL, 16);
 +    unsigned long va_base;
@@ -6990,7 +6990,7 @@ index 000000000000..3cd375fe3979
 +}
 diff --git a/drivers/misc/arbrw/poc/page_table_poc.c b/drivers/misc/arbrw/poc/page_table_poc.c
 new file mode 100644
-index 000000000000..6afbcd604b02
+index 000000000000..5a37ef336d64
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/page_table_poc.c
 @@ -0,0 +1,396 @@
@@ -7000,7 +7000,7 @@ index 000000000000..6afbcd604b02
 +//
 +// Under CONFIG_SDP_PGTABLE every page table page is allocated from a hidden
 +// pool that is kept out of the linear mapping and mapped at a random kernel
-+// virtual address. The pool is reachable only through the __tagone pointers
++// virtual address. The pool is reachable only through the __tag1 pointers
 +// mm_struct::pgd and sdp_pt_va_base, so the walk has to start from init_mm.pgd
 +// and translate each next-level physical address through the pool base instead
 +// of through the swapper_pg_dir symbol and the linear mapping.
@@ -7008,7 +7008,7 @@ index 000000000000..6afbcd604b02
 +// This PoC targets the page tables themselves, so it always starts from the
 +// init_mm symbol directly and the first protected slot it touches is
 +// init_mm.pgd. init_mm_poc.c is the variant that targets init_mm itself and
-+// goes through the __tagone pointer __init_mm_ptr under CONFIG_SDP_CACHE.
++// goes through the __tag1 pointer __init_mm_ptr under CONFIG_SDP_CACHE.
 +
 +#include <fcntl.h>
 +#include <stdio.h>
@@ -7056,7 +7056,7 @@ index 000000000000..6afbcd604b02
 +#define SDP_PT_POOL_MB 256
 +#define SDP_PT_POOL_SIZE ((unsigned long)SDP_PT_POOL_MB << 20)
 +
-+// FZY: A plain load of a __tagone slot returns the pointer with its upper 16
++// FZY: A plain load of a __tag1 slot returns the pointer with its upper 16
 +// bits cleared. Restoring the kernel VA prefix bypasses the mitigation, so set
 +// this to 1 only to evaluate whether the rest of the steps work; at 0 (the
 +// default) the walk fails on the protected pointer, which is the point.
@@ -7094,7 +7094,7 @@ index 000000000000..6afbcd604b02
 +  }
 +}
 +
-+// FZY: Undo the masking a plain load applies to a __tagone slot
++// FZY: Undo the masking a plain load applies to a __tag1 slot
 +static unsigned long untag(unsigned long val) {
 +#if SDP_BYPASS_TAG
 +  return val | 0xFFFF000000000000UL;
@@ -7191,7 +7191,7 @@ index 000000000000..6afbcd604b02
 +  printf("[+] init_mm:         0x%lx\n", init_mm_addr);
 +
 +  // Step 2: read init_mm.pgd, the root of the kernel page table. Under
-+  // CONFIG_SDP_PGTABLE this field is __tagone and points into the hidden pool.
++  // CONFIG_SDP_PGTABLE this field is __tag1 and points into the hidden pool.
 +  unsigned long pgd_field = init_mm_addr + pgd_offset;
 +  unsigned long pgd_va;
 +  arb_read(fd, pgd_field, &pgd_va, sizeof(pgd_va));
@@ -7205,7 +7205,7 @@ index 000000000000..6afbcd604b02
 +  struct pt_map map = {0};
 +  if (mode != 0) {
 +    // Page tables are in the sdp pool, outside the linear mapping.
-+    // sdp_pt_va_base is __tagone, sdp_pt_pa_base is useless without it.
++    // sdp_pt_va_base is __tag1, sdp_pt_pa_base is useless without it.
 +    unsigned long va_base_addr = strtoul(argv[5], NULL, 16);
 +    unsigned long pa_base_addr = strtoul(argv[6], NULL, 16);
 +    unsigned long va_base;
@@ -9441,7 +9441,7 @@ index 8a94e5a43c6d..6eec050b805e 100644
  }
  
 diff --git a/fs/coredump.c b/fs/coredump.c
-index 9d235fa14ab9..de35b94e4e91 100644
+index 9d235fa14ab9..20fdc4b7a602 100644
 --- a/fs/coredump.c
 +++ b/fs/coredump.c
 @@ -53,12 +53,26 @@
@@ -9460,9 +9460,9 @@ index 9d235fa14ab9..de35b94e4e91 100644
  static unsigned int core_pipe_limit;
 -static char core_pattern[CORENAME_MAX_SIZE] = "core";
 +
-+// FZY: Store the core_pattern string on heap, store its pointer in the global section, and mark it as __tagone
++// FZY: Store the core_pattern string on heap, store its pointer in the global section, and mark it as __tag1
 +// static char core_pattern[CORENAME_MAX_SIZE] = "core";
-+static char *__tagone core_pattern;
++static char *__tag1 core_pattern;
 +
 +// FZY: sdp_cache for core_pattern allocation
 +#ifdef CONFIG_SDP_CACHE
@@ -9477,7 +9477,7 @@ index 9d235fa14ab9..de35b94e4e91 100644
  
  	if (ispipe) {
 -		int argvs = sizeof(core_pattern) / 2;
-+		// FZY: core_pattern is a char *__tagone now, sizeof(core_pattern) will always return the size of a pointer, not the size of the string
++		// FZY: core_pattern is a char *__tag1 now, sizeof(core_pattern) will always return the size of a pointer, not the size of the string
 +		// int argvs = sizeof(core_pattern) / 2;
 +		int argvs = strlen(core_pattern) / 2;
 +
@@ -9524,7 +9524,7 @@ index 9d235fa14ab9..de35b94e4e91 100644
 +
 +	strncpy(core_pattern, "core", 5);
 +
-+	// FZY: Initialize coredump_sysctls[1].data. It does not need to be marked with __tagone, because it is only accessed during initialization and attackers cannot modify it at runtime
++	// FZY: Initialize coredump_sysctls[1].data. It does not need to be marked with __tag1, because it is only accessed during initialization and attackers cannot modify it at runtime
 +	coredump_sysctls[1].data = core_pattern;
 +
  	register_sysctl_init("kernel", coredump_sysctls);
@@ -9573,7 +9573,7 @@ index 64c2d0814ed6..5c8031fd7c3d 100644
  	if (fs) {
  		fs->users = 1;
 diff --git a/include/linux/bpf.h b/include/linux/bpf.h
-index 49f8b691496c..363c36892658 100644
+index 49f8b691496c..71c3ce8a8311 100644
 --- a/include/linux/bpf.h
 +++ b/include/linux/bpf.h
 @@ -2135,7 +2135,9 @@ static inline void bpf_map_dec_elem_count(struct bpf_map *map)
@@ -9582,8 +9582,8 @@ index 49f8b691496c..363c36892658 100644
  
 -extern int sysctl_unprivileged_bpf_disabled;
 +// extern int sysctl_unprivileged_bpf_disabled;
-+// FZY: Store the sysctl_unprivileged_bpf_disabled value on heap, store its pointer in the global section, and mark it as __tagone
-+extern int *__tagone sysctl_unprivileged_bpf_disabled_ptr;
++// FZY: Store the sysctl_unprivileged_bpf_disabled value on heap, store its pointer in the global section, and mark it as __tag1
++extern int *__tag1 sysctl_unprivileged_bpf_disabled_ptr;
  
  static inline bool bpf_allow_ptr_leaks(void)
  {
@@ -9634,7 +9634,7 @@ index 0bd581003cd5..c3cd18c5c345 100644
  extern struct gen_pool *of_gen_pool_get(struct device_node *np,
  	const char *propname, int index);
 diff --git a/include/linux/kmod.h b/include/linux/kmod.h
-index 68f69362d427..39a6f09c35f4 100644
+index 68f69362d427..2736707dc728 100644
 --- a/include/linux/kmod.h
 +++ b/include/linux/kmod.h
 @@ -17,7 +17,14 @@
@@ -9643,9 +9643,9 @@ index 68f69362d427..39a6f09c35f4 100644
  #ifdef CONFIG_MODULES
 -extern char modprobe_path[]; /* for sysctl */
 +
-+// FZY: Store the modprobe_path string on heap, store its pointer in the global section, and mark it as __tagone
++// FZY: Store the modprobe_path string on heap, store its pointer in the global section, and mark it as __tag1
 +// extern char modprobe_path[]; /* for sysctl */
-+extern char *__tagone modprobe_path;
++extern char *__tag1 modprobe_path;
 +
 +// FZY: Initialize modprobe_path from sdp_cache
 +void modprobe_path_init(void);
@@ -9737,17 +9737,17 @@ index bf5d0b1b16f4..df473817a6b1 100644
  
  static inline struct ptdesc *pmd_ptdesc(pmd_t *pmd)
 diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
-index 36c5b43999e6..999a2d5bb436 100644
+index 36c5b43999e6..5d12f592a5e1 100644
 --- a/include/linux/mm_types.h
 +++ b/include/linux/mm_types.h
 @@ -701,7 +701,13 @@ struct mm_struct {
  		unsigned long mmap_compat_legacy_base;
  #endif
  		unsigned long task_size;	/* size of task vm space */
-+		// FZY: Mark the page table root pointer as __tagone, so that it can
++		// FZY: Mark the page table root pointer as __tag1, so that it can
 +		// only be read and written with ld_sdp/sd_sdp
 +#ifdef CONFIG_SDP_PGTABLE
-+		pgd_t *__tagone pgd;
++		pgd_t *__tag1 pgd;
 +#else
  		pgd_t * pgd;
 +#endif
@@ -9762,7 +9762,7 @@ index 36c5b43999e6..999a2d5bb436 100644
 +// FZY: Define init_mm as a marco to avoid changing all the code referencing it
 +#ifdef CONFIG_SDP_CACHE
 +extern struct mm_struct __boot_init_mm;
-+extern struct mm_struct *__tagone __init_mm_ptr;
++extern struct mm_struct *__tag1 __init_mm_ptr;
 +#define init_mm (*__init_mm_ptr)
 +#else
  extern struct mm_struct init_mm;
@@ -9771,7 +9771,7 @@ index 36c5b43999e6..999a2d5bb436 100644
  /* Pointer magic because the dynamic array size confuses some compilers. */
  static inline void mm_init_cpumask(struct mm_struct *mm)
 diff --git a/include/linux/panic.h b/include/linux/panic.h
-index 6717b15e798c..7043caa812ed 100644
+index 6717b15e798c..d2592f6f82e3 100644
 --- a/include/linux/panic.h
 +++ b/include/linux/panic.h
 @@ -18,7 +18,9 @@ extern bool oops_may_print(void);
@@ -9780,13 +9780,13 @@ index 6717b15e798c..7043caa812ed 100644
  extern unsigned long panic_print;
 -extern int panic_on_oops;
 +// extern int panic_on_oops;
-+// FZY: Store the panic_on_oops value on heap, store its pointer in the global section, and mark it as __tagone
-+extern int *__tagone panic_on_oops_ptr;
++// FZY: Store the panic_on_oops value on heap, store its pointer in the global section, and mark it as __tag1
++extern int *__tag1 panic_on_oops_ptr;
  extern int panic_on_unrecovered_nmi;
  extern int panic_on_io_nmi;
  extern int panic_on_warn;
 diff --git a/include/linux/printk.h b/include/linux/printk.h
-index 8ef499ab3c1e..7ec23f8ee489 100644
+index 8ef499ab3c1e..792a9eda64d4 100644
 --- a/include/linux/printk.h
 +++ b/include/linux/printk.h
 @@ -326,7 +326,9 @@ extern void __printk_cpu_sync_put(void);
@@ -9795,13 +9795,13 @@ index 8ef499ab3c1e..7ec23f8ee489 100644
  
 -extern int kptr_restrict;
 +// extern int kptr_restrict;
-+// FZY: Store the kptr_restrict value on heap, store its pointer in the global section, and mark it as __tagone
-+extern int *__tagone kptr_restrict_ptr;
++// FZY: Store the kptr_restrict value on heap, store its pointer in the global section, and mark it as __tag1
++extern int *__tag1 kptr_restrict_ptr;
  
  /**
   * pr_fmt - used by the pr_*() macros to generate the printk format string
 diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 77f01ac385f7..12e43edad518 100644
+index 77f01ac385f7..af3e04272fca 100644
 --- a/include/linux/sched.h
 +++ b/include/linux/sched.h
 @@ -873,7 +873,8 @@ struct task_struct {
@@ -9809,8 +9809,8 @@ index 77f01ac385f7..12e43edad518 100644
  #endif
  
 -	struct mm_struct		*mm;
-+	// FZY: Protect task_struct.mm with __tagone
-+	struct mm_struct		*__tagone mm;
++	// FZY: Protect task_struct.mm with __tag1
++	struct mm_struct		*__tag1 mm;
  	struct mm_struct		*active_mm;
  
  	int				exit_state;
@@ -9820,8 +9820,8 @@ index 77f01ac385f7..12e43edad518 100644
  	/* Effective (overridable) subjective task credentials (COW): */
 -	const struct cred __rcu		*cred;
 +
-+	// FZY: Protect task_struct.cred with __tagone
-+	const struct cred __rcu		*__tagone cred;
++	// FZY: Protect task_struct.cred with __tag1
++	const struct cred __rcu		*__tag1 cred;
  
  #ifdef CONFIG_KEYS
  	/* Cached requested key. */
@@ -9830,8 +9830,8 @@ index 77f01ac385f7..12e43edad518 100644
  #endif
  	/* Filesystem information: */
 -	struct fs_struct		*fs;
-+	// FZY: Protect task_struct.fs with __tagone
-+	struct fs_struct		*__tagone fs;
++	// FZY: Protect task_struct.fs with __tag1
++	struct fs_struct		*__tag1 fs;
  
  	/* Open file information: */
  	struct files_struct		*files;
@@ -9840,8 +9840,8 @@ index 77f01ac385f7..12e43edad518 100644
  
  	/* Namespaces: */
 -	struct nsproxy			*nsproxy;
-+	// FZY: Protect task_struct.nsproxy with __tagone
-+	struct nsproxy			*__tagone nsproxy;
++	// FZY: Protect task_struct.nsproxy with __tag1
++	struct nsproxy			*__tag1 nsproxy;
  
  	/* Signal handlers: */
  	struct signal_struct		*signal;
@@ -9849,9 +9849,9 @@ index 77f01ac385f7..12e43edad518 100644
  	randomized_struct_fields_end
  
  	/* CPU-specific state of this task: */
-+	// FZY: Protect thread_struct by allocating it in sdp_cache and storing its __tagone pointer in task_struct
++	// FZY: Protect thread_struct by allocating it in sdp_cache and storing its __tag1 pointer in task_struct
 +#ifdef CONFIG_SDP_CACHE
-+	struct thread_struct		*__tagone thread;
++	struct thread_struct		*__tag1 thread;
 +#else
  	struct thread_struct		thread;
 +#endif
@@ -9896,7 +9896,7 @@ index 000000000000..28cf20db9669
 +#endif /* _LINUX_SDP_CACHE_H */
 diff --git a/include/linux/sdp_pgtable.h b/include/linux/sdp_pgtable.h
 new file mode 100644
-index 000000000000..b4aeb9e3f64d
+index 000000000000..0de8d2177695
 --- /dev/null
 +++ b/include/linux/sdp_pgtable.h
 @@ -0,0 +1,65 @@
@@ -9911,7 +9911,7 @@ index 000000000000..b4aeb9e3f64d
 +
 +#ifdef CONFIG_SDP_PGTABLE
 +
-+// A __tagone slot only holds its TTag as long as nothing writes over it
++// A __tag1 slot only holds its TTag as long as nothing writes over it
 +// with plain stores. The settag passes stamp the tag at the definition site
 +// (do_ctors() for statics, the allocation site for heap objects), so anything
 +// that blanks a whole object behind our back wipes them again.
@@ -9921,14 +9921,14 @@ index 000000000000..b4aeb9e3f64d
 +#error "CONFIG_SDP_PGTABLE cannot be used with slab wide object initialisation"
 +#endif
 +
-+#define __sdp_tagone		__tagone
++#define __sdp_tag1		__tag1
 +
 +#define SDP_PT_POOL_SIZE	((phys_addr_t)CONFIG_SDP_PGTABLE_POOL_MB << 20)
 +
-+// sdp_pt_va_base is the only pointer into the pool and is __tagone; the
++// sdp_pt_va_base is the only pointer into the pool and is __tag1; the
 +// pa base is useless without it, the pool is out of the linear mapping
 +extern phys_addr_t sdp_pt_pa_base;
-+extern void *__tagone sdp_pt_va_base;
++extern void *__tag1 sdp_pt_va_base;
 +
 +void *sdp_pt_alloc(void);
 +void sdp_pt_free(void *va);
@@ -9952,7 +9952,7 @@ index 000000000000..b4aeb9e3f64d
 +
 +#else /* !CONFIG_SDP_PGTABLE */
 +
-+#define __sdp_tagone
++#define __sdp_tag1
 +
 +static inline bool sdp_pt_is_pool_va(const void *va) { return false; }
 +static inline bool sdp_pt_is_pool_pfn(unsigned long pfn) { return false; }
@@ -10118,7 +10118,7 @@ index 436d73261810..d98bfd7ad281 100644
  
  	kunit_run_all_tests();
 diff --git a/io_uring/io_uring.c b/io_uring/io_uring.c
-index 8d1bc6cdfe71..2e27bd6bf288 100644
+index 8d1bc6cdfe71..28f6ed65be01 100644
 --- a/io_uring/io_uring.c
 +++ b/io_uring/io_uring.c
 @@ -98,6 +98,11 @@
@@ -10139,8 +10139,8 @@ index 8d1bc6cdfe71..2e27bd6bf288 100644
  
 -static int __read_mostly sysctl_io_uring_disabled;
 +// static int __read_mostly sysctl_io_uring_disabled;
-+// FZY: Store the sysctl_io_uring_disabled value on heap, store its pointer in the global section, and mark it as __tagone
-+static int *__tagone sysctl_io_uring_disabled_ptr;
++// FZY: Store the sysctl_io_uring_disabled value on heap, store its pointer in the global section, and mark it as __tag1
++static int *__tag1 sysctl_io_uring_disabled_ptr;
 +
  static int __read_mostly sysctl_io_uring_group = -1;
  
@@ -10191,7 +10191,7 @@ index 8d1bc6cdfe71..2e27bd6bf288 100644
  	BUILD_BUG_ON(offsetof(stype, ename) != eoffset); \
  	BUILD_BUG_ON(sizeof_field(stype, ename) != esize); \
 diff --git a/kernel/bpf/syscall.c b/kernel/bpf/syscall.c
-index d77b2f8b9364..80bfc12e1bc8 100644
+index d77b2f8b9364..15246c681fe5 100644
 --- a/kernel/bpf/syscall.c
 +++ b/kernel/bpf/syscall.c
 @@ -39,6 +39,11 @@
@@ -10214,8 +10214,8 @@ index d77b2f8b9364..80bfc12e1bc8 100644
 -	IS_BUILTIN(CONFIG_BPF_UNPRIV_DEFAULT_OFF) ? 2 : 0;
 +// int sysctl_unprivileged_bpf_disabled __read_mostly =
 +// 	IS_BUILTIN(CONFIG_BPF_UNPRIV_DEFAULT_OFF) ? 2 : 0;
-+// FZY: Store the sysctl_unprivileged_bpf_disabled value on heap, store its pointer in the global section, and mark it as __tagone
-+int *__tagone sysctl_unprivileged_bpf_disabled_ptr;
++// FZY: Store the sysctl_unprivileged_bpf_disabled value on heap, store its pointer in the global section, and mark it as __tag1
++int *__tag1 sysctl_unprivileged_bpf_disabled_ptr;
  
  static const struct bpf_map_ops * const bpf_map_types[] = {
  #define BPF_PROG_TYPE(_id, _name, prog_ctx_type, kern_ctx_type)
@@ -10245,7 +10245,7 @@ index d77b2f8b9364..80bfc12e1bc8 100644
  {
 -	int ret, unpriv_enable = *(int *)table->data;
 +	// FZY: Adjust the reference of sysctl_unprivileged_bpf_disabled
-+	int ret, unpriv_enable = **(int *__tagone*)table->data;
++	int ret, unpriv_enable = **(int *__tag1*)table->data;
  	bool locked_state = unpriv_enable == 1;
  	struct ctl_table tmp = *table;
  
@@ -10255,7 +10255,7 @@ index d77b2f8b9364..80bfc12e1bc8 100644
  			return -EPERM;
 -		*(int *)table->data = unpriv_enable;
 +		// FZY: Adjust the reference of sysctl_unprivileged_bpf_disabled
-+		**(int *__tagone*)table->data = unpriv_enable;
++		**(int *__tag1*)table->data = unpriv_enable;
  	}
  
  	if (write)
@@ -10562,7 +10562,7 @@ index cf1a73cbf2f6..f4492e107932 100644
  		if (kallsyms_for_perf())
  			return true;
 diff --git a/kernel/module/kmod.c b/kernel/module/kmod.c
-index 0800d9891692..167d41a41ab4 100644
+index 0800d9891692..b74ca32ad50a 100644
 --- a/kernel/module/kmod.c
 +++ b/kernel/module/kmod.c
 @@ -29,6 +29,11 @@
@@ -10583,9 +10583,9 @@ index 0800d9891692..167d41a41ab4 100644
  */
 -char modprobe_path[KMOD_PATH_LEN] = CONFIG_MODPROBE_PATH;
 +
-+// FZY: Store the modprobe_path string on heap, store its pointer in the global section, and mark it as __tagone
++// FZY: Store the modprobe_path string on heap, store its pointer in the global section, and mark it as __tag1
 +// char modprobe_path[KMOD_PATH_LEN] = CONFIG_MODPROBE_PATH;
-+char *__tagone modprobe_path;
++char *__tag1 modprobe_path;
 +
 +// FZY: Cache for modprobe_path allocation via sdp_cache
 +#ifdef CONFIG_SDP_CACHE
@@ -10621,7 +10621,7 @@ index 0800d9891692..167d41a41ab4 100644
  static void free_modprobe_argv(struct subprocess_info *info)
  {
 diff --git a/kernel/module/signing.c b/kernel/module/signing.c
-index a2ff4242e623..7a1d3435ff23 100644
+index a2ff4242e623..1d694ad529b1 100644
 --- a/kernel/module/signing.c
 +++ b/kernel/module/signing.c
 @@ -9,18 +9,72 @@
@@ -10647,8 +10647,8 @@ index a2ff4242e623..7a1d3435ff23 100644
 -static bool sig_enforce = IS_ENABLED(CONFIG_MODULE_SIG_FORCE);
 -module_param(sig_enforce, bool_enable_only, 0644);
 +// static bool sig_enforce = IS_ENABLED(CONFIG_MODULE_SIG_FORCE);
-+// FZY: Store the sig_enforce bool on heap, store its pointer in the global section, and mark it as __tagone
-+static bool *__tagone sig_enforce_ptr;
++// FZY: Store the sig_enforce bool on heap, store its pointer in the global section, and mark it as __tag1
++static bool *__tag1 sig_enforce_ptr;
 +
 +// FZY: Cache for sig_enforce_ptr allocation via sdp_cache
 +#ifdef CONFIG_SDP_CACHE
@@ -10790,7 +10790,7 @@ index 15781acaac1c..d5f4e2d78632 100644
  	return 0;
  }
 diff --git a/kernel/panic.c b/kernel/panic.c
-index ffa037fa777d..4335da3bbd42 100644
+index ffa037fa777d..302c202b6fb5 100644
 --- a/kernel/panic.c
 +++ b/kernel/panic.c
 @@ -38,6 +38,11 @@
@@ -10811,8 +10811,8 @@ index ffa037fa777d..4335da3bbd42 100644
  
 -int panic_on_oops = CONFIG_PANIC_ON_OOPS_VALUE;
 +// int panic_on_oops = CONFIG_PANIC_ON_OOPS_VALUE;
-+// FZY: Store the panic_on_oops value on heap, store its pointer in the global section, and mark it as __tagone
-+int *__tagone panic_on_oops_ptr;
++// FZY: Store the panic_on_oops value on heap, store its pointer in the global section, and mark it as __tag1
++int *__tag1 panic_on_oops_ptr;
 +
  static unsigned long tainted_mask =
  	IS_ENABLED(CONFIG_RANDSTRUCT) ? (1 << TAINT_RANDSTRUCT) : 0;
@@ -10851,7 +10851,7 @@ index ffa037fa777d..4335da3bbd42 100644
  }
  early_param("oops", oops_setup);
 diff --git a/kernel/printk/sysctl.c b/kernel/printk/sysctl.c
-index c228343eeb97..7d3e54565c08 100644
+index c228343eeb97..2bfdea6c72b1 100644
 --- a/kernel/printk/sysctl.c
 +++ b/kernel/printk/sysctl.c
 @@ -9,6 +9,11 @@
@@ -10877,7 +10877,7 @@ index c228343eeb97..7d3e54565c08 100644
 +		return -EPERM;
 +	struct ctl_table tmp;
 +	tmp = *table;
-+	tmp.data = *(int *__tagone *)table->data;
++	tmp.data = *(int *__tag1 *)table->data;
 +	return proc_dointvec_minmax(&tmp, write, buffer, lenp, ppos);
 +}
 +
@@ -10920,7 +10920,7 @@ index c228343eeb97..7d3e54565c08 100644
  	register_sysctl_init("kernel", printk_sysctls);
  }
 diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 354a2d294f52..e03048f31abf 100644
+index 354a2d294f52..72c8ac174f96 100644
 --- a/kernel/sysctl.c
 +++ b/kernel/sysctl.c
 @@ -745,6 +745,15 @@ int proc_dointvec(struct ctl_table *table, int write, void *buffer,
@@ -10932,7 +10932,7 @@ index 354a2d294f52..e03048f31abf 100644
 +{
 +	struct ctl_table tmp;
 +	tmp = *table;
-+	tmp.data = *(int *__tagone *)table->data;
++	tmp.data = *(int *__tag1 *)table->data;
 +	return do_proc_dointvec(&tmp, write, buffer, lenp, ppos, NULL, NULL);
 +}
 +
@@ -10952,7 +10952,7 @@ index 354a2d294f52..e03048f31abf 100644
 +		.max = (int *) table->extra2,
 +	};
 +	tmp = *table;
-+	tmp.data = *(int *__tagone *)table->data;
++	tmp.data = *(int *__tag1 *)table->data;
 +	return do_proc_dointvec(&tmp, write, buffer, lenp, ppos, do_proc_dointvec_minmax_conv, &param);
 +}
 +
@@ -11035,7 +11035,7 @@ index 4fa5635bf81b..e258a92819e0 100644
   * gen_pool_for_each_chunk - call func for every chunk of generic memory pool
   * @pool:	the generic memory pool
 diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-index afb88b24fa74..7f535169c2d7 100644
+index afb88b24fa74..16834e5181cb 100644
 --- a/lib/vsprintf.c
 +++ b/lib/vsprintf.c
 @@ -846,13 +846,16 @@ static char *default_pointer(char *buf, char *end, const void *ptr,
@@ -11044,8 +11044,8 @@ index afb88b24fa74..7f535169c2d7 100644
  
 -int kptr_restrict __read_mostly;
 +// int kptr_restrict __read_mostly;
-+// FZY: Store the kptr_restrict value on heap, store its pointer in the global section, and mark it as __tagone
-+int *__tagone kptr_restrict_ptr;
++// FZY: Store the kptr_restrict value on heap, store its pointer in the global section, and mark it as __tag1
++int *__tag1 kptr_restrict_ptr;
  
  static noinline_for_stack
  char *restricted_pointer(char *buf, char *end, const void *ptr,
@@ -11058,7 +11058,7 @@ index afb88b24fa74..7f535169c2d7 100644
  		/* Handle as %p, hash and do _not_ leak addresses. */
  		return default_pointer(buf, end, ptr, spec);
 diff --git a/mm/Kconfig b/mm/Kconfig
-index 264a2df5ecf5..f91881c17319 100644
+index 264a2df5ecf5..40e50e89d6d2 100644
 --- a/mm/Kconfig
 +++ b/mm/Kconfig
 @@ -1260,4 +1260,37 @@ config LOCK_MM_AND_FIND_VMA
@@ -11085,7 +11085,7 @@ index 264a2df5ecf5..f91881c17319 100644
 +	  Allocates every page table page from a physically contiguous pool that
 +	  is reserved at boot, kept out of the linear mapping and mapped at a
 +	  random kernel virtual address. The pool base and mm_struct::pgd are the
-+	  only pointers into it and are protected with __tagone, so an attacker
++	  only pointers into it and are protected with __tag1, so an attacker
 +	  with an arbitrary read/write primitive cannot locate the page tables.
 +
 +	  If unsure, say N.
@@ -11111,7 +11111,7 @@ index ec65984e2ade..f9d9525d39d0 100644
 +# FZY: Build sdp_cache.o
 +obj-$(CONFIG_SDP_CACHE) += sdp_cache.o
 diff --git a/mm/init-mm.c b/mm/init-mm.c
-index cfd367822cdd..1c4bc33b219d 100644
+index cfd367822cdd..13dafe4229c2 100644
 --- a/mm/init-mm.c
 +++ b/mm/init-mm.c
 @@ -1,4 +1,5 @@
@@ -11165,8 +11165,8 @@ index cfd367822cdd..1c4bc33b219d 100644
 +	INIT_MM_CONTEXT(__boot_init_mm)
 +};
 +
-+// FZY: Store init_mm in sdp_cache and store its pointer in the global section with __tagone
-+struct mm_struct *__tagone __init_mm_ptr = &__boot_init_mm;
++// FZY: Store init_mm in sdp_cache and store its pointer in the global section with __tag1
++struct mm_struct *__tag1 __init_mm_ptr = &__boot_init_mm;
 +#else
  struct mm_struct init_mm = {
  	.mm_mt		= MTREE_INIT_EXT(mm_mt, MM_MT_FLAGS, init_mm.mmap_lock),
@@ -11223,7 +11223,7 @@ index cfd367822cdd..1c4bc33b219d 100644
 +
 +	// Copy all fields from the boot-time init_mm.
 +	// FZY: Must be a typed struct assignment, not a memcpy(). Under
-+	// CONFIG_SDP_PGTABLE mm_struct carries a __tagone field (pgd) and only the
++	// CONFIG_SDP_PGTABLE mm_struct carries a __tag1 field (pgd) and only the
 +	// typed copy lowers it to ld_sdp/sd_sdp; a bytewise memcpy whose size is
 +	// not exactly sizeof(struct mm_struct) falls through to a plain
 +	// ld/sd pair and loses the tag. cpu_bitmap is a flexible array member,
@@ -18266,7 +18266,7 @@ index 000000000000..bcea651e4856
 +# end of Rust hacking
 +# end of Kernel hacking
 diff --git a/security/apparmor/include/apparmor.h b/security/apparmor/include/apparmor.h
-index 8a81557c9d59..c26008676783 100644
+index 8a81557c9d59..f6360c6eeaf9 100644
 --- a/security/apparmor/include/apparmor.h
 +++ b/security/apparmor/include/apparmor.h
 @@ -40,7 +40,9 @@
@@ -18275,8 +18275,8 @@ index 8a81557c9d59..c26008676783 100644
  /* Control parameters settable through module/boot flags */
 -extern enum audit_mode aa_g_audit;
 +// extern enum audit_mode aa_g_audit;
-+// FZY: Store the aa_g_audit value on heap, store its pointer in the global section, and mark it as __tagone
-+extern int *__tagone aa_g_audit;
++// FZY: Store the aa_g_audit value on heap, store its pointer in the global section, and mark it as __tag1
++extern int *__tag1 aa_g_audit;
  extern bool aa_g_audit_header;
  extern bool aa_g_debug;
  extern bool aa_g_hash_policy;
@@ -18297,7 +18297,7 @@ index 545f791cabda..323c2cdfa192 100644
  	return profile->audit;
  }
 diff --git a/security/apparmor/lsm.c b/security/apparmor/lsm.c
-index 108eccc5ada5..c22c8e0f35d9 100644
+index 108eccc5ada5..e4d2f58ea350 100644
 --- a/security/apparmor/lsm.c
 +++ b/security/apparmor/lsm.c
 @@ -41,6 +41,11 @@
@@ -18318,8 +18318,8 @@ index 108eccc5ada5..c22c8e0f35d9 100644
  /* Audit mode */
 -enum audit_mode aa_g_audit;
 +// enum audit_mode aa_g_audit;
-+// FZY: Store the aa_g_audit value on heap, store its pointer in the global section, and mark it as __tagone
-+int *__tagone aa_g_audit;
++// FZY: Store the aa_g_audit value on heap, store its pointer in the global section, and mark it as __tag1
++int *__tag1 aa_g_audit;
  module_param_call(audit, param_set_audit, param_get_audit,
  		  &aa_g_audit, S_IRUSR | S_IWUSR);
  
@@ -18364,7 +18364,7 @@ index 108eccc5ada5..c22c8e0f35d9 100644
  	if (error) {
  		AA_ERROR("Unable to setup dfa engine\n");
 diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index 2aa0e219d721..ff493b2544dc 100644
+index 2aa0e219d721..3d6a53f3f98b 100644
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
 @@ -106,7 +106,13 @@
@@ -18377,8 +18377,8 @@ index 2aa0e219d721..ff493b2544dc 100644
 +#include <linux/sdp_cache.h>
 +#endif
 +
-+// FZY: Store the selinux_state struct on heap, store its pointer in the global section, and mark it as __tagone
-+struct __selinux_state *__tagone __selinux_state_ptr;
++// FZY: Store the selinux_state struct on heap, store its pointer in the global section, and mark it as __tag1
++struct __selinux_state *__tag1 __selinux_state_ptr;
  
  /* SECMARK reference count */
  static atomic_t selinux_secmark_refcount = ATOMIC_INIT(0);
@@ -18404,7 +18404,7 @@ index 2aa0e219d721..ff493b2544dc 100644
  	selinux_avc_init();
  	mutex_init(&selinux_state.status_lock);
 diff --git a/security/selinux/include/security.h b/security/selinux/include/security.h
-index a9de89af8fdc..c552bb5f2703 100644
+index a9de89af8fdc..b7eba601e646 100644
 --- a/security/selinux/include/security.h
 +++ b/security/selinux/include/security.h
 @@ -89,7 +89,8 @@ extern int selinux_enabled_boot;
@@ -18422,8 +18422,8 @@ index a9de89af8fdc..c552bb5f2703 100644
  void selinux_avc_init(void);
  
 -extern struct selinux_state selinux_state;
-+// FZY: Store the selinux_state struct on heap, store its pointer in the global section, and mark it as __tagone
-+extern struct __selinux_state *__tagone __selinux_state_ptr;
++// FZY: Store the selinux_state struct on heap, store its pointer in the global section, and mark it as __tag1
++extern struct __selinux_state *__tag1 __selinux_state_ptr;
 +
 +// FZY: Define selinux_state as a macro that dereferences the pointer to avoid changing the code that references selinux_state
 +#define selinux_state (*__selinux_state_ptr)

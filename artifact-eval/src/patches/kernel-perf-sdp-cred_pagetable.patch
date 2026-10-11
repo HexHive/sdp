@@ -1622,7 +1622,7 @@ index d169a4f41a2e..0607cb3c6e4b 100644
  
  #endif /* _ASM_RISCV_PGALLOC_H */
 diff --git a/arch/riscv/include/asm/pgtable-64.h b/arch/riscv/include/asm/pgtable-64.h
-index 7a5097202e15..490fbafbc0d8 100644
+index 7a5097202e15..de6a2dad1775 100644
 --- a/arch/riscv/include/asm/pgtable-64.h
 +++ b/arch/riscv/include/asm/pgtable-64.h
 @@ -43,6 +43,28 @@ extern bool pgtable_l5_enabled;
@@ -1631,7 +1631,7 @@ index 7a5097202e15..490fbafbc0d8 100644
  
 +#ifdef CONFIG_SDP_PGTABLE
 +// FZY: Address conversion for pool page tables, plain arithmetic on the
-+// __tagone pool base. Defined here because virt_to_pfn() needs PGDIR_SIZE.
++// __tag1 pool base. Defined here because virt_to_pfn() needs PGDIR_SIZE.
 +static inline unsigned long sdp_pt_virt_to_pfn(const void *va)
 +{
 +	if (sdp_pt_is_pool_va(va))
@@ -1687,7 +1687,7 @@ index 7a5097202e15..490fbafbc0d8 100644
  	return (p4d_t *)p4d_pgtable((p4d_t) { pgd_val(pgd) });
  }
 diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
-index b2ba3f79cfe9..bccc7258d906 100644
+index b2ba3f79cfe9..ab8fc4ad3a82 100644
 --- a/arch/riscv/include/asm/pgtable.h
 +++ b/arch/riscv/include/asm/pgtable.h
 @@ -118,6 +118,16 @@
@@ -1701,7 +1701,7 @@ index b2ba3f79cfe9..bccc7258d906 100644
 +// FZY: Defined in arch/riscv/mm/init.c, repointed into the pool by
 +// sdp_pt_switch() in arch/riscv/mm/sdp_pgtable.c once the kernel page tables
 +// have been migrated
-+extern pte_t *__sdp_tagone fixmap_pte_ptr;
++extern pte_t *__sdp_tag1 fixmap_pte_ptr;
 +#endif
 +
  #define __page_val_to_pfn(_val)  (((_val) & _PAGE_PFN_MASK) >> _PAGE_PFN_SHIFT)
@@ -1859,7 +1859,7 @@ index 217fd4de6134..576b3a17917d 100644
  }
  
 diff --git a/arch/riscv/mm/init.c b/arch/riscv/mm/init.c
-index 0798bd861dcb..036c379e3fc5 100644
+index 0798bd861dcb..1fa8cd747b66 100644
 --- a/arch/riscv/mm/init.c
 +++ b/arch/riscv/mm/init.c
 @@ -36,6 +36,9 @@
@@ -1877,10 +1877,10 @@ index 0798bd861dcb..036c379e3fc5 100644
  #endif /* CONFIG_XIP_KERNEL */
  
 +// FZY: The fixmap pte page moves into the sdp pool on migration, so
-+// __set_fixmap() reaches it through a __tagone pointer, not the boot array.
++// __set_fixmap() reaches it through a __tag1 pointer, not the boot array.
 +// The boot time users all run before the migration and keep using the array.
 +// Not static: sdp_pt_switch() in sdp_pgtable.c repoints it after the migration.
-+pte_t *__sdp_tagone fixmap_pte_ptr = fixmap_pte;
++pte_t *__sdp_tag1 fixmap_pte_ptr = fixmap_pte;
 +
  static const pgprot_t protection_map[16] = {
  	[VM_NONE]					= PAGE_NONE,
@@ -1931,7 +1931,7 @@ index 0798bd861dcb..036c379e3fc5 100644
  		if (start >= end)
 diff --git a/arch/riscv/mm/sdp_pgtable.c b/arch/riscv/mm/sdp_pgtable.c
 new file mode 100644
-index 000000000000..2411234b0ca9
+index 000000000000..7a5d51be3277
 --- /dev/null
 +++ b/arch/riscv/mm/sdp_pgtable.c
 @@ -0,0 +1,279 @@
@@ -1939,7 +1939,7 @@ index 000000000000..2411234b0ca9
 +// The pool is reserved from memblock in setup_bootmem() and kept out of the
 +// linear mapping; sdp_pt_init() maps it at a random kernel virtual address and
 +// migrates the kernel page tables into it, so that the page tables can only be
-+// reached through the __tagone pointers sdp_pt_va_base and mm_struct::pgd.
++// reached through the __tag1 pointers sdp_pt_va_base and mm_struct::pgd.
 +
 +#include <linux/atomic.h>
 +#include <linux/init.h>
@@ -1959,9 +1959,9 @@ index 000000000000..2411234b0ca9
 +#include <asm/tlbflush.h>
 +
 +// Hidden page table pool: physically contiguous, out of the linear
-+// mapping, at a random va reachable only through __tagone pointers
++// mapping, at a random va reachable only through __tag1 pointers
 +phys_addr_t sdp_pt_pa_base __ro_after_init;
-+void *__tagone sdp_pt_va_base;
++void *__tag1 sdp_pt_va_base;
 +
 +static DEFINE_RAW_SPINLOCK(sdp_pt_lock);
 +static void *sdp_pt_freelist;
@@ -7004,17 +7004,17 @@ index bf5d0b1b16f4..df473817a6b1 100644
  
  static inline struct ptdesc *pmd_ptdesc(pmd_t *pmd)
 diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
-index 36c5b43999e6..0728bcf2afc5 100644
+index 36c5b43999e6..b36713aa8f15 100644
 --- a/include/linux/mm_types.h
 +++ b/include/linux/mm_types.h
 @@ -701,7 +701,13 @@ struct mm_struct {
  		unsigned long mmap_compat_legacy_base;
  #endif
  		unsigned long task_size;	/* size of task vm space */
-+		// FZY: Mark the page table root pointer as __tagone, so that it can
++		// FZY: Mark the page table root pointer as __tag1, so that it can
 +		// only be read and written with ld_sdp/sd_sdp
 +#ifdef CONFIG_SDP_PGTABLE
-+		pgd_t *__tagone pgd;
++		pgd_t *__tag1 pgd;
 +#else
  		pgd_t * pgd;
 +#endif
@@ -7022,7 +7022,7 @@ index 36c5b43999e6..0728bcf2afc5 100644
  #ifdef CONFIG_MEMBARRIER
  		/**
 diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 77f01ac385f7..ad8d07230e55 100644
+index 77f01ac385f7..19d0d3f37d64 100644
 --- a/include/linux/sched.h
 +++ b/include/linux/sched.h
 @@ -1061,7 +1061,9 @@ struct task_struct {
@@ -7031,8 +7031,8 @@ index 77f01ac385f7..ad8d07230e55 100644
  	/* Effective (overridable) subjective task credentials (COW): */
 -	const struct cred __rcu		*cred;
 +
-+	// FZY: Protect task_struct.cred with __tagone
-+	const struct cred __rcu		*__tagone cred;
++	// FZY: Protect task_struct.cred with __tag1
++	const struct cred __rcu		*__tag1 cred;
  
  #ifdef CONFIG_KEYS
  	/* Cached requested key. */
@@ -7060,7 +7060,7 @@ index 000000000000..28cf20db9669
 +#endif /* _LINUX_SDP_CACHE_H */
 diff --git a/include/linux/sdp_pgtable.h b/include/linux/sdp_pgtable.h
 new file mode 100644
-index 000000000000..b4aeb9e3f64d
+index 000000000000..0de8d2177695
 --- /dev/null
 +++ b/include/linux/sdp_pgtable.h
 @@ -0,0 +1,65 @@
@@ -7075,7 +7075,7 @@ index 000000000000..b4aeb9e3f64d
 +
 +#ifdef CONFIG_SDP_PGTABLE
 +
-+// A __tagone slot only holds its TTag as long as nothing writes over it
++// A __tag1 slot only holds its TTag as long as nothing writes over it
 +// with plain stores. The settag passes stamp the tag at the definition site
 +// (do_ctors() for statics, the allocation site for heap objects), so anything
 +// that blanks a whole object behind our back wipes them again.
@@ -7085,14 +7085,14 @@ index 000000000000..b4aeb9e3f64d
 +#error "CONFIG_SDP_PGTABLE cannot be used with slab wide object initialisation"
 +#endif
 +
-+#define __sdp_tagone		__tagone
++#define __sdp_tag1		__tag1
 +
 +#define SDP_PT_POOL_SIZE	((phys_addr_t)CONFIG_SDP_PGTABLE_POOL_MB << 20)
 +
-+// sdp_pt_va_base is the only pointer into the pool and is __tagone; the
++// sdp_pt_va_base is the only pointer into the pool and is __tag1; the
 +// pa base is useless without it, the pool is out of the linear mapping
 +extern phys_addr_t sdp_pt_pa_base;
-+extern void *__tagone sdp_pt_va_base;
++extern void *__tag1 sdp_pt_va_base;
 +
 +void *sdp_pt_alloc(void);
 +void sdp_pt_free(void *va);
@@ -7116,7 +7116,7 @@ index 000000000000..b4aeb9e3f64d
 +
 +#else /* !CONFIG_SDP_PGTABLE */
 +
-+#define __sdp_tagone
++#define __sdp_tag1
 +
 +static inline bool sdp_pt_is_pool_va(const void *va) { return false; }
 +static inline bool sdp_pt_is_pool_pfn(unsigned long pfn) { return false; }
@@ -7422,7 +7422,7 @@ index 4fa5635bf81b..e258a92819e0 100644
   * gen_pool_for_each_chunk - call func for every chunk of generic memory pool
   * @pool:	the generic memory pool
 diff --git a/mm/Kconfig b/mm/Kconfig
-index 264a2df5ecf5..f91881c17319 100644
+index 264a2df5ecf5..40e50e89d6d2 100644
 --- a/mm/Kconfig
 +++ b/mm/Kconfig
 @@ -1260,4 +1260,37 @@ config LOCK_MM_AND_FIND_VMA
@@ -7449,7 +7449,7 @@ index 264a2df5ecf5..f91881c17319 100644
 +	  Allocates every page table page from a physically contiguous pool that
 +	  is reserved at boot, kept out of the linear mapping and mapped at a
 +	  random kernel virtual address. The pool base and mm_struct::pgd are the
-+	  only pointers into it and are protected with __tagone, so an attacker
++	  only pointers into it and are protected with __tag1, so an attacker
 +	  with an arbitrary read/write primitive cannot locate the page tables.
 +
 +	  If unsure, say N.

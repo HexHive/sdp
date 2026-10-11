@@ -129,7 +129,7 @@ POC_NOTE[sig_enforce]="CONFIG_MODULE_UNLOAD is off, so msdos stays resident; reb
 POC_CMD[selinux_state]="PATH=/usr/sbin:/sbin:\$PATH ./selinux_state_poc 0 $SELINUX_ENFORCING"
 POC_OUT[selinux_state]="[+] Exploit succeeded! SELinux is in permissive mode now."
 POC_RESTORE[selinux_state]="[+] state_enforce restored"
-POC_NOTE[selinux_state]="needs the SELinux VM (run_vm.sh --selinux); the default VM boots lsm=capability,apparmor"
+POC_NOTE[selinux_state]="needs the SELinux VM (run_oriqemu_cuslinux.sh --selinux); the default VM boots lsm=capability,apparmor"
 
 POC_CMD[aa_g_audit]="./aa_g_audit_poc 0 $AA_G_AUDIT"
 POC_OUT[aa_g_audit]="Audit mode is AUDIT_QUIET now, which would quiet all messages"
