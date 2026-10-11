@@ -1,5 +1,5 @@
 diff --git a/configure b/configure
-index d08b71f14b0f..8d2e3f60c6d8 100755
+index d08b71f14b..92b99a91ac 100755
 --- a/configure
 +++ b/configure
 @@ -1705,7 +1705,9 @@ if test "$skip_meson" = no; then
@@ -7,21 +7,21 @@ index d08b71f14b0f..8d2e3f60c6d8 100755
  
    echo "[built-in options]" >> $cross
 -  echo "c_args = [$(meson_quote $CFLAGS $EXTRA_CFLAGS)]" >> $cross
-+  # FZY: Suppress some errors to allow building with newer toolchains
++  # SDP: Suppress some errors to allow building with newer toolchains
 +  # echo "c_args = [$(meson_quote $CFLAGS $EXTRA_CFLAGS)]" >> $cross
 +  echo "c_args = [$(meson_quote $CFLAGS $EXTRA_CFLAGS -Wno-error=discarded-qualifiers -Wno-error=unused-but-set-variable)]" >> $cross
    echo "cpp_args = [$(meson_quote $CXXFLAGS $EXTRA_CXXFLAGS)]" >> $cross
    test -n "$objcc" && echo "objc_args = [$(meson_quote $OBJCFLAGS $EXTRA_OBJCFLAGS)]" >> $cross
    echo "c_link_args = [$(meson_quote $CFLAGS $LDFLAGS $EXTRA_CFLAGS $EXTRA_LDFLAGS)]" >> $cross
 diff --git a/contrib/plugins/Makefile b/contrib/plugins/Makefile
-index 05a2a45c5c33..5e230a4515f7 100644
+index 05a2a45c5c..9d8d1f841a 100644
 --- a/contrib/plugins/Makefile
 +++ b/contrib/plugins/Makefile
 @@ -30,6 +30,9 @@ NAMES += drcov
  NAMES += ips
  NAMES += stoptrigger
  
-+# FZY: Add SDP instruction counter plugin
++# SDP: Add SDP instruction counter plugin
 +NAMES += sdp_counter
 +
  ifeq ($(CONFIG_WIN32),y)
@@ -29,27 +29,18 @@ index 05a2a45c5c33..5e230a4515f7 100644
  LDLIBS += $(shell $(PKG_CONFIG) --libs glib-2.0)
 diff --git a/contrib/plugins/sdp_counter.c b/contrib/plugins/sdp_counter.c
 new file mode 100644
-index 000000000000..6cbd37b3a94f
+index 0000000000..0fb6f5e483
 --- /dev/null
 +++ b/contrib/plugins/sdp_counter.c
-@@ -0,0 +1,275 @@
-+// FZY: Per-category instruction counter for the SDP RISC-V fork.
-+// Maintains counters for:
-+//   all, normal_load, normal_store,
-+//   ld_scp, ld_sdp, sd_scp, sd_sdp,
-+//   set_tag0, set_tag1, clear_tag.
-+//
-+// Boundary marker: any RISC-V CSR-write instruction targeting CSR 0x188
-+// (msdpc) — i.e. `csrrw`/`csrrwi`/`csrrs[i]`/`csrrc[i]` to msdpc. The plugin
-+// snapshots all category counters on the marker insn and emits one line:
-+//   SDP_SNAPSHOT pc=0x<pc> all=N normal_load=N ...
-+// csr.c's write_msdpc handler logs the marker value+pc in parallel; correlate
-+// the two streams by PC (or by their natural ordering).
-+//
-+// Args:
-+//   out=<file>   write the snapshot stream to a file (default: stderr)
-+//
-+// License: GNU GPL, version 2 or later.
+@@ -0,0 +1,264 @@
++// SDP: Per-category instruction counter for the SDP RISC-V fork: all,
++// normal_load, normal_store, ld_scp, ld_sdp, sd_scp, sd_sdp, set_tag0,
++// set_tag1 and clear_tag.
++// A CSR write to msdpc (0x188) is the boundary marker: the plugin prints
++// "SDP_SNAPSHOT pc=0x<pc> all=N normal_load=N ..." for it, which matches the
++// marker logged by csr.c's write_msdpc by PC.
++// Args: out=<file> writes the snapshots to a file (default: stderr)
++// License: GNU GPL, version 2 or later
 +
 +#include <inttypes.h>
 +#include <stdio.h>
@@ -125,41 +116,39 @@ index 000000000000..6cbd37b3a94f
 +    emit_report("SDP_SNAPSHOT", ms->pc);
 +}
 +
-+/* msdpc CSR address (matches CSR_MSDPC in target/riscv/cpu_bits.h). */
++// msdpc CSR address (matches CSR_MSDPC in target/riscv/cpu_bits.h)
 +#define MSDPC_CSR 0x188
 +
-+/*
-+ * Decode RISC-V insn bytes (host-endian, as copied from the TB) and return
-+ * the matching category, or -1 if uncategorised. Sets *is_marker=true when
-+ * the encoding is a CSR write to msdpc that will actually perform a write.
-+ */
++// Decode RISC-V insn bytes (host-endian, as copied from the TB) and return
++// the matching category, or -1 if uncategorised. Sets *is_marker=true when
++// the encoding is a CSR write to msdpc that will actually perform a write
 +static int classify(uint32_t bytes, size_t insn_size, bool *is_marker)
 +{
 +    *is_marker = false;
 +
 +    if (insn_size == 2) {
-+        /* RV-C (RV64): 16-bit compressed loads/stores, incl. FP. */
++        // RV-C (RV64): 16-bit compressed loads/stores, incl. FP
 +        uint16_t c = (uint16_t)(bytes & 0xFFFF);
 +        uint16_t quadrant = c & 0x3;
 +        uint16_t f3 = (c >> 13) & 0x7;
 +        if (quadrant == 0 || quadrant == 2) {
-+            /* loads: f3=001 (c.fld[sp]), 010 (c.lw[sp]), 011 (c.ld[sp]) */
++            // loads: f3=001 (c.fld[sp]), 010 (c.lw[sp]), 011 (c.ld[sp])
 +            if (f3 == 1 || f3 == 2 || f3 == 3) return CAT_NORMAL_LOAD;
-+            /* stores: f3=101 (c.fsd[sp]), 110 (c.sw[sp]), 111 (c.sd[sp]) */
++            // stores: f3=101 (c.fsd[sp]), 110 (c.sw[sp]), 111 (c.sd[sp])
 +            if (f3 == 5 || f3 == 6 || f3 == 7) return CAT_NORMAL_STORE;
 +        }
 +        return -1;
 +    }
 +
-+    /* 32-bit insn */
++    // 32-bit insn
 +    uint32_t opcode = bytes & 0x7F;
 +    uint32_t f3 = (bytes >> 12) & 0x7;
 +
 +    switch (opcode) {
-+    case 0x03: /* LB/LH/LW/LD/LBU/LHU/LWU */
-+    case 0x07: /* FLW/FLD/FLQ */
++    case 0x03: // LB/LH/LW/LD/LBU/LHU/LWU
++    case 0x07: // FLW/FLD/FLQ
 +        return CAT_NORMAL_LOAD;
-+    case 0x23: /* SB/SH/SW/SD; also set_tag0/1, clear_tag */
++    case 0x23: // SB/SH/SW/SD; also set_tag0/1, clear_tag
 +        switch (f3) {
 +        case 0: case 1: case 2: case 3:
 +            return CAT_NORMAL_STORE;
@@ -168,39 +157,39 @@ index 000000000000..6cbd37b3a94f
 +        case 7: return CAT_SET_TAG1;
 +        }
 +        return -1;
-+    case 0x27: /* FSW/FSD/FSQ */
++    case 0x27: // FSW/FSD/FSQ
 +        return CAT_NORMAL_STORE;
-+    case 0x2F: { /* AMO/LR/SC, plus lr_sdp.d/sc_sdp.d */
++    case 0x2F: { // AMO/LR/SC, plus lr_sdp.d/sc_sdp.d
 +        uint32_t funct5 = (bytes >> 27) & 0x1F;
 +        switch (funct5) {
-+        case 0x02: /* LR.W/D */
-+        case 0x1E: /* lr_sdp.d */
++        case 0x02: // LR.W/D
++        case 0x1E: // lr_sdp.d
 +            return CAT_NORMAL_LOAD;
-+        default:   /* SC.W/D, sc_sdp.d, AMO* (read-modify-write) */
++        default:   // SC.W/D, sc_sdp.d, AMO* (read-modify-write)
 +            return CAT_NORMAL_STORE;
 +        }
 +    }
-+    case 0x0B: /* ld_scp_NNN */
++    case 0x0B: // ld_scp_NNN
 +        return CAT_LD_SCP;
-+    case 0x2B: /* ld_sdp_NNN */
++    case 0x2B: // ld_sdp_NNN
 +        return CAT_LD_SDP;
-+    case 0x5B: /* sd_scp_NNN */
++    case 0x5B: // sd_scp_NNN
 +        return CAT_SD_SCP;
-+    case 0x7B: /* sd_sdp_NNN */
++    case 0x7B: // sd_sdp_NNN
 +        return CAT_SD_SDP;
-+    case 0x73: { /* SYSTEM — CSR access */
++    case 0x73: { // SYSTEM: CSR access
 +        uint32_t csr = (bytes >> 20) & 0xFFF;
 +        if (csr != MSDPC_CSR) return -1;
 +        uint32_t rs1_or_imm = (bytes >> 15) & 0x1F;
 +        switch (f3) {
-+        case 1: /* csrrw  - always writes */
-+        case 5: /* csrrwi - always writes */
++        case 1: // csrrw  - always writes
++        case 5: // csrrwi - always writes
 +            *is_marker = true;
 +            break;
-+        case 2: /* csrrs  - writes iff rs1 != 0 */
-+        case 3: /* csrrc  - writes iff rs1 != 0 */
-+        case 6: /* csrrsi - writes iff uimm5 != 0 */
-+        case 7: /* csrrci - writes iff uimm5 != 0 */
++        case 2: // csrrs  - writes iff rs1 != 0
++        case 3: // csrrc  - writes iff rs1 != 0
++        case 6: // csrrsi - writes iff uimm5 != 0
++        case 7: // csrrci - writes iff uimm5 != 0
 +            if (rs1_or_imm != 0) *is_marker = true;
 +            break;
 +        }
@@ -223,9 +212,9 @@ index 000000000000..6cbd37b3a94f
 +        bool is_marker = false;
 +        int cat = classify(bytes, sz, &is_marker);
 +
-+        /* Always count toward "all" — the marker itself is excluded so the
-+         * snapshot reads as "instructions executed strictly before the
-+         * marker", which is what you want for phase deltas. */
++        // Always count toward "all"; the marker itself is excluded so the
++        // snapshot reads as "instructions executed strictly before the
++        // marker", which is what you want for phase deltas
 +        if (!is_marker) {
 +            qemu_plugin_register_vcpu_insn_exec_inline_per_vcpu(
 +                insn, QEMU_PLUGIN_INLINE_ADD_U64,
@@ -309,7 +298,7 @@ index 000000000000..6cbd37b3a94f
 +    return 0;
 +}
 diff --git a/hw/riscv/virt.c b/hw/riscv/virt.c
-index cef41c150aaf..282b09570d36 100644
+index cef41c150a..1ca9bf16a8 100644
 --- a/hw/riscv/virt.c
 +++ b/hw/riscv/virt.c
 @@ -44,6 +44,7 @@
@@ -324,7 +313,7 @@ index cef41c150aaf..282b09570d36 100644
  #include "qapi/qapi-visit-common.h"
  #include "hw/virtio/virtio-iommu.h"
  
-+// FZY: Include the header file for sensitive data protection
++// SDP: Include the header file for sensitive data protection
 +#include "target/riscv/sensitive_data_protection.h"
 +
  /* KVM AIA only supports APLIC MSI. APLIC Wired is always emulated by QEMU. */
@@ -334,7 +323,7 @@ index cef41c150aaf..282b09570d36 100644
      }
  }
  
-+// FZY: Tag memory is machine state, so a reset has to wipe it. Otherwise a warm
++// SDP: Tag memory is machine state, so a reset has to wipe it. Otherwise a warm
 +// reboot (the guest rebooting itself) keeps the previous boot's tags, and the
 +// new kernel traps on its first plain store into a granule the old one tagged
 +static void virt_memtag_reset(void *opaque)
@@ -351,7 +340,7 @@ index cef41c150aaf..282b09570d36 100644
      memory_region_add_subregion(system_memory, memmap[VIRT_DRAM].base,
          machine->ram);
  
-+    // FZY: Set ram_size and allocate the tag memory
++    // SDP: Set ram_size and allocate the tag memory
 +    total_mem_size = machine->ram_size;
 +    memtag_size = machine->ram_size / (MEMPTR_SIZE_IN_BIT / MEMTAG_SIZE_IN_BIT);
 +    memtag_array = (atomic_uchar *)g_malloc0(memtag_size);
@@ -365,14 +354,14 @@ index cef41c150aaf..282b09570d36 100644
      memory_region_init_rom(mask_rom, NULL, "riscv_virt_board.mrom",
                             memmap[VIRT_MROM].size, &error_fatal);
 diff --git a/include/qemu/log.h b/include/qemu/log.h
-index e10e24cd4fc8..d03a40685393 100644
+index e10e24cd4f..03ef904af7 100644
 --- a/include/qemu/log.h
 +++ b/include/qemu/log.h
 @@ -38,6 +38,10 @@ bool qemu_log_separate(void);
  #define CPU_LOG_TB_VPU     (1 << 21)
  #define LOG_TB_OP_PLUGIN   (1 << 22)
  
-+// FZY: SDP tag operations and tag checks. Off by default: a protected kernel
++// SDP: Tag operations and tag checks. Off by default: a protected kernel
 +// emits one line per tagged access, which is gigabytes per boot
 +#define CPU_LOG_SDP        (1 << 23)
 +
@@ -380,7 +369,7 @@ index e10e24cd4fc8..d03a40685393 100644
  
  FILE *qemu_log_trylock(void) G_GNUC_WARN_UNUSED_RESULT;
 diff --git a/net/slirp.c b/net/slirp.c
-index eb9a456ed49e..a1033d499c48 100644
+index eb9a456ed4..a1033d499c 100644
 --- a/net/slirp.c
 +++ b/net/slirp.c
 @@ -363,8 +363,13 @@ static void net_slirp_poll_notify(Notifier *notifier, void *data)
@@ -398,14 +387,14 @@ index eb9a456ed49e..a1033d499c48 100644
      case MAIN_LOOP_POLL_OK:
      case MAIN_LOOP_POLL_ERR:
 diff --git a/target/riscv/cpu.c b/target/riscv/cpu.c
-index a90808a3bace..f7600624c57e 100644
+index a90808a3ba..339786c82e 100644
 --- a/target/riscv/cpu.c
 +++ b/target/riscv/cpu.c
 @@ -291,6 +291,9 @@ static const char * const riscv_excp_names[] = {
      "guest_load_page_fault",
      "reserved",
      "guest_store_page_fault",
-+    // FZY: Custom SDP causes
++    // SDP: Custom SDP causes
 +    "sdp_stag_mismatch",
 +    "sdp_ttag_mismatch",
  };
@@ -415,49 +404,46 @@ index a90808a3bace..f7600624c57e 100644
          env->mseccfg = 0;
      }
  
-+    // FZY: Clear msdpc
++    // SDP: Clear msdpc
 +    env->msdpc = 0;
 +
      pmp_unlock_entries(env);
  #endif
      env->xl = riscv_cpu_mxl(env);
 diff --git a/target/riscv/cpu.h b/target/riscv/cpu.h
-index 1619c3acb666..109c9bf20b83 100644
+index 1619c3acb6..bd1499c054 100644
 --- a/target/riscv/cpu.h
 +++ b/target/riscv/cpu.h
 @@ -368,6 +368,9 @@ struct CPUArchState {
      uint32_t scounteren;
      uint32_t mcounteren;
  
-+    // FZY: Add msdpc csr to enable/disable sensitive data protection
++    // SDP: Add msdpc csr to enable/disable sensitive data protection
 +    target_ulong msdpc;
 +
      uint32_t mcountinhibit;
  
      /* PMU cycle & instret privilege mode filtering */
-@@ -563,6 +566,10 @@ void riscv_cpu_do_transaction_failed(CPUState *cs, hwaddr physaddr,
+@@ -563,6 +566,7 @@ void riscv_cpu_do_transaction_failed(CPUState *cs, hwaddr physaddr,
                                       int mmu_idx, MemTxAttrs attrs,
                                       MemTxResult response, uintptr_t retaddr);
  hwaddr riscv_cpu_get_phys_page_debug(CPUState *cpu, vaddr addr);
-+
-+// FZY: Debug: Add a debugger helper to get physical addresses for reference
-+// hwaddr riscv_cpu_get_phys_addr_debug(CPURISCVState *cpu, vaddr addr);
 +
  bool riscv_cpu_exec_interrupt(CPUState *cs, int interrupt_request);
  void riscv_cpu_swap_hypervisor_regs(CPURISCVState *env);
  int riscv_cpu_claim_interrupts(RISCVCPU *cpu, uint64_t interrupts);
 diff --git a/target/riscv/cpu_bits.h b/target/riscv/cpu_bits.h
-index 32b068f18aa5..dbc4fc4176f4 100644
+index 32b068f18a..83ceb47d98 100644
 --- a/target/riscv/cpu_bits.h
 +++ b/target/riscv/cpu_bits.h
 @@ -154,6 +154,15 @@
  #define CSR_MTVEC           0x305
  #define CSR_MCOUNTEREN      0x306
  
-+// FZY: Add msdpc csr to enable/disable sensitive data protection
++// SDP: Add msdpc csr to enable/disable sensitive data protection
 +#define CSR_MSDPC           0x188
 +
-+// FZY: msdpc control bits. Bit 0 enables the checks, bit 16 selects enforcing
++// SDP: msdpc control bits. Bit 0 enables the checks, bit 16 selects enforcing
 +// mode (trap on mismatch) instead of permissive mode (log only)
 +#define MSDPC_ENABLE        0x1
 +#define MSDPC_ENFORCING     0x10000
@@ -471,7 +457,7 @@ index 32b068f18aa5..dbc4fc4176f4 100644
      RISCV_EXCP_VIRT_INSTRUCTION_FAULT = 0x16,
      RISCV_EXCP_STORE_GUEST_AMO_ACCESS_FAULT = 0x17,
 +
-+    // FZY: Custom SDP causes, distinguishing the two kinds of tag mismatch
++    // SDP: Custom SDP causes, distinguishing the two kinds of tag mismatch
 +    RISCV_EXCP_SDP_STAG_MISMATCH = 0x18,
 +    RISCV_EXCP_SDP_TTAG_MISMATCH = 0x19,
 +
@@ -479,43 +465,14 @@ index 32b068f18aa5..dbc4fc4176f4 100644
  } RISCVException;
  
 diff --git a/target/riscv/cpu_helper.c b/target/riscv/cpu_helper.c
-index 395a1d914061..a5c95431bc0f 100644
+index 395a1d9140..111e7a2623 100644
 --- a/target/riscv/cpu_helper.c
 +++ b/target/riscv/cpu_helper.c
-@@ -1237,6 +1237,28 @@ hwaddr riscv_cpu_get_phys_page_debug(CPUState *cs, vaddr addr)
-     return phys_addr & TARGET_PAGE_MASK;
- }
- 
-+// FZY: Debug: Reference debuger helper for getting physical addresses
-+// hwaddr riscv_cpu_get_phys_addr_debug(CPURISCVState *env, vaddr addr)
-+// {
-+//     hwaddr phys_addr;
-+//     int prot;
-+//     int mmu_idx = riscv_env_mmu_index(env, false);
-+
-+//     if (get_physical_address(env, &phys_addr, &prot, addr, NULL, 0, mmu_idx,
-+// +                             true, env->virt_enabled, true)) {
-+//         return -1;
-+//     }
-+
-+//     if (env->virt_enabled) {
-+//         if (get_physical_address(env, &phys_addr, &prot, phys_addr, NULL,
-+// +                                 0, MMUIdx_U, false, true, true)) {
-+//             return -1;
-+//         }
-+//     }
-+
-+//     return phys_addr;
-+// }
-+
- void riscv_cpu_do_transaction_failed(CPUState *cs, hwaddr physaddr,
-                                      vaddr addr, unsigned size,
-                                      MMUAccessType access_type,
-@@ -1720,6 +1742,11 @@ void riscv_cpu_do_interrupt(CPUState *cs)
+@@ -1720,6 +1720,11 @@ void riscv_cpu_do_interrupt(CPUState *cs)
          case RISCV_EXCP_VIRT_INSTRUCTION_FAULT:
              tval = env->bins;
              break;
-+        // FZY: Report the faulting data address for SDP tag mismatches
++        // SDP: Report the faulting data address for SDP tag mismatches
 +        case RISCV_EXCP_SDP_STAG_MISMATCH:
 +        case RISCV_EXCP_SDP_TTAG_MISMATCH:
 +            tval = env->badaddr;
@@ -524,14 +481,14 @@ index 395a1d914061..a5c95431bc0f 100644
              tval = env->badaddr;
              if (cs->watchpoint_hit) {
 diff --git a/target/riscv/csr.c b/target/riscv/csr.c
-index ea3560342c4f..6f9f90839a34 100644
+index ea3560342c..f4ccf1e577 100644
 --- a/target/riscv/csr.c
 +++ b/target/riscv/csr.c
-@@ -2254,6 +2254,55 @@ static RISCVException write_mcounteren(CPURISCVState *env, int csrno,
+@@ -2254,6 +2254,52 @@ static RISCVException write_mcounteren(CPURISCVState *env, int csrno,
      return RISCV_EXCP_NONE;
  }
  
-+// FZY: Add msdpc csr read/write handlers to enable/disable sdp checks
++// SDP: Add msdpc csr read/write handlers to enable/disable sdp checks
 +static RISCVException read_msdpc(CPURISCVState *env, int csrno,
 +                                  target_ulong *val)
 +{
@@ -542,12 +499,9 @@ index ea3560342c4f..6f9f90839a34 100644
 +static RISCVException write_msdpc(CPURISCVState *env, int csrno,
 +                                   target_ulong val)
 +{
-+    // FZY: msdpc has two uses. (1) Original: SDP control register — bit 0
-+    // enables/disables SDP checks. (2) Boundary marker for the
-+    // instruction-count plugin — caller writes a marker-ID payload in the
-+    // high bits. We distinguish by value: a value made only of MSDPC_MASK bits
-+    // is a pure control write; anything else is a marker. The control bits
-+    // still take effect in either case.
++    // SDP: msdpc is the SDP control register (bit 0 enables the checks) and the
++    // plugin's boundary marker: bits outside MSDPC_MASK make a write a marker,
++    // and the control bits take effect either way
 +    int64_t icnt = -1;
 +#if defined(CONFIG_TCG) && !defined(CONFIG_USER_ONLY)
 +    if (icount_enabled()) {
@@ -571,8 +525,8 @@ index ea3560342c4f..6f9f90839a34 100644
 +                 (uint64_t)val, (uint64_t)env->pc, icnt);
 +    }
 +
-+    // FZY: Delegate the SDP causes to S-mode so the kernel, not the firmware,
-+    // handles tag mismatches. Firmware sets medeleg before any msdpc write.
++    // SDP: Delegate the SDP causes to S-mode so the kernel, not the firmware,
++    // handles tag mismatches. Firmware sets medeleg before any msdpc write
 +    env->medeleg |= (1ULL << RISCV_EXCP_SDP_STAG_MISMATCH) |
 +                    (1ULL << RISCV_EXCP_SDP_TTAG_MISMATCH);
 +
@@ -583,27 +537,26 @@ index ea3560342c4f..6f9f90839a34 100644
  /* Machine Trap Handling */
  static RISCVException read_mscratch_i128(CPURISCVState *env, int csrno,
                                           Int128 *val)
-@@ -4964,6 +5013,8 @@ riscv_csr_operations csr_ops[CSR_TABLE_SIZE] = {
+@@ -4964,6 +5010,8 @@ riscv_csr_operations csr_ops[CSR_TABLE_SIZE] = {
      [CSR_MTVEC]       = { "mtvec",      any,   read_mtvec,   write_mtvec   },
      [CSR_MCOUNTEREN]  = { "mcounteren", umode, read_mcounteren,
                            write_mcounteren                                 },
-+    // FZY: Register msdpc read/write handlers
++    // SDP: Register msdpc read/write handlers
 +    [CSR_MSDPC]       = { "msdpc", any, read_msdpc, write_msdpc           },
  
      [CSR_MSTATUSH]    = { "mstatush",   any32, read_mstatush,
                            write_mstatush                                   },
 diff --git a/target/riscv/helper.h b/target/riscv/helper.h
-index 451261ce5a4f..3e509051e6aa 100644
+index 451261ce5a..42082c125b 100644
 --- a/target/riscv/helper.h
 +++ b/target/riscv/helper.h
-@@ -139,6 +139,19 @@ DEF_HELPER_1(tlb_flush_all, void, env)
+@@ -139,6 +139,18 @@ DEF_HELPER_1(tlb_flush_all, void, env)
  DEF_HELPER_1(itrigger_match, void, env)
  #endif
  
-+// FZY: TODO: Add helper function definations for sensitive data protection
 +DEF_HELPER_FLAGS_6(inst_log, TCG_CALL_NO_WG, void, env, i64, i64, i64, i64, i64)
 +
-+// FZY: Debug: Log pc of lr.d if the loaded memory is tagged
++// SDP: Debug: Log pc of lr.d if the loaded memory is tagged
 +DEF_HELPER_FLAGS_3(lr_d_log, TCG_CALL_NO_WG, void, env, i64, i64)
 +
 +DEF_HELPER_FLAGS_4(check_memtag_load_tag0, TCG_CALL_NO_WG, void, env, i64, i64, i64)
@@ -617,7 +570,7 @@ index 451261ce5a4f..3e509051e6aa 100644
  #ifndef CONFIG_USER_ONLY
  DEF_HELPER_1(hyp_tlb_flush, void, env)
 diff --git a/target/riscv/insn32.decode b/target/riscv/insn32.decode
-index c45b8fa1d802..26adc10a33ed 100644
+index c45b8fa1d8..5ab24e6568 100644
 --- a/target/riscv/insn32.decode
 +++ b/target/riscv/insn32.decode
 @@ -22,7 +22,7 @@
@@ -642,7 +595,7 @@ index c45b8fa1d802..26adc10a33ed 100644
  srlw     0000000 .....  ..... 101 ..... 0111011 @r
  sraw     0100000 .....  ..... 101 ..... 0111011 @r
  
-+# FZY: Instructions for sensitive data protection
++# SDP: Instructions for sensitive data protection
 +# Tag setting instructions
 +set_tag0   ....... .....  ..... 101 ..... 0100011 @s
 +set_tag1   ....... .....  ..... 111 ..... 0100011 @s
@@ -688,7 +641,7 @@ index c45b8fa1d802..26adc10a33ed 100644
  # *** RV128I Base Instruction Set (in addition to RV64I) ***
  ldu      ............   ..... 111 ..... 0000011 @i
  {
-@@ -205,15 +248,15 @@ ldu      ............   ..... 111 ..... 0000011 @i
+@@ -205,15 +248,16 @@ ldu      ............   ..... 111 ..... 0000011 @i
    lq       ............   ..... 010 ..... 0001111 @i
  }
  sq       ............   ..... 100 ..... 0100011 @s
@@ -701,6 +654,7 @@ index c45b8fa1d802..26adc10a33ed 100644
 -slld     0000000 ..... .....  001 ..... 1111011 @r
 -srld     0000000 ..... .....  101 ..... 1111011 @r
 -srad     0100000 ..... .....  101 ..... 1111011 @r
++# SDP: RV128 addid..srad are removed, SDP's sd_scp/sd_sdp reuse their opcodes
 +# addid    ............  .....  000 ..... 1011011 @i
 +# sllid    000000 ......  ..... 001 ..... 1011011 @sh6
 +# srlid    000000 ......  ..... 101 ..... 1011011 @sh6
@@ -713,7 +667,7 @@ index c45b8fa1d802..26adc10a33ed 100644
  
  # *** RV32M Standard Extension ***
  mul      0000001 .....  ..... 000 ..... 0110011 @r
-@@ -233,11 +276,11 @@ remw     0000001 .....  ..... 110 ..... 0111011 @r
+@@ -233,11 +277,12 @@ remw     0000001 .....  ..... 110 ..... 0111011 @r
  remuw    0000001 .....  ..... 111 ..... 0111011 @r
  
  # *** RV128M Standard Extension (in addition to RV64M) ***
@@ -722,6 +676,7 @@ index c45b8fa1d802..26adc10a33ed 100644
 -divud    0000001 .....  ..... 101 ..... 1111011 @r
 -remd     0000001 .....  ..... 110 ..... 1111011 @r
 -remud    0000001 .....  ..... 111 ..... 1111011 @r
++# SDP: RV128 muld..remud are removed, SDP's sd_sdp reuses their opcode
 +# muld     0000001 .....  ..... 000 ..... 1111011 @r
 +# divd     0000001 .....  ..... 100 ..... 1111011 @r
 +# divud    0000001 .....  ..... 101 ..... 1111011 @r
@@ -730,14 +685,12 @@ index c45b8fa1d802..26adc10a33ed 100644
  
  # *** RV32A Standard Extension ***
  lr_w       00010 . . 00000 ..... 010 ..... 0101111 @atom_ld
-@@ -265,6 +308,13 @@ amomax_d   10100 . . ..... ..... 011 ..... 0101111 @atom_st
+@@ -265,6 +310,11 @@ amomax_d   10100 . . ..... ..... 011 ..... 0101111 @atom_st
  amominu_d  11000 . . ..... ..... 011 ..... 0101111 @atom_st
  amomaxu_d  11100 . . ..... ..... 011 ..... 0101111 @atom_st
  
-+# FZY: SDP tag-aware lr/sc instructions
-+# lr_sdp_d: like lr.d but returns sign-extended bits[47:0] (matches ld_tag1).
-+# sc_sdp_d: like sc.d but preserves mem[63:48] (TTag), writes rs2[47:0] to mem[47:0].
-+# Uses reserved funct5 values 11110 / 11111 in the standard AMO opcode space.
++# SDP: Tag-aware lr/sc in the reserved AMO funct5 11110/11111: lr_sdp_d returns
++# sign-extended bits [47:0] like ld_tag1, sc_sdp_d keeps the TTag in mem[63:48]
 +lr_sdp_d  11110 . . 00000 ..... 011 ..... 0101111 @atom_ld
 +sc_sdp_d  11111 . . ..... ..... 011 ..... 0101111 @atom_st
 +
@@ -745,14 +698,14 @@ index c45b8fa1d802..26adc10a33ed 100644
  flw        ............   ..... 010 ..... 0000111 @i
  fsw        .......  ..... ..... 010 ..... 0100111 @s
 diff --git a/target/riscv/insn_trans/trans_rva.c.inc b/target/riscv/insn_trans/trans_rva.c.inc
-index 39bbf60f3c35..9f846b5ea3f9 100644
+index 39bbf60f3c..294920c05d 100644
 --- a/target/riscv/insn_trans/trans_rva.c.inc
 +++ b/target/riscv/insn_trans/trans_rva.c.inc
 @@ -96,6 +96,87 @@ static bool gen_sc(DisasContext *ctx, arg_atomic *a, MemOp mop)
      return true;
  }
  
-+// FZY: Generate lr_sdp.d, SDP tag-aware variants of lr.d
++// SDP: Generate lr_sdp.d, SDP tag-aware variants of lr.d
 +static bool gen_lr_sdp_d(DisasContext *ctx, arg_atomic *a, MemOp mop)
 +{
 +    TCGv src1;
@@ -762,16 +715,16 @@ index 39bbf60f3c35..9f846b5ea3f9 100644
 +    if (a->rl) {
 +        tcg_gen_mb(TCG_MO_ALL | TCG_BAR_STRL);
 +    }
-+    /* Load the raw 64-bit word (TTag in top 16, data in low 48). */
++    // Load the raw 64-bit word (TTag in top 16, data in low 48)
 +    tcg_gen_qemu_ld_tl(load_val, src1, ctx->mem_idx, mop);
 +    if (a->aq || ctx->ztso) {
 +        tcg_gen_mb(TCG_MO_ALL | TCG_BAR_LDAQ);
 +    }
 +
-+    /* Put addr in load_res; raw value stays in load_val for sc_sdp_d to merge. */
++    // Put addr in load_res; raw value stays in load_val for sc_sdp_d to merge
 +    tcg_gen_mov_tl(load_res, src1);
 +
-+    /* Return sign-extended low 48 bits to rd. */
++    // Return sign-extended low 48 bits to rd
 +    TCGv ext = tcg_temp_new();
 +    tcg_gen_shli_tl(ext, load_val, 16);
 +    tcg_gen_sari_tl(ext, ext, 16);
@@ -780,7 +733,7 @@ index 39bbf60f3c35..9f846b5ea3f9 100644
 +    return true;
 +}
 +
-+// FZY: Generate sc_sdp.d, SDP tag-aware variants of sc.d
++// SDP: Generate sc_sdp.d, SDP tag-aware variants of sc.d
 +static bool gen_sc_sdp_d(DisasContext *ctx, arg_atomic *a, MemOp mop)
 +{
 +    TCGv dest, src1, src2;
@@ -794,14 +747,14 @@ index 39bbf60f3c35..9f846b5ea3f9 100644
 +    dest = dest_gpr(ctx, a->rd);
 +    src2 = get_gpr(ctx, a->rs2, EXT_NONE);
 +
-+    /* new = (load_val & 0xFFFF000000000000) | (src2 & 0x0000FFFFFFFFFFFF) */
++    // new = (load_val & 0xFFFF000000000000) | (src2 & 0x0000FFFFFFFFFFFF)
 +    TCGv new_val = tcg_temp_new();
 +    TCGv top = tcg_temp_new();
 +    tcg_gen_andi_tl(new_val, src2, 0x0000FFFFFFFFFFFFULL);
 +    tcg_gen_andi_tl(top, load_val, 0xFFFF000000000000ULL);
 +    tcg_gen_or_tl(new_val, new_val, top);
 +
-+    /* Atomic CAS: if mem == load_val, store new_val. */
++    // Atomic CAS: if mem == load_val, store new_val
 +    tcg_gen_atomic_cmpxchg_tl(dest, load_res, load_val, new_val,
 +                              ctx->mem_idx, mop);
 +    tcg_gen_setcond_tl(TCG_COND_NE, dest, dest, load_val);
@@ -819,14 +772,14 @@ index 39bbf60f3c35..9f846b5ea3f9 100644
 +    return true;
 +}
 +
-+// FZY: Translate lr_sdp.d
++// SDP: Translate lr_sdp.d
 +static bool trans_lr_sdp_d(DisasContext *ctx, arg_lr_sdp_d *a)
 +{
 +    REQUIRE_A_OR_ZALRSC(ctx);
 +    return gen_lr_sdp_d(ctx, a, (MO_ALIGN | MO_TEUQ));
 +}
 +
-+// FZY: Translate sc_sdp.d
++// SDP: Translate sc_sdp.d
 +static bool trans_sc_sdp_d(DisasContext *ctx, arg_sc_sdp_d *a)
 +{
 +    REQUIRE_A_OR_ZALRSC(ctx);
@@ -836,32 +789,23 @@ index 39bbf60f3c35..9f846b5ea3f9 100644
  static bool trans_lr_w(DisasContext *ctx, arg_lr_w *a)
  {
      REQUIRE_A_OR_ZALRSC(ctx);
-@@ -167,6 +248,16 @@ static bool trans_lr_d(DisasContext *ctx, arg_lr_d *a)
+@@ -167,6 +248,7 @@ static bool trans_lr_d(DisasContext *ctx, arg_lr_d *a)
      REQUIRE_64BIT(ctx);
      REQUIRE_A_OR_ZALRSC(ctx);
      return gen_lr(ctx, a, MO_ALIGN | MO_TEUQ);
 +
-+    // // FZY: Debug: Log pc of lr.d if the loaded memory is tagged
-+    // if (!gen_lr(ctx, a, MO_ALIGN | MO_TEUQ)) {
-+    //     return false;
-+    // }
-+    // TCGv addr = get_address(ctx, a->rs1, 0);
-+    // TCGv pc = tcg_temp_new();
-+    // gen_pc_plus_diff(pc, ctx, 0);
-+    // gen_helper_lr_d_log(tcg_env, addr, pc);
-+    // return true;
  }
  
  static bool trans_sc_d(DisasContext *ctx, arg_sc_d *a)
 diff --git a/target/riscv/insn_trans/trans_rvi.c.inc b/target/riscv/insn_trans/trans_rvi.c.inc
-index fab5c06719ed..380c11b1a6c7 100644
+index fab5c06719..81371727a2 100644
 --- a/target/riscv/insn_trans/trans_rvi.c.inc
 +++ b/target/riscv/insn_trans/trans_rvi.c.inc
 @@ -18,6 +18,10 @@
   * this program.  If not, see <http://www.gnu.org/licenses/>.
   */
  
-+// FZY: Include the header file for getting physical addresses to check memory tags
++// SDP: Include the header file for getting physical addresses to check memory tags
 +#include "exec/mmu-access-type.h"
 +#include "tcg/tcg.h"
 +
@@ -873,7 +817,7 @@ index fab5c06719ed..380c11b1a6c7 100644
  }
  
 +/*
-+// FZY: Original gen_load_tl without tag checking logic
++// SDP: Original gen_load_tl without tag checking logic
  static bool gen_load_tl(DisasContext *ctx, arg_lb *a, MemOp memop)
  {
      TCGv dest = dest_gpr(ctx, a->rd);
@@ -883,13 +827,13 @@ index fab5c06719ed..380c11b1a6c7 100644
  }
 +*/
 +
-+// FZY: Generate load instructions with tag0 checking logic
++// SDP: Generate load instructions with tag0 checking logic
 +static bool gen_load_tl_tag0(DisasContext *ctx, arg_ld *a, MemOp memop)
 +{
 +    TCGv dest = dest_gpr(ctx, a->rd);
 +    TCGv addr = get_address(ctx, a->rs1, a->imm);
 +
-+    // FZY: Add tag checking logic for load instructions
++    // SDP: Add tag checking logic for load instructions
 +    TCGv pc = tcg_temp_new();
 +    gen_pc_plus_diff(pc, ctx, 0);
 +
@@ -901,24 +845,24 @@ index fab5c06719ed..380c11b1a6c7 100644
 +    return true;
 +}
 +
-+// FZY: Generate load instructions with tag1 checking logic
++// SDP: Generate load instructions with tag1 checking logic
 +static bool gen_load_tl_tag1(DisasContext *ctx, arg_ld *a, MemOp memop, uint64_t subject_ttag)
 +{
 +    TCGv dest = dest_gpr(ctx, a->rd);
 +    // The non-zero address offset are added to the address register, so here it is always 0
 +    TCGv addr = get_address(ctx, a->rs1, 0);
 +
-+    // FZY: Add tag checking logic for load instructions
++    // SDP: Add tag checking logic for load instructions
 +    TCGv pc = tcg_temp_new();
 +    gen_pc_plus_diff(pc, ctx, 0);
 +
-+    // FZY: Load into a temp, not into rd, so that a trapping check leaves rd intact
++    // SDP: Load into a temp, not into rd, so that a trapping check leaves rd intact
 +    TCGv raw = tcg_temp_new();
 +    tcg_gen_qemu_ld_tl(raw, addr, ctx->mem_idx, memop);
 +
 +    gen_helper_check_memtag_load_tag1(tcg_env, tcg_constant_i64(a->rd), addr, tcg_constant_i64(subject_ttag), raw, pc);
 +
-+    // FZY: Load only the lower 48 bits in ld_tag1, by shifting left by 16 bits and then shifting right (sign-extension) by 16 bits
++    // SDP: Load only the lower 48 bits in ld_tag1, by shifting left by 16 bits and then shifting right (sign-extension) by 16 bits
 +    tcg_gen_shli_tl(dest, raw, 16);
 +    tcg_gen_sari_tl(dest, dest, 16);
 +    
@@ -943,7 +887,7 @@ index fab5c06719ed..380c11b1a6c7 100644
  }
  
 +/*
-+// FZY: Original gen_store_tl without tag checking logic
++// SDP: Original gen_store_tl without tag checking logic
  static bool gen_store_tl(DisasContext *ctx, arg_sb *a, MemOp memop)
  {
      TCGv addr = get_address(ctx, a->rs1, a->imm);
@@ -953,13 +897,13 @@ index fab5c06719ed..380c11b1a6c7 100644
  }
 +*/
 +
-+// FZY: Generate store instructions with tag0 checking logic
++// SDP: Generate store instructions with tag0 checking logic
 +static bool gen_store_tl_tag0(DisasContext *ctx, arg_sd *a, MemOp memop)
 +{
 +    TCGv addr = get_address(ctx, a->rs1, a->imm);
 +    TCGv data = get_gpr(ctx, a->rs2, EXT_NONE);
 +
-+    // FZY: Add tag checking logic for store instructions
++    // SDP: Add tag checking logic for store instructions
 +    TCGv pc = tcg_temp_new();
 +    gen_pc_plus_diff(pc, ctx, 0);
 +
@@ -974,7 +918,7 @@ index fab5c06719ed..380c11b1a6c7 100644
 +    return true;
 +}
 +
-+// FZY: Generate store instructions with tag1 checking logic
++// SDP: Generate store instructions with tag1 checking logic
 +static bool gen_store_tl_tag1(DisasContext *ctx, arg_sd *a, MemOp memop, uint64_t subject_ttag)
 +{
 +    // The non-zero address offset are added to the address register, so here it is always 0
@@ -983,7 +927,7 @@ index fab5c06719ed..380c11b1a6c7 100644
 +    TCGv data = tcg_temp_new();
 +    tcg_gen_mov_tl(data, get_gpr(ctx, a->rs2, EXT_NONE));
 +
-+    // FZY: Add tag checking logic for store instructions
++    // SDP: Add tag checking logic for store instructions
 +    TCGv pc = tcg_temp_new();
 +    gen_pc_plus_diff(pc, ctx, 0);
 +
@@ -1000,7 +944,7 @@ index fab5c06719ed..380c11b1a6c7 100644
 +        tcg_gen_mb(TCG_MO_ALL | TCG_BAR_STRL);
 +    }
 +
-+    // FZY: Store ttag:pointer
++    // SDP: Store ttag:pointer
 +    tcg_gen_andi_i64(data, data, 0x0000FFFFFFFFFFFF);
 +    tcg_gen_or_i64(data, data, object_ttag);
 +
@@ -1025,7 +969,7 @@ index fab5c06719ed..380c11b1a6c7 100644
      }
  }
  
-@@ -407,27 +522,360 @@ static bool trans_sq(DisasContext *ctx, arg_sq *a)
+@@ -407,27 +522,359 @@ static bool trans_sq(DisasContext *ctx, arg_sq *a)
      return gen_store(ctx, a, MO_TEUO);
  }
  
@@ -1035,7 +979,6 @@ index fab5c06719ed..380c11b1a6c7 100644
 -    REQUIRE_128BIT(ctx);
 -    ctx->ol = MXL_RV64;
 -    return gen_arith(ctx, a, EXT_NONE, tcg_gen_add_tl, NULL);
-+    // TCGv reg_1 = get_gpr(ctx, a->rd, EXT_ZERO);
 +    TCGv reg_2 = get_gpr(ctx, a->rs1, EXT_ZERO);
 +    uint64_t imm = a->imm;
 +    imm = imm & 0xFFF;
@@ -1048,11 +991,11 @@ index fab5c06719ed..380c11b1a6c7 100644
 +    bool out;
 +
 +    if (ctx->cfg_ptr->ext_zama16b) {
-+        ; // FZY: TODO: Not supported, raise an exception
++        ;
 +    }
 +    decode_save_opc(ctx);
 +    if (get_xl(ctx) != MXL_RV64) {
-+        ; // FZY: TODO: Not supported, raise an exception
++        ;
 +    } else {
 +        out = gen_load_tl_tag1(ctx, a, memop, imm);
 +    }
@@ -1181,11 +1124,11 @@ index fab5c06719ed..380c11b1a6c7 100644
 +    gen_helper_inst_log(tcg_env, reg_1, reg_2, tcg_constant_i64(imm), tcg_constant_i64(1), sd_tag1_pc);
 +
 +    if (ctx->cfg_ptr->ext_zama16b) {
-+        ; // FZY: TODO: Not supported, raise an exception
++        ;
 +    }
 +    decode_save_opc(ctx);
 +    if (get_xl(ctx) != MXL_RV64) {
-+        ; // FZY: TODO: Not supported, raise an exception
++        ;
 +    }
 +
 +    return gen_store_tl_tag1(ctx, a, memop, imm);
@@ -1287,7 +1230,7 @@ index fab5c06719ed..380c11b1a6c7 100644
 +    return gen_store_tag1(ctx, a, MO_TEUQ, true, 7);
 +}
 +
-+// FZY: Generate set_tag0 or set_tag1 instructions
++// SDP: Generate set_tag0 or set_tag1 instructions
 +static bool gen_set_tag(DisasContext *ctx, arg_sd *a, MemOp mem_op, uint64_t mem_tag)
 +{
 +    TCGv reg_1 = get_gpr(ctx, a->rs1, EXT_ZERO);
@@ -1298,18 +1241,18 @@ index fab5c06719ed..380c11b1a6c7 100644
 +    gen_helper_inst_log(tcg_env, reg_1, reg_2, tcg_constant_i64(imm), tcg_constant_i64(2 + mem_tag), set_tag_pc);
 +
 +    if (ctx->cfg_ptr->ext_zama16b) {
-+        ; // FZY: TODO: Not supported, raise an exception
++        ;
 +    }
 +    decode_save_opc(ctx);
 +    if (get_xl(ctx) != MXL_RV64) {
-+        ; // FZY: TODO: Not supported, raise an exception
++        ;
 +    }
 +
 +    TCGv addr = get_address(ctx, a->rs1, a->imm);
 +    gen_helper_check_set_tag(tcg_env, addr, tcg_constant_i64(mem_tag), reg_2, set_tag_pc);
 +    gen_helper_set_tag(tcg_env, addr, tcg_constant_i64(mem_tag));
 +
-+    // FZY: Write ttag to the high 16 bits of the target address
++    // SDP: Write ttag to the high 16 bits of the target address
 +    if (ctx->ztso) {
 +        tcg_gen_mb(TCG_MO_ALL | TCG_BAR_STRL);
 +    }
@@ -1329,7 +1272,7 @@ index fab5c06719ed..380c11b1a6c7 100644
 +    return true;
 +}
 +
-+// FZY: Generate clear_tag instructions
++// SDP: Generate clear_tag instructions
 +static bool gen_clear_tag(DisasContext *ctx, arg_sd *a, MemOp mem_op)
 +{
 +    TCGv reg_1 = get_gpr(ctx, a->rs1, EXT_ZERO);
@@ -1340,11 +1283,11 @@ index fab5c06719ed..380c11b1a6c7 100644
 +    gen_helper_inst_log(tcg_env, reg_1, reg_2, tcg_constant_i64(imm), tcg_constant_i64(4), clear_tag_pc);
 +
 +    if (ctx->cfg_ptr->ext_zama16b) {
-+        ; // FZY: TODO: Not supported, raise an exception
++        ;
 +    }
 +    decode_save_opc(ctx);
 +    if (get_xl(ctx) != MXL_RV64) {
-+        ; // FZY: TODO: Not supported, raise an exception
++        ;
 +    }
 +
 +    TCGv addr = get_address(ctx, a->rs1, a->imm);
@@ -1373,7 +1316,7 @@ index fab5c06719ed..380c11b1a6c7 100644
 +    return gen_clear_tag(ctx, a, MO_TEUQ);
 +}
 +
-+// FZY: Comment out conflict RV128 instructions
++// SDP: RV128 addd, addid and subd are removed, SDP reuses their opcodes
 +// static bool trans_addd(DisasContext *ctx, arg_addd *a)
 +// {
 +//     REQUIRE_128BIT(ctx);
@@ -1398,7 +1341,7 @@ index fab5c06719ed..380c11b1a6c7 100644
  static void gen_addi2_i128(TCGv retl, TCGv reth,
                             TCGv srcl, TCGv srch, target_long imm)
  {
-@@ -714,26 +1162,27 @@ static bool trans_sraiw(DisasContext *ctx, arg_sraiw *a)
+@@ -714,26 +1161,27 @@ static bool trans_sraiw(DisasContext *ctx, arg_sraiw *a)
      return gen_shift_imm_fn(ctx, a, EXT_NONE, gen_sraiw, NULL);
  }
  
@@ -1422,7 +1365,7 @@ index fab5c06719ed..380c11b1a6c7 100644
 -    ctx->ol = MXL_RV64;
 -    return gen_shift_imm_fn(ctx, a, EXT_NONE, tcg_gen_sari_tl,  NULL);
 -}
-+// FZY: Comment out conflict RV128 instructions
++// SDP: RV128 sllid, srlid and sraid are removed, SDP reuses their opcodes
 +// static bool trans_sllid(DisasContext *ctx, arg_sllid *a)
 +// {
 +//     REQUIRE_128BIT(ctx);
@@ -1446,7 +1389,7 @@ index fab5c06719ed..380c11b1a6c7 100644
  
  static bool trans_addw(DisasContext *ctx, arg_addw *a)
  {
-@@ -770,26 +1219,27 @@ static bool trans_sraw(DisasContext *ctx, arg_sraw *a)
+@@ -770,26 +1218,27 @@ static bool trans_sraw(DisasContext *ctx, arg_sraw *a)
      return gen_shift(ctx, a, EXT_SIGN, tcg_gen_sar_tl, NULL);
  }
  
@@ -1470,7 +1413,7 @@ index fab5c06719ed..380c11b1a6c7 100644
 -    ctx->ol = MXL_RV64;
 -    return gen_shift(ctx, a, EXT_SIGN, tcg_gen_sar_tl, NULL);
 -}
-+// FZY: Comment out conflict RV128 instructions
++// SDP: RV128 slld, srld and srad are removed, SDP reuses their opcodes
 +// static bool trans_slld(DisasContext *ctx, arg_slld *a)
 +// {
 +//     REQUIRE_128BIT(ctx);
@@ -1495,10 +1438,10 @@ index fab5c06719ed..380c11b1a6c7 100644
  static bool trans_pause(DisasContext *ctx, arg_pause *a)
  {
 diff --git a/target/riscv/insn_trans/trans_rvm.c.inc b/target/riscv/insn_trans/trans_rvm.c.inc
-index 795f0ccf1403..ca7505969c45 100644
+index 795f0ccf14..ae6da97568 100644
 --- a/target/riscv/insn_trans/trans_rvm.c.inc
 +++ b/target/riscv/insn_trans/trans_rvm.c.inc
-@@ -359,42 +359,43 @@ static bool trans_remuw(DisasContext *ctx, arg_remuw *a)
+@@ -359,42 +359,44 @@ static bool trans_remuw(DisasContext *ctx, arg_remuw *a)
      return gen_arith(ctx, a, EXT_ZERO, gen_remu, NULL);
  }
  
@@ -1525,23 +1468,7 @@ index 795f0ccf1403..ca7505969c45 100644
 -    ctx->ol = MXL_RV64;
 -    return gen_arith(ctx, a, EXT_ZERO, gen_divu, NULL);
 -}
--
--static bool trans_remd(DisasContext *ctx, arg_remd *a)
--{
--    REQUIRE_128BIT(ctx);
--    REQUIRE_EXT(ctx, RVM);
--    ctx->ol = MXL_RV64;
--    return gen_arith(ctx, a, EXT_SIGN, gen_rem, NULL);
--}
--
--static bool trans_remud(DisasContext *ctx, arg_remud *a)
--{
--    REQUIRE_128BIT(ctx);
--    REQUIRE_EXT(ctx, RVM);
--    ctx->ol = MXL_RV64;
--    return gen_arith(ctx, a, EXT_ZERO, gen_remu, NULL);
--}
-+// FZY: Comment out conflict RV128 instructions
++// SDP: RV128 muld/divd/divud/remd/remud are removed, SDP reuses their opcodes
 +// static bool trans_muld(DisasContext *ctx, arg_muld *a)
 +// {
 +//     REQUIRE_128BIT(ctx);
@@ -1581,21 +1508,37 @@ index 795f0ccf1403..ca7505969c45 100644
 +//     ctx->ol = MXL_RV64;
 +//     return gen_arith(ctx, a, EXT_ZERO, gen_remu, NULL);
 +// }
+ 
+-static bool trans_remd(DisasContext *ctx, arg_remd *a)
+-{
+-    REQUIRE_128BIT(ctx);
+-    REQUIRE_EXT(ctx, RVM);
+-    ctx->ol = MXL_RV64;
+-    return gen_arith(ctx, a, EXT_SIGN, gen_rem, NULL);
+-}
+-
+-static bool trans_remud(DisasContext *ctx, arg_remud *a)
+-{
+-    REQUIRE_128BIT(ctx);
+-    REQUIRE_EXT(ctx, RVM);
+-    ctx->ol = MXL_RV64;
+-    return gen_arith(ctx, a, EXT_ZERO, gen_remu, NULL);
+-}
 diff --git a/target/riscv/machine.c b/target/riscv/machine.c
-index 492c2c6d9d79..081d3191de09 100644
+index 492c2c6d9d..2454313bcc 100644
 --- a/target/riscv/machine.c
 +++ b/target/riscv/machine.c
 @@ -398,6 +398,8 @@ const VMStateDescription vmstate_riscv_cpu = {
          VMSTATE_UINTTL(env.siselect, RISCVCPU),
          VMSTATE_UINT32(env.scounteren, RISCVCPU),
          VMSTATE_UINT32(env.mcounteren, RISCVCPU),
-+        // FZY: Add msdpc to vmstate
++        // SDP: Add msdpc to vmstate
 +        VMSTATE_UINTTL(env.msdpc, RISCVCPU),
          VMSTATE_UINT32(env.mcountinhibit, RISCVCPU),
          VMSTATE_STRUCT_ARRAY(env.pmu_ctrs, RISCVCPU, RV_MAX_MHPMCOUNTERS, 0,
                               vmstate_pmu_ctr_state, PMUCTRState),
 diff --git a/target/riscv/meson.build b/target/riscv/meson.build
-index a4bd61e52a94..aa4e1a817e23 100644
+index a4bd61e52a..3dfcf03b26 100644
 --- a/target/riscv/meson.build
 +++ b/target/riscv/meson.build
 @@ -22,7 +22,10 @@ riscv_ss.add(files(
@@ -1605,17 +1548,19 @@ index a4bd61e52a94..aa4e1a817e23 100644
 -  'vcrypto_helper.c'
 +  'vcrypto_helper.c',
 +
-+  # FZY: Add file for sensitive data protection
++  # SDP: Add file for sensitive data protection
 +  'sensitive_data_protection.c',
  ))
  
  riscv_system_ss = ss.source_set()
 diff --git a/target/riscv/sensitive_data_protection.c b/target/riscv/sensitive_data_protection.c
 new file mode 100644
-index 000000000000..1bba94f41e35
+index 0000000000..fe45e84303
 --- /dev/null
 +++ b/target/riscv/sensitive_data_protection.c
-@@ -0,0 +1,377 @@
+@@ -0,0 +1,343 @@
++// SDP: Semantic support for SDP instructions
++
 +#include "sensitive_data_protection.h"
 +
 +#include "exec/helper-proto.h"
@@ -1623,7 +1568,7 @@ index 000000000000..1bba94f41e35
 +#include "exec/exec-all.h"
 +#include "exec/cpu_ldst.h"
 +
-+// FZY: Define the memtag related variables
++// Define the memtag related variables
 +const uint64_t MEMPTR_SIZE_IN_BIT = 64;
 +const uint64_t MEMPTR_SIZE_IN_BYTE = MEMPTR_SIZE_IN_BIT / 8;
 +const uint64_t MEMTAG_SIZE_IN_BIT = 1;
@@ -1642,8 +1587,8 @@ index 000000000000..1bba94f41e35
 +    "s8",   "s9",   "s10",  "s11",  "t3",   "t4",   "t5",   "t6",
 +};
 +
-+// FZY: In enforcing mode a tag mismatch traps with an STag/TTag specific
-+// cause; in permissive mode the caller only logs and carries on.
++// In enforcing mode a tag mismatch traps with an STag/TTag specific
++// cause; in permissive mode the caller only logs and carries on
 +static void sdp_raise(CPURISCVState *env, uint64_t vaddr, bool is_ttag,
 +                      uintptr_t ra) {
 +    if (!(env->msdpc & MSDPC_ENFORCING)) {
@@ -1653,25 +1598,13 @@ index 000000000000..1bba94f41e35
 +    riscv_raise_exception(env, is_ttag ? RISCV_EXCP_SDP_TTAG_MISMATCH : RISCV_EXCP_SDP_STAG_MISMATCH, ra);
 +}
 +
-+// FZY: Add helper functions for sensitive data protection
++// Add helper functions for sensitive data protection
 +void helper_inst_log(CPURISCVState *env, uint64_t reg_1, uint64_t reg_2, uint64_t imm, uint64_t inst_flag, uint64_t pc) {
-+
-+    // FZY: Debug
-+    // (void)env;
-+    // (void)reg_1;
-+    // (void)reg_2;
-+    // (void)imm;
-+    // (void)inst_flag;
 +
 +    switch(inst_flag) {
 +        case 0:
 +            qemu_log_mask(CPU_LOG_SDP, "ld_tag1, rd: %s, addr: %lx, subject_ttag: %04lx\n", riscv_regnames[reg_1], reg_2, imm & 0xFFFF);
 +            break;
-+
-+            // FZY: Debug
-+            // hwaddr paddr = get_paddr(env, reg_2, MMU_DATA_LOAD);
-+            // qemu_log_mask(CPU_LOG_SDP, "ld_tag1, rd: %s, addr: %lx, paddr: %lx, subject_ttag: %04lx\n", riscv_regnames[reg_1], reg_2, (uint64_t)paddr, imm & 0xFFFF);
-+            // break;
 +
 +        case 1:
 +            qemu_log_mask(CPU_LOG_SDP, "sd_tag1, rs: %lx, addr: %lx, subject_ttag: %04lx, pc: %lx\n", reg_2, reg_1, imm & 0xFFFF, pc);
@@ -1691,8 +1624,8 @@ index 000000000000..1bba94f41e35
 +    }
 +}
 +
-+// FZY: Try to read 8 bytes of guest memory at vaddr without faulting.
-+// Returns true on success and stores the loaded value in *out.
++// Try to read 8 bytes of guest memory at vaddr without faulting.
++// Returns true on success and stores the loaded value in *out
 +static bool guest_load_u64_nofault(CPURISCVState *env, uint64_t vaddr,
 +                                   uintptr_t ra, uint64_t *out) {
 +    int mmu_idx = riscv_env_mmu_index(env, false);
@@ -1706,7 +1639,7 @@ index 000000000000..1bba94f41e35
 +    return true;
 +}
 +
-+// FZY: Walk the frame-pointer chain (s0/x8)
++// Walk the frame-pointer chain (s0/x8)
 +static void dump_guest_callstack(CPURISCVState *env, uintptr_t ra) {
 +    enum { MAX_FRAMES = 32 };
 +    uint64_t fp = env->gpr[8]; // s0
@@ -1726,7 +1659,7 @@ index 000000000000..1bba94f41e35
 +            break;
 +        }
 +        qemu_log_mask(CPU_LOG_SDP, "  #%d  ra=%lx  fp=%lx\n", i, saved_ra, saved_fp);
-+        // Stack grows down; caller's fp must be higher than callee's.
++        // Stack grows down; caller's fp must be higher than callee's
 +        if (saved_fp <= fp) {
 +            break;
 +        }
@@ -1734,7 +1667,7 @@ index 000000000000..1bba94f41e35
 +    }
 +}
 +
-+// // FZY: Debug: Log pc and guest call stack of lr.d when the loaded memory's memtag is 1.
++// Debug: Log the pc and guest call stack of an lr.d loading tagged memory
 +void helper_lr_d_log(CPURISCVState *env, uint64_t vaddr, uint64_t pc) {
 +    uintptr_t ra = GETPC();
 +    hwaddr paddr = get_paddr(env, vaddr, MMU_DATA_LOAD);
@@ -1743,17 +1676,14 @@ index 000000000000..1bba94f41e35
 +            qemu_log_mask(CPU_LOG_SDP, "lr.d tagged load, pc: %lx, vaddr: %lx, paddr: %lx\n",
 +                          pc, vaddr, paddr);
 +
-+            // FZY: Debug
++            // Debug
 +            dump_guest_callstack(env, ra);
 +        }
 +    }
 +}
 +
-+// FZY: Return the physical address of the given virtual address.
-+// Fast path: TCG soft-TLB probe (nonfault). Slow path on a probe failure:
-+// debug page-table walk, which has no side effects on A/D bits and does not
-+// fail on clean (D=0) kernel PTEs. The real fault, if any, is still taken by
-+// the actual qemu_ld/qemu_st that follows the helper.
++// Physical address of vaddr: probe the TCG soft TLB, falling back to a
++// side-effect-free debug page walk; the real fault comes from the access itself
 +hwaddr get_paddr(CPURISCVState *env, uint64_t vaddr, MMUAccessType access_type) {
 +    CPUTLBEntryFull *full;
 +    void *host;
@@ -1765,7 +1695,7 @@ index 000000000000..1bba94f41e35
 +    }
 +
 +    // Fallback: debug walk handles the D=0 / clean-PTE case that the nonfault
-+    // probe can't resolve.
++    // probe can't resolve
 +    hwaddr page = riscv_cpu_get_phys_page_debug(env_cpu(env), vaddr);
 +    if (page == (hwaddr)-1) {
 +        return 0;
@@ -1773,7 +1703,7 @@ index 000000000000..1bba94f41e35
 +    return page | (vaddr & ~TARGET_PAGE_MASK);
 +}
 +
-+// FZY: Get the memory tag of the given physical address
++// Get the memory tag of the given physical address
 +bool get_memtag(hwaddr paddr) {
 +    paddr -= DRAM_BASE;
 +
@@ -1791,7 +1721,7 @@ index 000000000000..1bba94f41e35
 +    return tag;
 +}
 +
-+// FZY: Set the memory tag of the given physical address
++// Set the memory tag of the given physical address
 +void set_memtag(hwaddr paddr, bool tag) {
 +    paddr -= DRAM_BASE;
 +
@@ -1811,7 +1741,7 @@ index 000000000000..1bba94f41e35
 +    } while (!atomic_compare_exchange_weak(tag_addr, &old_value, new_value));
 +}
 +
-+// FZY: Helper function for tag setting
++// Helper function for tag setting
 +void helper_set_tag(CPURISCVState *env, uint64_t vaddr, uint64_t memory_tag) {
 +    hwaddr paddr = get_paddr(env, vaddr, MMU_DATA_STORE);
 +
@@ -1819,16 +1749,14 @@ index 000000000000..1bba94f41e35
 +        set_memtag(paddr, (memory_tag != 0));
 +    } else {
 +        // Translation failed (unmapped or non-RAM). Skip the memtag update;
-+        // the subsequent qemu_st will raise the proper guest fault if needed.
++        // the subsequent qemu_st will raise the proper guest fault if needed
 +        qemu_log_mask(CPU_LOG_SDP, "helper_set_tag: skipped, vaddr: %lx, paddr: %lx, DRAM: [%lx,%lx)\n",
 +                      vaddr, paddr, DRAM_BASE, DRAM_BASE + total_mem_size);
 +    }
 +}
 +
-+// FZY: Helper function for set_tag pre-condition checking.
-+// For set_tag1, expect the current memtag to be 0.
-+// For set_tag0, expect the current memtag to be 1 and the current TTag
-+// (high 16 bits of the memory word) to equal subject_ttag.
++// Check set_tag's precondition: set_tag1 expects memtag 0, set_tag0
++// expects memtag 1 and a TTag (bits 63:48 of the word) equal to subject_ttag
 +void helper_check_set_tag(CPURISCVState *env, uint64_t vaddr, uint64_t memory_tag, uint64_t subject_ttag, uint64_t pc) {
 +    uintptr_t ra = GETPC();
 +    if (!env->msdpc) {
@@ -1865,10 +1793,10 @@ index 000000000000..1bba94f41e35
 +    }
 +}
 +
-+// FZY: Helper function for load tag checking
++// Helper function for load tag checking
 +void helper_check_memtag_load_tag0(CPURISCVState *env, uint64_t dst_rg, uint64_t vaddr, uint64_t pc) {
 +    uintptr_t ra = GETPC();
-+    // FZY: If msdpc is not set, skip the check
++    // If msdpc is not set, skip the check
 +    if (!env->msdpc) {
 +        return;
 +    }
@@ -1882,18 +1810,14 @@ index 000000000000..1bba94f41e35
 +            qemu_log_mask(CPU_LOG_SDP, "load mismatch, pc: %lx, dst_rg: %s, vaddr: %lx, paddr: %lx, mem_tag: %u\n", pc, riscv_regnames[dst_rg], vaddr, paddr, mem_tag);
 +            sdp_raise(env, vaddr, false, ra);
 +
-+            // FZY: Debug
-+            // CPUState *cs = env_cpu(env);
-+            // cs->exception_index = EXCP_DEBUG;
-+            // cpu_loop_exit_restore(cs, GETPC());
 +        }
 +    }
 +}
 +
-+// FZY: Helper function for ld_tag1 tag checking
++// Helper function for ld_tag1 tag checking
 +void helper_check_memtag_load_tag1(CPURISCVState *env, uint64_t dst_rg, uint64_t vaddr, uint64_t subject_ttag, uint64_t object_ttag, uint64_t pc) {
 +    uintptr_t ra = GETPC();
-+    // FZY: If msdpc is not set, skip the check
++    // If msdpc is not set, skip the check
 +    if (!env->msdpc) {
 +        return;
 +    }
@@ -1901,7 +1825,7 @@ index 000000000000..1bba94f41e35
 +    hwaddr paddr = get_paddr(env, vaddr, MMU_DATA_LOAD);
 +    if (paddr < DRAM_BASE || paddr >= DRAM_BASE + total_mem_size) {
 +        // Translation failed (unmapped or non-RAM). Skip the check; the
-+        // subsequent qemu_ld will raise the proper guest fault if needed.
++        // subsequent qemu_ld will raise the proper guest fault if needed
 +        qemu_log_mask(CPU_LOG_SDP, "ld_tag1 skipped, pc: %lx, vaddr: %lx, paddr: %lx\n", pc, vaddr, paddr);
 +        return;
 +    }
@@ -1913,11 +1837,6 @@ index 000000000000..1bba94f41e35
 +        qemu_log_mask(CPU_LOG_SDP, "ld_tag1 STag mismatch, pc: %lx, dst_rg: %s, vaddr: %lx, paddr: %lx, mem_tag: %u\n", pc, riscv_regnames[dst_rg], vaddr, paddr, mem_tag);
 +        sdp_raise(env, vaddr, false, ra);
 +        
-+        // FZY: Debug
-+        // CPUState *cs = env_cpu(env);
-+        // cs->exception_index = EXCP_DEBUG;
-+        // cpu_loop_exit_restore(cs, GETPC());
-+    
 +        return;
 +    } else {
 +        // Check ttag
@@ -1929,16 +1848,15 @@ index 000000000000..1bba94f41e35
 +    }
 +}
 +
-+// FZY: Helper function for store tag checking
++// Helper function for store tag checking
 +void helper_check_memtag_store_tag0(CPURISCVState *env, uint64_t value, uint64_t vaddr, uint64_t pc) {
 +    uintptr_t ra = GETPC();
-+    // FZY: If msdpc is not set, skip the check
++    // If msdpc is not set, skip the check
 +    if (!env->msdpc) {
 +        return;
 +    }
 +
 +    hwaddr paddr = get_paddr(env, vaddr, MMU_DATA_STORE);
-+    // hwaddr paddr = riscv_cpu_get_phys_addr_debug(env, vaddr);
 +
 +    if (paddr >= DRAM_BASE && paddr < DRAM_BASE + total_mem_size) {
 +        bool mem_tag = get_memtag(paddr);
@@ -1947,18 +1865,14 @@ index 000000000000..1bba94f41e35
 +            qemu_log_mask(CPU_LOG_SDP, "store mismatch, pc: %lx, value: %lx, vaddr: %lx, paddr: %lx, mem_tag: %u\n", pc, value, vaddr, paddr, mem_tag);
 +            sdp_raise(env, vaddr, false, ra);
 +
-+            // FZY: Debug
-+            // CPUState *cs = env_cpu(env);
-+            // cs->exception_index = EXCP_DEBUG;
-+            // cpu_loop_exit_restore(cs, GETPC());
 +        }
 +    }
 +}
 +
-+// FZY: Helper function for sd_tag1 tag checking
++// Helper function for sd_tag1 tag checking
 +void helper_check_memtag_store_tag1(CPURISCVState *env, uint64_t value, uint64_t vaddr, uint64_t subject_ttag, uint64_t object_ttag, uint64_t pc) {
 +    uintptr_t ra = GETPC();
-+    // FZY: If msdpc is not set, skip the check
++    // If msdpc is not set, skip the check
 +    if (!env->msdpc) {
 +        return;
 +    }
@@ -1966,7 +1880,7 @@ index 000000000000..1bba94f41e35
 +    hwaddr paddr = get_paddr(env, vaddr, MMU_DATA_STORE);
 +    if (paddr < DRAM_BASE || paddr >= DRAM_BASE + total_mem_size) {
 +        // Translation failed (unmapped or non-RAM). Skip the check; the
-+        // subsequent qemu_st will raise the proper guest fault if needed.
++        // subsequent qemu_st will raise the proper guest fault if needed
 +        qemu_log_mask(CPU_LOG_SDP, "sd_tag1 skipped, pc: %lx, vaddr: %lx, paddr: %lx\n", pc, vaddr, paddr);
 +        return;
 +    }
@@ -1977,11 +1891,6 @@ index 000000000000..1bba94f41e35
 +    if (mem_tag != 1) {
 +        qemu_log_mask(CPU_LOG_SDP, "sd_tag1 STag mismatch, pc: %lx, value: %lx, vaddr: %lx, paddr: %lx, mem_tag: %u\n", pc, value, vaddr, paddr, mem_tag);
 +        sdp_raise(env, vaddr, false, ra);
-+
-+        // FZY: Debug
-+        // CPUState *cs = env_cpu(env);
-+        // cs->exception_index = EXCP_DEBUG;
-+        // cpu_loop_exit_restore(cs, GETPC());
 +
 +        return;
 +    } else {
@@ -1995,11 +1904,11 @@ index 000000000000..1bba94f41e35
 +}
 diff --git a/target/riscv/sensitive_data_protection.h b/target/riscv/sensitive_data_protection.h
 new file mode 100644
-index 000000000000..898e43392cea
+index 0000000000..09fc162b8c
 --- /dev/null
 +++ b/target/riscv/sensitive_data_protection.h
 @@ -0,0 +1,24 @@
-+// FZY: Header file for sensitive data protection
++// SDP: Header file for sensitive data protection
 +
 +#ifndef SENSITIVE_DATA_PROTECTION_H
 +#define SENSITIVE_DATA_PROTECTION_H
@@ -2025,7 +1934,7 @@ index 000000000000..898e43392cea
 +#endif
 \ No newline at end of file
 diff --git a/util/log.c b/util/log.c
-index 6219819855c2..091713d6444f 100644
+index 6219819855..60f9bea1e5 100644
 --- a/util/log.c
 +++ b/util/log.c
 @@ -503,6 +503,11 @@ const QEMULogItem qemu_log_items[] = {
@@ -2033,7 +1942,7 @@ index 6219819855c2..091713d6444f 100644
      { CPU_LOG_TB_VPU, "vpu",
        "include VPU registers in the 'cpu' logging" },
 +
-+    // FZY: SDP tag operations and tag checks
++    // SDP: Tag operations and tag checks
 +    { CPU_LOG_SDP, "sdp",
 +      "log SDP tag operations and tag checks (very verbose)" },
 +

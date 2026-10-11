@@ -1,4 +1,4 @@
-// FZY: Add a simple proof of concept that overwrites panic_on_oops from 1 to 0, allowing the system to continue running after an oops instead of panicking
+// SDP: Add a simple proof of concept that overwrites panic_on_oops from 1 to 0, allowing the system to continue running after an oops instead of panicking
 
 #include <fcntl.h>
 #include <stdio.h>
@@ -190,7 +190,7 @@ int main(int argc, char *argv[]) {
     arb_read(arbrw_dev_fd, panic_on_oops_addr, &panic_on_oops_addr, sizeof(unsigned long));
     printf("[+] panic_on_oops address from kernel: 0x%lx\n", panic_on_oops_addr);
   
-    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work correctly
+    // Enable to bypass the mitigation and evaluate if the rest steps work correctly
     // panic_on_oops_addr = panic_on_oops_addr | 0xFFFF000000000000;
   }
   

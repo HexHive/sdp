@@ -1,4 +1,4 @@
-// FZY: Control-flow hijacking proof of concept that overwrites the saved ra register in task_struct.thread to redirect a sleeping thread's execution to a kernel function
+// SDP: Control-flow hijacking proof of concept that overwrites the saved ra register in task_struct.thread to redirect a sleeping thread's execution to a kernel function
 //   1. Fork a child process
 //   2. Child gets its own task_struct address via ioctl, reports it, then sleeps
 //   3. Parent overwrites the child's thread_struct.ra with thread_hijack_target
@@ -149,7 +149,7 @@ int main(int argc, char *argv[]) {
            thread_offset, thread_ptr);
 
     printf("[parent] SDP mode: thread pointer (tagged): 0x%lx\n", thread_ptr);
-    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work correctly
+    // Enable to bypass the mitigation and evaluate if the rest steps work correctly
     // thread_ptr = thread_ptr | 0xFFFF000000000000;
 
     ra_addr = thread_ptr;

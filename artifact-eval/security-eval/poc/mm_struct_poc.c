@@ -1,4 +1,4 @@
-// FZY: Add a simple proof of concept that corrupts task_struct.mm->start_brk
+// SDP: Add a simple proof of concept that corrupts task_struct.mm->start_brk
 // Verified by reading /proc/self/stat before and after
 
 #include <fcntl.h>
@@ -129,7 +129,7 @@ int main(int argc, char *argv[]) {
 
   if (mode != 0) {
     printf("[+] SDP mode %d: mm pointer (tagged): 0x%lx\n", mode, mm_addr);
-    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work
+    // Enable to bypass the mitigation and evaluate if the rest steps work
     // correctly
     // mm_addr = mm_addr | 0xFFFF000000000000;
   }

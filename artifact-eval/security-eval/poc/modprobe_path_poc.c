@@ -1,4 +1,4 @@
-// FZY: Add a simple privilege escalation proof of concept that overwrites the modprobe_path to execute a payload script when executing a file with unknown magic bytes
+// SDP: Add a simple privilege escalation proof of concept that overwrites the modprobe_path to execute a payload script when executing a file with unknown magic bytes
 
 #include <fcntl.h>
 #include <stdio.h>
@@ -215,7 +215,7 @@ int main(int argc, char *argv[]) {
 
     printf("[+] modprobe_path address from kernel memory: 0x%lx\n", modprobe_path_addr);
 
-    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work correctly
+    // Enable to bypass the mitigation and evaluate if the rest steps work correctly
     // modprobe_path_addr = modprobe_path_addr | 0xFFFF000000000000;
   }
   

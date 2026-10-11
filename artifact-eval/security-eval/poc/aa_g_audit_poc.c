@@ -1,4 +1,4 @@
-// FZY: Add a simple apparmor log level downgrading proof of concept that overwrites aa_g_audit from 0 (normal) to 2 (quite)
+// SDP: Add a simple apparmor log level downgrading proof of concept that overwrites aa_g_audit from 0 (normal) to 2 (quite)
 
 #include <fcntl.h>
 #include <stdio.h>
@@ -182,7 +182,7 @@ int main(int argc, char *argv[]) {
 
     printf("[+] aa_g_audit address from kernel memory: 0x%lx\n", aa_g_audit_addr);
 
-    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work correctly
+    // Enable to bypass the mitigation and evaluate if the rest steps work correctly
     // aa_g_audit_addr = aa_g_audit_addr | 0xFFFF000000000000;
   }
   

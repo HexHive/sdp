@@ -1,11 +1,11 @@
-// FZY: Add a simple control-flow hijacking proof of concept that overwrites the return address to execute a commit_creds(&init_cred) gadget
+// SDP: Add a simple control-flow hijacking proof of concept that overwrites the return address to execute a commit_creds(&init_cred) gadget
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
 
-// FZY: Return-address overwrite. use_tagged: 0 = plain ld/sd (naive attacker),
+// Return-address overwrite. use_tagged: 0 = plain ld/sd (naive attacker),
 // 3 = tagged ld_sdp/sd_sdp (attacker reaching for the tagged instructions). On an
 // SDP kernel both trap (plain on STag, tagged on TTag mismatch) and fail.
 struct arb_ret_overwrite_request {

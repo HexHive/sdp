@@ -1,5 +1,5 @@
 #!/bin/bash
-# FZY: The arbrw PoC table - the run command for every PoC, and the output each
+# SDP: The arbrw PoC table - the run command for every PoC, and the output each
 # one produces when it works on the original, unprotected kernel. Both host
 # drivers source this file rather than copying it: run_poc_ori_kernel.py turns
 # the table into pass/fail checks, and run_poc_sdp_kernel.py rewrites the mode

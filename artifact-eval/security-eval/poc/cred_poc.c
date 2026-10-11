@@ -1,4 +1,4 @@
-// FZY: Add a simple proof of concept that overwrites the cred struct to get root privileges
+// SDP: Add a simple proof of concept that overwrites the cred struct to get root privileges
 
 #include <fcntl.h>
 #include <stdio.h>
@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
 
   if (mode != 0) {
     printf("[+] SDP mode %d: cred pointer (tagged): 0x%lx\n", mode, cred_addr);
-    // FZY: Enable to bypass the mitigation and evaluate if the rest steps work correctly
+    // Enable to bypass the mitigation and evaluate if the rest steps work correctly
     // cred_addr = cred_addr | 0xFFFF000000000000;
   }
 
