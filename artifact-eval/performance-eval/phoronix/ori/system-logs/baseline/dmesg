@@ -209,7 +209,7 @@ pcieport 0000:01:00.0: enabling device (0000 -> 0002)
 pcieport 0000:02:02.0: enabling device (0000 -> 0002)
 pcieport 0000:02:04.0: enabling device (0000 -> 0002)
 pci 0000:04:00.0: enabling device (0000 -> 0002)
-CCACHE: DataError @ 0x00000001.00801270
+CCACHE: DataError @ 0x00000001.00801A70
 CCACHE: 4 banks, 16 ways, sets/bank=512, bytes/block=64
 CCACHE: Index of the largest way enabled: 15
 printk: console [ttySIF0] enabled
@@ -275,7 +275,7 @@ Run /sbin/init as init process
     TERM=linux
     BOOT_IMAGE=/boot/vmlinuz-6.6-original
     crashkernel=2G-4G:320M,4G-32G:512M,32G-64G:1024M,64G-128G:2048M,128G-:4096M
-systemd[1]: System time advanced to timestamp on /var/lib/systemd/timesync/clock: Wed 2026-04-22 10:23:35 UTC
+systemd[1]: System time advanced to timestamp on /var/lib/systemd/timesync/clock: Mon 2026-09-07 17:05:50 CEST
 systemd[1]: systemd 257.4-1ubuntu3.1 running in system mode (+PAM +AUDIT +SELINUX +APPARMOR +IMA +IPE +SMACK +SECCOMP +GCRYPT -GNUTLS +OPENSSL +ACL +BLKID +CURL +ELFUTILS +FIDO2 +IDN2 -IDN +IPTC +KMOD +LIBCRYPTSETUP +LIBCRYPTSETUP_PLUGINS +LIBFDISK +PCRE2 +PWQUALITY +P11KIT +QRENCODE +TPM2 +BZIP2 +LZ4 +XZ +ZLIB +ZSTD -BPF_FRAMEWORK -BTF -XKBCOMMON -UTMP +SYSVINIT +LIBARCHIVE)
 systemd[1]: Detected architecture riscv64.
 systemd[1]: Hostname set to .
@@ -320,7 +320,6 @@ systemd[1]: Starting lvm2-monitor.service - Monitoring of LVM2 mirrors, snapshot
 systemd[1]: Starting modprobe@configfs.service - Load Kernel Module configfs...
 systemd[1]: Starting modprobe@dm_multipath.service - Load Kernel Module dm_multipath...
 systemd[1]: Starting modprobe@drm.service - Load Kernel Module drm...
-systemd-journald[107]: Collecting audit messages is disabled.
 systemd[1]: Starting modprobe@efi_pstore.service - Load Kernel Module efi_pstore...
 systemd[1]: Starting modprobe@fuse.service - Load Kernel Module fuse...
 systemd[1]: netplan-ovs-cleanup.service - OpenVSwitch configuration for cleanup was skipped because of an unmet condition check (ConditionFileIsExecutable=/usr/bin/ovs-vsctl).
@@ -329,26 +328,32 @@ systemd[1]: systemd-hibernate-clear.service - Clear Stale Hibernate Storage Info
 systemd[1]: Starting systemd-modules-load.service - Load Kernel Modules...
 systemd[1]: systemd-pcrmachine.service - TPM PCR Machine ID Measurement was skipped because of an unmet condition check (ConditionSecurity=measured-uki).
 systemd[1]: Starting systemd-tmpfiles-setup-dev-early.service - Create Static Device Nodes in /dev gracefully...
+systemd-journald[107]: Collecting audit messages is disabled.
 systemd[1]: systemd-tpm2-setup-early.service - Early TPM SRK Setup was skipped because of an unmet condition check (ConditionSecurity=measured-uki).
 systemd[1]: Starting systemd-udev-load-credentials.service - Load udev Rules from Credentials...
 systemd[1]: Starting systemd-udev-trigger.service - Coldplug All udev Devices...
+systemd[1]: Mounted run-lock.mount - Legacy Locks Directory /run/lock.
+systemd[1]: modprobe@configfs.service: Deactivated successfully.
+systemd[1]: Finished modprobe@configfs.service - Load Kernel Module configfs.
 systemd[1]: Started systemd-journald.service - Journal Service.
 EXT4-fs (nvme0n1p2): re-mounted 8147861a-43f4-452f-8abf-1e8015e88f42 r/w. Quota mode: disabled.
 Adding 4194300k swap on /swap.img.  Priority:-2 extents:36 across:451829760k SS
 systemd-journald[107]: Received client request to flush runtime journal.
-random: crng init done
+systemd-journald[107]: /var/log/journal/0a116517db364004bb831434871de1c7/system.journal: Realtime clock jumped backwards relative to last journal entry, rotating.
+systemd-journald[107]: Rotating system journal.
 macb 10090000.ethernet end0: renamed from eth0
-audit: type=1400 audit(1776853422.995:2): apparmor="STATUS" operation="profile_load" profile="unconfined" name="1password" pid=323 comm="apparmor_parser"
-audit: type=1400 audit(1776853422.999:3): apparmor="STATUS" operation="profile_load" profile="unconfined" name="Discord" pid=324 comm="apparmor_parser"
-audit: type=1400 audit(1776853422.999:4): apparmor="STATUS" operation="profile_load" profile="unconfined" name=4D6F6E676F444220436F6D70617373 pid=325 comm="apparmor_parser"
-audit: type=1400 audit(1776853423.003:5): apparmor="STATUS" operation="profile_load" profile="unconfined" name="QtWebEngineProcess" pid=326 comm="apparmor_parser"
-audit: type=1400 audit(1776853423.011:6): apparmor="STATUS" operation="profile_load" profile="unconfined" name="balena-etcher" pid=330 comm="apparmor_parser"
-audit: type=1400 audit(1776853423.023:7): apparmor="STATUS" operation="profile_load" profile="unconfined" name="babeld" pid=329 comm="apparmor_parser"
-audit: type=1400 audit(1776853423.027:8): apparmor="STATUS" operation="profile_load" profile="unconfined" name="alsamixer" pid=328 comm="apparmor_parser"
-audit: type=1400 audit(1776853423.035:9): apparmor="STATUS" operation="profile_load" profile="unconfined" name="bfdd" pid=331 comm="apparmor_parser"
-audit: type=1400 audit(1776853423.043:10): apparmor="STATUS" operation="profile_load" profile="unconfined" name="Xorg" pid=327 comm="apparmor_parser"
-audit: type=1400 audit(1776853423.047:11): apparmor="STATUS" operation="profile_load" profile="unconfined" name="buildah" pid=334 comm="apparmor_parser"
+random: crng init done
+audit: type=1400 audit(1788793557.838:2): apparmor="STATUS" operation="profile_load" profile="unconfined" name="Discord" pid=326 comm="apparmor_parser"
+audit: type=1400 audit(1788793557.838:3): apparmor="STATUS" operation="profile_load" profile="unconfined" name="QtWebEngineProcess" pid=328 comm="apparmor_parser"
+audit: type=1400 audit(1788793557.838:4): apparmor="STATUS" operation="profile_load" profile="unconfined" name=4D6F6E676F444220436F6D70617373 pid=327 comm="apparmor_parser"
+audit: type=1400 audit(1788793557.842:5): apparmor="STATUS" operation="profile_load" profile="unconfined" name="1password" pid=325 comm="apparmor_parser"
+audit: type=1400 audit(1788793557.854:6): apparmor="STATUS" operation="profile_load" profile="unconfined" name="balena-etcher" pid=332 comm="apparmor_parser"
+audit: type=1400 audit(1788793557.866:7): apparmor="STATUS" operation="profile_load" profile="unconfined" name="babeld" pid=331 comm="apparmor_parser"
+audit: type=1400 audit(1788793557.866:8): apparmor="STATUS" operation="profile_load" profile="unconfined" name="alsamixer" pid=330 comm="apparmor_parser"
+audit: type=1400 audit(1788793557.874:9): apparmor="STATUS" operation="profile_load" profile="unconfined" name="Xorg" pid=329 comm="apparmor_parser"
+audit: type=1400 audit(1788793557.882:10): apparmor="STATUS" operation="profile_load" profile="unconfined" name="buildah" pid=336 comm="apparmor_parser"
+audit: type=1400 audit(1788793557.886:11): apparmor="STATUS" operation="profile_load" profile="unconfined" name="brave" pid=335 comm="apparmor_parser"
 macb 10090000.ethernet end0: PHY [10090000.ethernet-ffffffff:00] driver [Generic PHY] (irq=POLL)
 macb 10090000.ethernet end0: configuring for phy/gmii link mode
 macb 10090000.ethernet end0: Link is Up - 1Gbps/Full - flow control off
-php[1028]: memfd_create() called without MFD_EXEC or MFD_NOEXEC_SEAL set
+php[864]: memfd_create() called without MFD_EXEC or MFD_NOEXEC_SEAL set
