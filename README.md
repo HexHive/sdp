@@ -19,7 +19,7 @@ The performance evaluation (Paper §8.3) is built here and measured on a SiFive 
 
 Directory tree:
 ```
-artifact-eval/
+sdp/
 ├── env.sh                    environments
 ├── docker/
 │   ├── Dockerfile            images: sdp-eval and sdp-build
