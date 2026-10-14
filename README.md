@@ -54,7 +54,7 @@ sdp/
 
 ### 2 Access
 #### 2.1 Artifact Source
-The artifact is available on [Zenodo](https://doi.org/10.5281/zenodo.22775299) and [GitHub](https://github.com/HexHive/sdp).
+The artifact is available on [Zenodo](https://doi.org/10.5281/zenodo.22775298) and [GitHub](https://github.com/HexHive/sdp).
 
 #### 2.2 Remote Access
 We provide remote access over a private [ZeroTier](https://www.zerotier.com) network to a machine for the security evaluation and to the SiFive Unmatched board for the performance evaluation.
