@@ -1,9 +1,11 @@
 ## SDP: Sensitive Data Protection
 
+This is the artifact repository for the IEEE S&P 2027 paper *SDP: Sensitive Data Protection*.
+
 ### 1 Overview
 #### 1.1 Paper
 SDP introduces a unified solution to protect sensitive data against both data-only attacks and control-flow hijacking.
-We propose to randomly allocate sensitive data and enforce read and write protection on sensitive pointers through pointer-type-based compartmentalization, which simplifies the overall system design and reduces overhead.
+We propose to randomly allocate sensitive data and enforce read and write protection on sensitive pointers through pointer type-based compartmentalization, which simplifies the overall system design and reduces overhead, while still providing strong security guarantees.
 We prototype SDP by extending the RISC-V ISA, evaluate its security guarantees by protecting 16 commonly attacked security-sensitive fields in the Linux kernel, and show its negligible performance impact with a set of micro (LMbench) and macro (Phoronix) benchmarks.
 The results demonstrate that SDP provides an effective and practical solution for sensitive data protection.
 
