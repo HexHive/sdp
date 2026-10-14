@@ -1,0 +1,1919 @@
+[lmbench3.0 results for Linux sdpboard 6.6.0-g94e6d7c53275 #841 SMP Sat Aug 29 00:50:37 CEST 2026 riscv64 riscv64 riscv64 GNU/Linux]
+[LMBENCH_VER: 11636a6]
+[BENCHMARK_HARDWARE: NO]
+[BENCHMARK_OS: NO]
+[ALL: 512 1k 2k 4k 8k 16k 32k 64k 128k 256k 512k 1m 2m 4m 8m 16m 32m 64m 128m 256m 512m 1024m]
+[DISKS: ]
+[DISK_DESC: ]
+[ENOUGH: 10000]
+[FAST: ]
+[FASTMEM: NO]
+[FILE: /var/tmp/XXX]
+[FSDIR: /var/tmp]
+[HALF: 512 1k 2k 4k 8k 16k 32k 64k 128k 256k 512k 1m 2m 4m 8m 16m 32m 64m 128m 256m 512m]
+[INFO: INFO.sdpboard]
+[LINE_SIZE: 64]
+[LOOP_O: 0]
+[MB: 1024]
+[MHZ: 1195 MHz, 0.8368 nanosec clock]
+[MOTHERBOARD: ]
+[NETWORKS: ]
+[PROCESSORS: 4]
+[REMOTE: ]
+[SLOWFS: YES]
+[OS: ]
+[SYNC_MAX: 1]
+[LMBENCH_SCHED: DEFAULT]
+[TIMING_O: 0]
+[LMBENCH VERSION: lmbench-3alpha4]
+[USER: ubuntu]
+[HOSTNAME: sdpboard]
+[NODENAME: sdpboard]
+[SYSNAME: Linux]
+[PROCESSOR: riscv64]
+[MACHINE: riscv64]
+[RELEASE: 6.6.0-g94e6d7c53275]
+[VERSION: #841 SMP Sat Aug 29 00:50:37 CEST 2026]
+[Sat Aug 29 17:16:00 CEST 2026]
+[ 17:16:00 up 1 min, 2 users, load average: 1.39, 0.56, 0.20]
+[net: Kernel Interface table]
+Kernel: error fetching interface information: Device not found
+[net: Iface             MTU    RX-OK RX-ERR RX-DRP RX-OVR    TX-OK TX-ERR TX-DRP TX-OVR Flg]
+Iface: error fetching interface information: Device not found
+[net: end0             1500      373      0    229 0            48      0      0      0 BMRU]
+[if: end0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500]
+[if: inet 128.178.122.70  netmask 255.255.255.0  broadcast 128.178.122.255]
+[if: inet6 fe80::72b3:d5ff:fe92:f77f  prefixlen 64  scopeid 0x20<link>]
+[if: ether 70:b3:d5:92:f7:7f  txqueuelen 1000  (Ethernet)]
+[if: RX packets 373  bytes 48274 (48.2 KB)]
+[if: RX errors 0  dropped 229  overruns 0  frame 0]
+[if: TX packets 48  bytes 5564 (5.5 KB)]
+[if: TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0]
+[if: device interrupt 47]
+[if: ]
+[net: lo              65536       92      0      0 0            92      0      0      0 LRU]
+[if: lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536]
+[if: inet 127.0.0.1  netmask 255.0.0.0]
+[if: inet6 ::1  prefixlen 128  scopeid 0x10<host>]
+[if: loop  txqueuelen 1000  (Local Loopback)]
+[if: RX packets 92  bytes 7264 (7.2 KB)]
+[if: RX errors 0  dropped 0  overruns 0  frame 0]
+[if: TX packets 92  bytes 7264 (7.2 KB)]
+[if: TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0]
+[if: ]
+[mount: /dev/nvme0n1p2 on / type ext4 (rw,relatime,stripe=32)]
+[mount: devtmpfs on /dev type devtmpfs (rw,relatime,size=8087704k,nr_inodes=2021926,mode=755)]
+[mount: proc on /proc type proc (rw,nosuid,nodev,noexec,relatime)]
+[mount: sysfs on /sys type sysfs (rw,nosuid,nodev,noexec,relatime)]
+[mount: securityfs on /sys/kernel/security type securityfs (rw,nosuid,nodev,noexec,relatime)]
+[mount: tmpfs on /dev/shm type tmpfs (rw,nosuid,nodev)]
+[mount: devpts on /dev/pts type devpts (rw,nosuid,noexec,relatime,gid=5,mode=600,ptmxmode=000)]
+[mount: tmpfs on /run type tmpfs (rw,nosuid,nodev,size=3235512k,nr_inodes=819200,mode=755)]
+[mount: cgroup2 on /sys/fs/cgroup type cgroup2 (rw,nosuid,nodev,noexec,relatime,nsdelegate,memory_recursiveprot)]
+[mount: bpf on /sys/fs/bpf type bpf (rw,nosuid,nodev,noexec,relatime,mode=700)]
+[mount: systemd-1 on /proc/sys/fs/binfmt_misc type autofs (rw,relatime,fd=34,pgrp=1,timeout=0,minproto=5,maxproto=5,direct)]
+[mount: tmpfs on /run/lock type tmpfs (rw,nosuid,nodev,noexec,relatime,size=5120k)]
+[mount: tmpfs on /run/credentials/systemd-journald.service type tmpfs (ro,nosuid,nodev,noexec,relatime,nosymfollow,size=1024k,nr_inodes=1024,mode=700,noswap)]
+[mount: tmpfs on /run/credentials/systemd-resolved.service type tmpfs (ro,nosuid,nodev,noexec,relatime,nosymfollow,size=1024k,nr_inodes=1024,mode=700,noswap)]
+[mount: tmpfs on /tmp type tmpfs (rw,nosuid,nodev,nr_inodes=1048576)]
+[mount: /dev/nvme0n1p1 on /boot/efi type vfat (rw,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,errors=remount-ro)]
+[mount: binfmt_misc on /proc/sys/fs/binfmt_misc type binfmt_misc (rw,nosuid,nodev,noexec,relatime)]
+[mount: tmpfs on /run/credentials/systemd-networkd.service type tmpfs (ro,nosuid,nodev,noexec,relatime,nosymfollow,size=1024k,nr_inodes=1024,mode=700,noswap)]
+[mount: tmpfs on /run/credentials/getty@tty1.service type tmpfs (ro,nosuid,nodev,noexec,relatime,nosymfollow,size=1024k,nr_inodes=1024,mode=700,noswap)]
+[mount: tmpfs on /run/user/1000 type tmpfs (rw,nosuid,nodev,relatime,size=1617756k,nr_inodes=404439,mode=700,uid=1000,gid=1000)]
+[mount: tmpfs on /run/credentials/serial-getty@ttySIF0.service type tmpfs (ro,nosuid,nodev,noexec,relatime,nosymfollow,size=1024k,nr_inodes=1024,mode=700,noswap)]
+
+raw: 1001967 us / 3419304 iter = 0.2930 us/iter
+raw: 1000714 us / 3419304 iter = 0.2927 us/iter
+raw: 1000704 us / 3419304 iter = 0.2927 us/iter
+raw: 1000667 us / 3419304 iter = 0.2927 us/iter
+raw: 1000393 us / 3419304 iter = 0.2926 us/iter
+raw: 1000093 us / 3419304 iter = 0.2925 us/iter
+raw: 999625 us / 3419304 iter = 0.2923 us/iter
+raw: 999283 us / 3419304 iter = 0.2922 us/iter
+raw: 998754 us / 3419304 iter = 0.2921 us/iter
+raw: 998671 us / 3419304 iter = 0.2921 us/iter
+raw: 998626 us / 3419304 iter = 0.2921 us/iter
+Simple syscall: 0.2925 microseconds
+
+raw: 1000281 us / 1167229 iter = 0.8570 us/iter
+raw: 1000035 us / 1167229 iter = 0.8568 us/iter
+raw: 999962 us / 1167229 iter = 0.8567 us/iter
+raw: 999276 us / 1167229 iter = 0.8561 us/iter
+raw: 999196 us / 1167229 iter = 0.8560 us/iter
+raw: 999195 us / 1167229 iter = 0.8560 us/iter
+raw: 999174 us / 1167229 iter = 0.8560 us/iter
+raw: 999105 us / 1167229 iter = 0.8560 us/iter
+raw: 999050 us / 1167229 iter = 0.8559 us/iter
+raw: 998963 us / 1167229 iter = 0.8558 us/iter
+raw: 998885 us / 1167229 iter = 0.8558 us/iter
+Simple read: 0.8560 microseconds
+
+raw: 1007915 us / 1477948 iter = 0.6820 us/iter
+raw: 1001510 us / 1477948 iter = 0.6776 us/iter
+raw: 1000399 us / 1477948 iter = 0.6769 us/iter
+raw: 997324 us / 1477948 iter = 0.6748 us/iter
+raw: 996905 us / 1477948 iter = 0.6745 us/iter
+raw: 996877 us / 1477948 iter = 0.6745 us/iter
+raw: 996611 us / 1477948 iter = 0.6743 us/iter
+raw: 996605 us / 1477948 iter = 0.6743 us/iter
+raw: 996125 us / 1477948 iter = 0.6740 us/iter
+raw: 996026 us / 1477948 iter = 0.6739 us/iter
+raw: 995876 us / 1477948 iter = 0.6738 us/iter
+Simple write: 0.6745 microseconds
+
+raw: 999544 us / 296041 iter = 3.3764 us/iter
+raw: 997569 us / 296041 iter = 3.3697 us/iter
+raw: 997503 us / 296041 iter = 3.3695 us/iter
+raw: 997430 us / 296041 iter = 3.3692 us/iter
+raw: 997133 us / 296041 iter = 3.3682 us/iter
+raw: 997082 us / 296041 iter = 3.3681 us/iter
+raw: 997074 us / 296041 iter = 3.3680 us/iter
+raw: 996802 us / 296041 iter = 3.3671 us/iter
+raw: 996258 us / 296041 iter = 3.3653 us/iter
+raw: 995993 us / 296041 iter = 3.3644 us/iter
+raw: 995757 us / 296041 iter = 3.3636 us/iter
+Simple stat: 3.3681 microseconds
+
+raw: 1002061 us / 945710 iter = 1.0596 us/iter
+raw: 1002012 us / 945710 iter = 1.0595 us/iter
+raw: 1000818 us / 945710 iter = 1.0583 us/iter
+raw: 999253 us / 945710 iter = 1.0566 us/iter
+raw: 999159 us / 945710 iter = 1.0565 us/iter
+raw: 999117 us / 945710 iter = 1.0565 us/iter
+raw: 998937 us / 945710 iter = 1.0563 us/iter
+raw: 998933 us / 945710 iter = 1.0563 us/iter
+raw: 998813 us / 945710 iter = 1.0562 us/iter
+raw: 998742 us / 945710 iter = 1.0561 us/iter
+raw: 998415 us / 945710 iter = 1.0557 us/iter
+Simple fstat: 1.0565 microseconds
+
+raw: 1114645 us / 139527 iter = 7.9887 us/iter
+raw: 1113688 us / 139527 iter = 7.9819 us/iter
+raw: 1110416 us / 139527 iter = 7.9584 us/iter
+raw: 1106967 us / 139527 iter = 7.9337 us/iter
+raw: 1096438 us / 139527 iter = 7.8582 us/iter
+raw: 1093203 us / 139527 iter = 7.8351 us/iter
+raw: 1092591 us / 139527 iter = 7.8307 us/iter
+raw: 1078930 us / 139527 iter = 7.7328 us/iter
+raw: 1074815 us / 139527 iter = 7.7033 us/iter
+raw: 1069598 us / 139527 iter = 7.6659 us/iter
+raw: 1057508 us / 139527 iter = 7.5792 us/iter
+Simple open/close: 7.8351 microseconds
+
+raw: 996842 us / 618049 iter = 1.6129 us/iter
+raw: 996397 us / 618049 iter = 1.6122 us/iter
+raw: 995814 us / 618049 iter = 1.6112 us/iter
+raw: 995412 us / 618049 iter = 1.6106 us/iter
+raw: 995097 us / 618049 iter = 1.6101 us/iter
+raw: 995010 us / 618049 iter = 1.6099 us/iter
+raw: 994933 us / 618049 iter = 1.6098 us/iter
+raw: 994633 us / 618049 iter = 1.6093 us/iter
+raw: 994616 us / 618049 iter = 1.6093 us/iter
+raw: 994444 us / 618049 iter = 1.6090 us/iter
+raw: 994398 us / 618049 iter = 1.6089 us/iter
+Select on 10 fd's: 1.6099 microseconds
+
+raw: 999397 us / 106757 iter = 9.3614 us/iter
+raw: 999392 us / 106757 iter = 9.3614 us/iter
+raw: 999377 us / 106757 iter = 9.3612 us/iter
+raw: 999335 us / 106757 iter = 9.3608 us/iter
+raw: 999320 us / 106757 iter = 9.3607 us/iter
+raw: 999318 us / 106757 iter = 9.3607 us/iter
+raw: 999300 us / 106757 iter = 9.3605 us/iter
+raw: 999291 us / 106757 iter = 9.3604 us/iter
+raw: 999290 us / 106757 iter = 9.3604 us/iter
+raw: 999277 us / 106757 iter = 9.3603 us/iter
+raw: 992484 us / 106757 iter = 9.2967 us/iter
+Select on 100 fd's: 9.3607 microseconds
+
+raw: 999684 us / 44744 iter = 22.3423 us/iter
+raw: 999612 us / 44744 iter = 22.3407 us/iter
+raw: 999590 us / 44744 iter = 22.3402 us/iter
+raw: 999585 us / 44744 iter = 22.3401 us/iter
+raw: 999556 us / 44744 iter = 22.3394 us/iter
+raw: 999327 us / 44744 iter = 22.3343 us/iter
+raw: 999250 us / 44744 iter = 22.3326 us/iter
+raw: 999089 us / 44744 iter = 22.3290 us/iter
+raw: 995898 us / 44744 iter = 22.2577 us/iter
+raw: 994548 us / 44744 iter = 22.2275 us/iter
+raw: 992980 us / 44744 iter = 22.1925 us/iter
+Select on 250 fd's: 22.3343 microseconds
+
+raw: 999548 us / 22581 iter = 44.2650 us/iter
+raw: 999523 us / 22581 iter = 44.2639 us/iter
+raw: 999509 us / 22581 iter = 44.2633 us/iter
+raw: 999496 us / 22581 iter = 44.2627 us/iter
+raw: 999491 us / 22581 iter = 44.2625 us/iter
+raw: 999487 us / 22581 iter = 44.2623 us/iter
+raw: 999487 us / 22581 iter = 44.2623 us/iter
+raw: 999481 us / 22581 iter = 44.2620 us/iter
+raw: 999480 us / 22581 iter = 44.2620 us/iter
+raw: 999272 us / 22581 iter = 44.2528 us/iter
+raw: 992280 us / 22581 iter = 43.9431 us/iter
+Select on 500 fd's: 44.2623 microseconds
+
+raw: 1003925 us / 536939 iter = 1.8697 us/iter
+raw: 1002315 us / 536939 iter = 1.8667 us/iter
+raw: 1002053 us / 536939 iter = 1.8662 us/iter
+raw: 1001652 us / 536939 iter = 1.8655 us/iter
+raw: 1000385 us / 536939 iter = 1.8631 us/iter
+raw: 1000292 us / 536939 iter = 1.8630 us/iter
+raw: 999506 us / 536939 iter = 1.8615 us/iter
+raw: 999446 us / 536939 iter = 1.8614 us/iter
+raw: 998229 us / 536939 iter = 1.8591 us/iter
+raw: 996796 us / 536939 iter = 1.8564 us/iter
+raw: 996362 us / 536939 iter = 1.8556 us/iter
+Select on 10 tcp fd's: 1.8630 microseconds
+
+raw: 999159 us / 55979 iter = 17.8488 us/iter
+raw: 998469 us / 55979 iter = 17.8365 us/iter
+raw: 998467 us / 55979 iter = 17.8365 us/iter
+raw: 998452 us / 55979 iter = 17.8362 us/iter
+raw: 998449 us / 55979 iter = 17.8361 us/iter
+raw: 998438 us / 55979 iter = 17.8359 us/iter
+raw: 998436 us / 55979 iter = 17.8359 us/iter
+raw: 998423 us / 55979 iter = 17.8357 us/iter
+raw: 998416 us / 55979 iter = 17.8355 us/iter
+raw: 998390 us / 55979 iter = 17.8351 us/iter
+raw: 995010 us / 55979 iter = 17.7747 us/iter
+Select on 100 tcp fd's: 17.8359 microseconds
+
+raw: 999917 us / 22324 iter = 44.7911 us/iter
+raw: 999906 us / 22324 iter = 44.7906 us/iter
+raw: 999789 us / 22324 iter = 44.7854 us/iter
+raw: 999738 us / 22324 iter = 44.7831 us/iter
+raw: 999620 us / 22324 iter = 44.7778 us/iter
+raw: 999615 us / 22324 iter = 44.7776 us/iter
+raw: 999613 us / 22324 iter = 44.7775 us/iter
+raw: 999583 us / 22324 iter = 44.7762 us/iter
+raw: 999576 us / 22324 iter = 44.7758 us/iter
+raw: 999574 us / 22324 iter = 44.7758 us/iter
+raw: 999573 us / 22324 iter = 44.7757 us/iter
+Select on 250 tcp fd's: 44.7776 microseconds
+
+raw: 999569 us / 11106 iter = 90.0026 us/iter
+raw: 999507 us / 11106 iter = 89.9970 us/iter
+raw: 999495 us / 11106 iter = 89.9959 us/iter
+raw: 999482 us / 11106 iter = 89.9948 us/iter
+raw: 999482 us / 11106 iter = 89.9948 us/iter
+raw: 999481 us / 11106 iter = 89.9947 us/iter
+raw: 999473 us / 11106 iter = 89.9940 us/iter
+raw: 999441 us / 11106 iter = 89.9911 us/iter
+raw: 999424 us / 11106 iter = 89.9896 us/iter
+raw: 999413 us / 11106 iter = 89.9886 us/iter
+raw: 999402 us / 11106 iter = 89.9876 us/iter
+Select on 500 tcp fd's: 89.9947 microseconds
+
+raw: 969890 us / 1054717 iter = 0.9196 us/iter
+raw: 963834 us / 1054717 iter = 0.9138 us/iter
+raw: 963320 us / 1054717 iter = 0.9133 us/iter
+raw: 962747 us / 1054717 iter = 0.9128 us/iter
+raw: 962396 us / 1054717 iter = 0.9125 us/iter
+raw: 962174 us / 1054717 iter = 0.9123 us/iter
+raw: 960744 us / 1054717 iter = 0.9109 us/iter
+raw: 959299 us / 1054717 iter = 0.9095 us/iter
+raw: 955504 us / 1054717 iter = 0.9059 us/iter
+raw: 955101 us / 1054717 iter = 0.9056 us/iter
+raw: 954218 us / 1054717 iter = 0.9047 us/iter
+Signal handler installation: 0.9123 microseconds
+
+raw: 1005882 us / 1192707 iter = 0.8434 us/iter
+raw: 1005055 us / 1192707 iter = 0.8427 us/iter
+raw: 1004952 us / 1192707 iter = 0.8426 us/iter
+raw: 1004930 us / 1192707 iter = 0.8426 us/iter
+raw: 1004840 us / 1192707 iter = 0.8425 us/iter
+raw: 1004704 us / 1192707 iter = 0.8424 us/iter
+raw: 1004631 us / 1192707 iter = 0.8423 us/iter
+raw: 1004512 us / 1192707 iter = 0.8422 us/iter
+raw: 1004175 us / 1192707 iter = 0.8419 us/iter
+raw: 1003820 us / 1192707 iter = 0.8416 us/iter
+raw: 1002696 us / 1192707 iter = 0.8407 us/iter
+
+raw: 1000887 us / 235129 iter = 4.2568 us/iter
+raw: 1000600 us / 235129 iter = 4.2555 us/iter
+raw: 1000217 us / 235129 iter = 4.2539 us/iter
+raw: 1000160 us / 235129 iter = 4.2537 us/iter
+raw: 1000121 us / 235129 iter = 4.2535 us/iter
+raw: 1000098 us / 235129 iter = 4.2534 us/iter
+raw: 1000071 us / 235129 iter = 4.2533 us/iter
+raw: 999770 us / 235129 iter = 4.2520 us/iter
+raw: 999753 us / 235129 iter = 4.2519 us/iter
+raw: 999722 us / 235129 iter = 4.2518 us/iter
+raw: 999584 us / 235129 iter = 4.2512 us/iter
+Signal handler overhead: 3.4110 microseconds
+
+raw: 999663 us / 1184630 iter = 0.8439 us/iter
+raw: 999405 us / 1184630 iter = 0.8436 us/iter
+raw: 999396 us / 1184630 iter = 0.8436 us/iter
+raw: 999279 us / 1184630 iter = 0.8435 us/iter
+raw: 998928 us / 1184630 iter = 0.8432 us/iter
+raw: 998904 us / 1184630 iter = 0.8432 us/iter
+raw: 998888 us / 1184630 iter = 0.8432 us/iter
+raw: 998805 us / 1184630 iter = 0.8431 us/iter
+raw: 998737 us / 1184630 iter = 0.8431 us/iter
+raw: 998462 us / 1184630 iter = 0.8428 us/iter
+raw: 996601 us / 1184630 iter = 0.8413 us/iter
+
+raw: 1002005 us / 236404 iter = 4.2385 us/iter
+raw: 1001098 us / 236404 iter = 4.2347 us/iter
+raw: 1000717 us / 236404 iter = 4.2331 us/iter
+raw: 1000229 us / 236404 iter = 4.2310 us/iter
+raw: 999763 us / 236404 iter = 4.2290 us/iter
+raw: 999607 us / 236404 iter = 4.2284 us/iter
+raw: 999537 us / 236404 iter = 4.2281 us/iter
+raw: 999486 us / 236404 iter = 4.2279 us/iter
+raw: 999373 us / 236404 iter = 4.2274 us/iter
+raw: 999352 us / 236404 iter = 4.2273 us/iter
+raw: 999291 us / 236404 iter = 4.2270 us/iter
+
+raw: 995577 us / 229681 iter = 4.3346 us/iter
+raw: 995061 us / 229681 iter = 4.3324 us/iter
+raw: 994819 us / 229681 iter = 4.3313 us/iter
+raw: 994638 us / 229681 iter = 4.3305 us/iter
+raw: 994576 us / 229681 iter = 4.3302 us/iter
+raw: 994428 us / 229681 iter = 4.3296 us/iter
+raw: 994268 us / 229681 iter = 4.3289 us/iter
+raw: 994198 us / 229681 iter = 4.3286 us/iter
+raw: 993897 us / 229681 iter = 4.3273 us/iter
+raw: 993847 us / 229681 iter = 4.3271 us/iter
+raw: 993481 us / 229681 iter = 4.3255 us/iter
+Protection fault: 0.9444 microseconds
+
+raw: 996844 us / 231200 iter = 4.3116 us/iter
+raw: 995575 us / 231200 iter = 4.3061 us/iter
+raw: 994780 us / 231200 iter = 4.3027 us/iter
+raw: 994695 us / 231200 iter = 4.3023 us/iter
+raw: 994459 us / 231200 iter = 4.3013 us/iter
+raw: 994408 us / 231200 iter = 4.3011 us/iter
+raw: 994260 us / 231200 iter = 4.3004 us/iter
+raw: 994070 us / 231200 iter = 4.2996 us/iter
+raw: 994058 us / 231200 iter = 4.2996 us/iter
+raw: 993955 us / 231200 iter = 4.2991 us/iter
+raw: 993869 us / 231200 iter = 4.2987 us/iter
+Protection fault raw: 4.3011 microseconds
+
+raw: 1083641 us / 72354 iter = 14.9769 us/iter
+raw: 1083046 us / 72354 iter = 14.9687 us/iter
+raw: 1082954 us / 72354 iter = 14.9674 us/iter
+raw: 1082843 us / 72354 iter = 14.9659 us/iter
+raw: 1081120 us / 72354 iter = 14.9421 us/iter
+raw: 1080267 us / 72354 iter = 14.9303 us/iter
+raw: 1080056 us / 72354 iter = 14.9274 us/iter
+raw: 1079982 us / 72354 iter = 14.9264 us/iter
+raw: 1079918 us / 72354 iter = 14.9255 us/iter
+raw: 1079347 us / 72354 iter = 14.9176 us/iter
+raw: 1079120 us / 72354 iter = 14.9144 us/iter
+Pipe latency: 14.9303 microseconds
+
+raw: 997130 us / 41601 iter = 23.9689 us/iter
+raw: 996827 us / 41601 iter = 23.9616 us/iter
+raw: 996702 us / 41601 iter = 23.9586 us/iter
+raw: 996551 us / 41601 iter = 23.9550 us/iter
+raw: 996352 us / 41601 iter = 23.9502 us/iter
+raw: 996088 us / 41601 iter = 23.9438 us/iter
+raw: 996064 us / 41601 iter = 23.9433 us/iter
+raw: 995929 us / 41601 iter = 23.9400 us/iter
+raw: 995401 us / 41601 iter = 23.9273 us/iter
+raw: 995384 us / 41601 iter = 23.9269 us/iter
+raw: 995184 us / 41601 iter = 23.9221 us/iter
+AF_UNIX sock stream latency: 23.9438 microseconds
+
+raw: 999960 us / 1959 iter = 510.4441 us/iter
+raw: 999904 us / 1959 iter = 510.4155 us/iter
+raw: 999772 us / 1959 iter = 510.3481 us/iter
+raw: 999710 us / 1959 iter = 510.3165 us/iter
+raw: 999686 us / 1959 iter = 510.3042 us/iter
+raw: 999680 us / 1959 iter = 510.3012 us/iter
+raw: 999545 us / 1959 iter = 510.2323 us/iter
+raw: 999448 us / 1959 iter = 510.1827 us/iter
+raw: 999311 us / 1959 iter = 510.1128 us/iter
+raw: 998728 us / 1959 iter = 509.8152 us/iter
+raw: 994587 us / 1959 iter = 507.7014 us/iter
+Process fork+exit: 510.3012 microseconds
+
+raw: 989696 us / 728 iter = 1359.4725 us/iter
+raw: 989155 us / 728 iter = 1358.7294 us/iter
+raw: 989065 us / 728 iter = 1358.6058 us/iter
+raw: 988719 us / 728 iter = 1358.1305 us/iter
+raw: 988564 us / 728 iter = 1357.9176 us/iter
+raw: 988110 us / 728 iter = 1357.2940 us/iter
+raw: 987975 us / 728 iter = 1357.1085 us/iter
+raw: 987942 us / 728 iter = 1357.0632 us/iter
+raw: 987768 us / 728 iter = 1356.8242 us/iter
+raw: 987571 us / 728 iter = 1356.5536 us/iter
+raw: 986605 us / 728 iter = 1355.2266 us/iter
+Process fork+execve: 1357.2940 microseconds
+
+raw: 990883 us / 343 iter = 2888.8717 us/iter
+raw: 988006 us / 343 iter = 2880.4840 us/iter
+raw: 987887 us / 343 iter = 2880.1370 us/iter
+raw: 986293 us / 343 iter = 2875.4898 us/iter
+raw: 986251 us / 343 iter = 2875.3673 us/iter
+raw: 985147 us / 343 iter = 2872.1487 us/iter
+raw: 984853 us / 343 iter = 2871.2915 us/iter
+raw: 984337 us / 343 iter = 2869.7872 us/iter
+raw: 982493 us / 343 iter = 2864.4111 us/iter
+raw: 982173 us / 343 iter = 2863.4781 us/iter
+raw: 981850 us / 343 iter = 2862.5364 us/iter
+Process fork+/bin/sh -c: 2872.1487 microseconds
+File /var/tmp/XXX write bandwidth: 145731 KB/sec
+
+raw: 1038904 us / 28289 iter = 36.7247 us/iter
+raw: 1029535 us / 28289 iter = 36.3935 us/iter
+raw: 997068 us / 28289 iter = 35.2458 us/iter
+raw: 995564 us / 28289 iter = 35.1926 us/iter
+raw: 993379 us / 28289 iter = 35.1154 us/iter
+raw: 992025 us / 28289 iter = 35.0675 us/iter
+raw: 983586 us / 28289 iter = 34.7692 us/iter
+raw: 981607 us / 28289 iter = 34.6992 us/iter
+raw: 979967 us / 28289 iter = 34.6413 us/iter
+raw: 979732 us / 28289 iter = 34.6330 us/iter
+raw: 979691 us / 28289 iter = 34.6315 us/iter
+
+raw: 1338634 us / 3 iter = 446211.3333 us/iter
+raw: 1338619 us / 3 iter = 446206.3333 us/iter
+raw: 1338363 us / 3 iter = 446121.0000 us/iter
+raw: 1338313 us / 3 iter = 446104.3333 us/iter
+raw: 1338248 us / 3 iter = 446082.6667 us/iter
+raw: 1338187 us / 3 iter = 446062.3333 us/iter
+raw: 1338116 us / 3 iter = 446038.6667 us/iter
+raw: 1338066 us / 3 iter = 446022.0000 us/iter
+raw: 1338043 us / 3 iter = 446014.3333 us/iter
+raw: 1338021 us / 3 iter = 446007.0000 us/iter
+raw: 1338012 us / 3 iter = 446004.0000 us/iter
+Pagefaults on /var/tmp/XXX: 1.7015 microseconds
+
+"mappings
+
+raw: 1052385 us / 29276 iter = 35.9470 us/iter
+raw: 1024805 us / 29276 iter = 35.0050 us/iter
+raw: 1019920 us / 29276 iter = 34.8381 us/iter
+raw: 1011614 us / 29276 iter = 34.5544 us/iter
+raw: 1010728 us / 29276 iter = 34.5241 us/iter
+raw: 1010379 us / 29276 iter = 34.5122 us/iter
+raw: 1009327 us / 29276 iter = 34.4763 us/iter
+raw: 1008612 us / 29276 iter = 34.4518 us/iter
+raw: 1004872 us / 29276 iter = 34.3241 us/iter
+raw: 1002167 us / 29276 iter = 34.2317 us/iter
+raw: 1000610 us / 29276 iter = 34.1785 us/iter
+0.524288 35
+
+raw: 1009196 us / 21720 iter = 46.4639 us/iter
+raw: 1007698 us / 21720 iter = 46.3949 us/iter
+raw: 1007686 us / 21720 iter = 46.3944 us/iter
+raw: 1005727 us / 21720 iter = 46.3042 us/iter
+raw: 1005351 us / 21720 iter = 46.2869 us/iter
+raw: 1001653 us / 21720 iter = 46.1166 us/iter
+raw: 1000445 us / 21720 iter = 46.0610 us/iter
+raw: 999873 us / 21720 iter = 46.0347 us/iter
+raw: 999450 us / 21720 iter = 46.0152 us/iter
+raw: 998993 us / 21720 iter = 45.9942 us/iter
+raw: 998950 us / 21720 iter = 45.9922 us/iter
+1.048576 46
+
+raw: 1005065 us / 13226 iter = 75.9916 us/iter
+raw: 996528 us / 13226 iter = 75.3461 us/iter
+raw: 995309 us / 13226 iter = 75.2540 us/iter
+raw: 994321 us / 13226 iter = 75.1793 us/iter
+raw: 993907 us / 13226 iter = 75.1480 us/iter
+raw: 993846 us / 13226 iter = 75.1434 us/iter
+raw: 993610 us / 13226 iter = 75.1255 us/iter
+raw: 993565 us / 13226 iter = 75.1221 us/iter
+raw: 993526 us / 13226 iter = 75.1192 us/iter
+raw: 993460 us / 13226 iter = 75.1142 us/iter
+raw: 992754 us / 13226 iter = 75.0608 us/iter
+2.097152 75
+
+raw: 990052 us / 7782 iter = 127.2233 us/iter
+raw: 982220 us / 7782 iter = 126.2169 us/iter
+raw: 982109 us / 7782 iter = 126.2026 us/iter
+raw: 981865 us / 7782 iter = 126.1713 us/iter
+raw: 981433 us / 7782 iter = 126.1158 us/iter
+raw: 981188 us / 7782 iter = 126.0843 us/iter
+raw: 981122 us / 7782 iter = 126.0758 us/iter
+raw: 980764 us / 7782 iter = 126.0298 us/iter
+raw: 980752 us / 7782 iter = 126.0283 us/iter
+raw: 980473 us / 7782 iter = 125.9924 us/iter
+raw: 980470 us / 7782 iter = 125.9920 us/iter
+4.194304 126
+
+raw: 1006157 us / 4190 iter = 240.1329 us/iter
+raw: 1005017 us / 4190 iter = 239.8609 us/iter
+raw: 998691 us / 4190 iter = 238.3511 us/iter
+raw: 997984 us / 4190 iter = 238.1823 us/iter
+raw: 997949 us / 4190 iter = 238.1740 us/iter
+raw: 997907 us / 4190 iter = 238.1640 us/iter
+raw: 997805 us / 4190 iter = 238.1396 us/iter
+raw: 997641 us / 4190 iter = 238.1005 us/iter
+raw: 997424 us / 4190 iter = 238.0487 us/iter
+raw: 997214 us / 4190 iter = 237.9986 us/iter
+raw: 997157 us / 4190 iter = 237.9850 us/iter
+8.388608 238
+
+raw: 1007533 us / 2239 iter = 449.9924 us/iter
+raw: 1000990 us / 2239 iter = 447.0701 us/iter
+raw: 1000724 us / 2239 iter = 446.9513 us/iter
+raw: 1000665 us / 2239 iter = 446.9250 us/iter
+raw: 1000524 us / 2239 iter = 446.8620 us/iter
+raw: 1000462 us / 2239 iter = 446.8343 us/iter
+raw: 1000369 us / 2239 iter = 446.7928 us/iter
+raw: 1000320 us / 2239 iter = 446.7709 us/iter
+raw: 999804 us / 2239 iter = 446.5404 us/iter
+raw: 999183 us / 2239 iter = 446.2631 us/iter
+raw: 998781 us / 2239 iter = 446.0835 us/iter
+16.777216 447
+
+raw: 1007561 us / 1149 iter = 876.9025 us/iter
+raw: 1006226 us / 1149 iter = 875.7406 us/iter
+raw: 1000058 us / 1149 iter = 870.3725 us/iter
+raw: 999854 us / 1149 iter = 870.1950 us/iter
+raw: 999794 us / 1149 iter = 870.1427 us/iter
+raw: 999727 us / 1149 iter = 870.0844 us/iter
+raw: 999711 us / 1149 iter = 870.0705 us/iter
+raw: 999681 us / 1149 iter = 870.0444 us/iter
+raw: 999068 us / 1149 iter = 869.5109 us/iter
+raw: 998483 us / 1149 iter = 869.0017 us/iter
+raw: 998098 us / 1149 iter = 868.6667 us/iter
+33.554432 870
+
+raw: 1008052 us / 570 iter = 1768.5123 us/iter
+raw: 1003198 us / 570 iter = 1759.9965 us/iter
+raw: 1001467 us / 570 iter = 1756.9596 us/iter
+raw: 1001316 us / 570 iter = 1756.6947 us/iter
+raw: 1001172 us / 570 iter = 1756.4421 us/iter
+raw: 1001160 us / 570 iter = 1756.4211 us/iter
+raw: 1001147 us / 570 iter = 1756.3982 us/iter
+raw: 1001121 us / 570 iter = 1756.3526 us/iter
+raw: 1000975 us / 570 iter = 1756.0965 us/iter
+raw: 1000710 us / 570 iter = 1755.6316 us/iter
+raw: 1000457 us / 570 iter = 1755.1877 us/iter
+67.108864 1756
+
+raw: 1007923 us / 285 iter = 3536.5719 us/iter
+raw: 1007373 us / 285 iter = 3534.6421 us/iter
+raw: 1007328 us / 285 iter = 3534.4842 us/iter
+raw: 1002792 us / 285 iter = 3518.5684 us/iter
+raw: 1002715 us / 285 iter = 3518.2982 us/iter
+raw: 1002713 us / 285 iter = 3518.2912 us/iter
+raw: 1002692 us / 285 iter = 3518.2175 us/iter
+raw: 1002615 us / 285 iter = 3517.9474 us/iter
+raw: 1002526 us / 285 iter = 3517.6351 us/iter
+raw: 1002426 us / 285 iter = 3517.2842 us/iter
+raw: 1001397 us / 285 iter = 3513.6737 us/iter
+134.217728 3518
+
+raw: 1011748 us / 142 iter = 7124.9859 us/iter
+raw: 1007743 us / 142 iter = 7096.7817 us/iter
+raw: 1005582 us / 142 iter = 7081.5634 us/iter
+raw: 1005581 us / 142 iter = 7081.5563 us/iter
+raw: 1005553 us / 142 iter = 7081.3592 us/iter
+raw: 1005517 us / 142 iter = 7081.1056 us/iter
+raw: 1005294 us / 142 iter = 7079.5352 us/iter
+raw: 1005105 us / 142 iter = 7078.2042 us/iter
+raw: 1004930 us / 142 iter = 7076.9718 us/iter
+raw: 1004652 us / 142 iter = 7075.0141 us/iter
+raw: 1004620 us / 142 iter = 7074.7887 us/iter
+268.435456 7081
+
+raw: 1051936 us / 71 iter = 14816.0000 us/iter
+raw: 1012437 us / 71 iter = 14259.6761 us/iter
+raw: 1010825 us / 71 iter = 14236.9718 us/iter
+raw: 1007780 us / 71 iter = 14194.0845 us/iter
+raw: 1006547 us / 71 iter = 14176.7183 us/iter
+raw: 1006062 us / 71 iter = 14169.8873 us/iter
+raw: 1005519 us / 71 iter = 14162.2394 us/iter
+raw: 1005326 us / 71 iter = 14159.5211 us/iter
+raw: 1004690 us / 71 iter = 14150.5634 us/iter
+raw: 1004655 us / 71 iter = 14150.0704 us/iter
+raw: 1004619 us / 71 iter = 14149.5634 us/iter
+536.870912 14170
+
+raw: 1068162 us / 33 iter = 32368.5455 us/iter
+raw: 1066281 us / 33 iter = 32311.5455 us/iter
+raw: 1016424 us / 33 iter = 30800.7273 us/iter
+raw: 1012753 us / 33 iter = 30689.4848 us/iter
+raw: 1012146 us / 33 iter = 30671.0909 us/iter
+raw: 1012069 us / 33 iter = 30668.7576 us/iter
+raw: 1012032 us / 33 iter = 30667.6364 us/iter
+raw: 1012022 us / 33 iter = 30667.3333 us/iter
+raw: 1011832 us / 33 iter = 30661.5758 us/iter
+raw: 1011408 us / 33 iter = 30648.7273 us/iter
+raw: 1011283 us / 33 iter = 30644.9394 us/iter
+1073.741824 30669
+
+
+raw: 1098241 us / 23979 iter = 45.8001 us/iter
+raw: 1096963 us / 23979 iter = 45.7468 us/iter
+raw: 1096935 us / 23979 iter = 45.7457 us/iter
+raw: 1096507 us / 23979 iter = 45.7278 us/iter
+raw: 1096480 us / 23979 iter = 45.7267 us/iter
+raw: 1096022 us / 23979 iter = 45.7076 us/iter
+raw: 1095711 us / 23979 iter = 45.6946 us/iter
+raw: 1095521 us / 23979 iter = 45.6867 us/iter
+raw: 1095365 us / 23979 iter = 45.6802 us/iter
+raw: 1094668 us / 23979 iter = 45.6511 us/iter
+raw: 1094294 us / 23979 iter = 45.6355 us/iter
+UDP latency using localhost: 45.7076 microseconds
+
+raw: 2252803 us / 33208 iter = 67.8392 us/iter
+raw: 2251655 us / 33208 iter = 67.8046 us/iter
+raw: 2249877 us / 33208 iter = 67.7511 us/iter
+raw: 2248355 us / 33208 iter = 67.7052 us/iter
+raw: 2248307 us / 33208 iter = 67.7038 us/iter
+raw: 2248146 us / 33208 iter = 67.6989 us/iter
+raw: 2245802 us / 33208 iter = 67.6283 us/iter
+raw: 2245717 us / 33208 iter = 67.6258 us/iter
+raw: 2244486 us / 33208 iter = 67.5887 us/iter
+raw: 2243093 us / 33208 iter = 67.5468 us/iter
+raw: 2242641 us / 33208 iter = 67.5332 us/iter
+TCP latency using localhost: 67.6989 microseconds
+
+Socket bandwidth using localhost
+
+raw: 1203524 us / 248796 iter = 4.8374 us/iter
+raw: 1200951 us / 248796 iter = 4.8271 us/iter
+raw: 1200521 us / 248796 iter = 4.8253 us/iter
+raw: 1200470 us / 248796 iter = 4.8251 us/iter
+raw: 1191620 us / 248796 iter = 4.7895 us/iter
+raw: 1189707 us / 248796 iter = 4.7819 us/iter
+raw: 1186554 us / 248796 iter = 4.7692 us/iter
+raw: 1185988 us / 248796 iter = 4.7669 us/iter
+raw: 1183599 us / 248796 iter = 4.7573 us/iter
+raw: 849179 us / 248796 iter = 3.4132 us/iter
+raw: 838889 us / 248796 iter = 3.3718 us/iter
+0.000001 0.21 MB/sec
+
+raw: 1313102 us / 218941 iter = 5.9975 us/iter
+raw: 1312816 us / 218941 iter = 5.9962 us/iter
+raw: 1311064 us / 218941 iter = 5.9882 us/iter
+raw: 1310940 us / 218941 iter = 5.9876 us/iter
+raw: 1310922 us / 218941 iter = 5.9876 us/iter
+raw: 1309854 us / 218941 iter = 5.9827 us/iter
+raw: 1306596 us / 218941 iter = 5.9678 us/iter
+raw: 1306242 us / 218941 iter = 5.9662 us/iter
+raw: 1303958 us / 218941 iter = 5.9558 us/iter
+raw: 1303312 us / 218941 iter = 5.9528 us/iter
+raw: 1256250 us / 218941 iter = 5.7378 us/iter
+0.000064 10.70 MB/sec
+
+raw: 1272415 us / 202852 iter = 6.2726 us/iter
+raw: 1269876 us / 202852 iter = 6.2601 us/iter
+raw: 1268144 us / 202852 iter = 6.2516 us/iter
+raw: 1268111 us / 202852 iter = 6.2514 us/iter
+raw: 1268058 us / 202852 iter = 6.2511 us/iter
+raw: 1267912 us / 202852 iter = 6.2504 us/iter
+raw: 1266366 us / 202852 iter = 6.2428 us/iter
+raw: 1264307 us / 202852 iter = 6.2327 us/iter
+raw: 1263590 us / 202852 iter = 6.2291 us/iter
+raw: 1263253 us / 202852 iter = 6.2275 us/iter
+raw: 1232237 us / 202852 iter = 6.0746 us/iter
+0.000128 20.48 MB/sec
+
+raw: 1016699 us / 152221 iter = 6.6791 us/iter
+raw: 1014930 us / 152221 iter = 6.6675 us/iter
+raw: 1014389 us / 152221 iter = 6.6639 us/iter
+raw: 1014217 us / 152221 iter = 6.6628 us/iter
+raw: 1013726 us / 152221 iter = 6.6596 us/iter
+raw: 1013499 us / 152221 iter = 6.6581 us/iter
+raw: 1010890 us / 152221 iter = 6.6409 us/iter
+raw: 1009600 us / 152221 iter = 6.6325 us/iter
+raw: 1008582 us / 152221 iter = 6.6258 us/iter
+raw: 1007578 us / 152221 iter = 6.6192 us/iter
+raw: 1007028 us / 152221 iter = 6.6156 us/iter
+0.000256 38.45 MB/sec
+
+raw: 928214 us / 129252 iter = 7.1814 us/iter
+raw: 927978 us / 129252 iter = 7.1796 us/iter
+raw: 927897 us / 129252 iter = 7.1790 us/iter
+raw: 927552 us / 129252 iter = 7.1763 us/iter
+raw: 927541 us / 129252 iter = 7.1762 us/iter
+raw: 927001 us / 129252 iter = 7.1720 us/iter
+raw: 926372 us / 129252 iter = 7.1672 us/iter
+raw: 926261 us / 129252 iter = 7.1663 us/iter
+raw: 924475 us / 129252 iter = 7.1525 us/iter
+raw: 924458 us / 129252 iter = 7.1524 us/iter
+raw: 920366 us / 129252 iter = 7.1207 us/iter
+0.000512 71.39 MB/sec
+
+raw: 946747 us / 114572 iter = 8.2633 us/iter
+raw: 944822 us / 114572 iter = 8.2465 us/iter
+raw: 944610 us / 114572 iter = 8.2447 us/iter
+raw: 944575 us / 114572 iter = 8.2444 us/iter
+raw: 943337 us / 114572 iter = 8.2336 us/iter
+raw: 942741 us / 114572 iter = 8.2284 us/iter
+raw: 942512 us / 114572 iter = 8.2264 us/iter
+raw: 942466 us / 114572 iter = 8.2260 us/iter
+raw: 942209 us / 114572 iter = 8.2237 us/iter
+raw: 941754 us / 114572 iter = 8.2198 us/iter
+raw: 941104 us / 114572 iter = 8.2141 us/iter
+0.001024 124.45 MB/sec
+
+raw: 981687 us / 96796 iter = 10.1418 us/iter
+raw: 981652 us / 96796 iter = 10.1415 us/iter
+raw: 978424 us / 96796 iter = 10.1081 us/iter
+raw: 978296 us / 96796 iter = 10.1068 us/iter
+raw: 978102 us / 96796 iter = 10.1048 us/iter
+raw: 977374 us / 96796 iter = 10.0973 us/iter
+raw: 976705 us / 96796 iter = 10.0903 us/iter
+raw: 976320 us / 96796 iter = 10.0864 us/iter
+raw: 976081 us / 96796 iter = 10.0839 us/iter
+raw: 975883 us / 96796 iter = 10.0819 us/iter
+raw: 975474 us / 96796 iter = 10.0776 us/iter
+0.001437 142.32 MB/sec
+
+raw: 1087855 us / 14 iter = 77703.9286 us/iter
+raw: 1082605 us / 14 iter = 77328.9286 us/iter
+raw: 1080630 us / 14 iter = 77187.8571 us/iter
+raw: 1069971 us / 14 iter = 76426.5000 us/iter
+raw: 1067520 us / 14 iter = 76251.4286 us/iter
+raw: 1066926 us / 14 iter = 76209.0000 us/iter
+raw: 1065099 us / 14 iter = 76078.5000 us/iter
+raw: 1062080 us / 14 iter = 75862.8571 us/iter
+raw: 1061689 us / 14 iter = 75834.9286 us/iter
+raw: 1060783 us / 14 iter = 75770.2143 us/iter
+raw: 1057796 us / 14 iter = 75556.8571 us/iter
+10.485760 137.59 MB/sec
+
+
+raw: 2221514 us / 94 iter = 23633.1277 us/iter
+raw: 2221316 us / 94 iter = 23631.0213 us/iter
+raw: 2221266 us / 94 iter = 23630.4894 us/iter
+raw: 2221262 us / 94 iter = 23630.4468 us/iter
+raw: 2221221 us / 94 iter = 23630.0106 us/iter
+raw: 2221208 us / 94 iter = 23629.8723 us/iter
+raw: 2221153 us / 94 iter = 23629.2872 us/iter
+raw: 2221090 us / 94 iter = 23628.6170 us/iter
+raw: 2221086 us / 94 iter = 23628.5745 us/iter
+raw: 2220978 us / 94 iter = 23627.4255 us/iter
+raw: 2220389 us / 94 iter = 23621.1596 us/iter
+AF_UNIX sock stream bandwidth: 443.75 MB/sec
+
+raw: 2226726 us / 87 iter = 25594.5517 us/iter
+raw: 2226200 us / 87 iter = 25588.5057 us/iter
+raw: 2225743 us / 87 iter = 25583.2529 us/iter
+raw: 2225709 us / 87 iter = 25582.8621 us/iter
+raw: 2225517 us / 87 iter = 25580.6552 us/iter
+raw: 2225248 us / 87 iter = 25577.5632 us/iter
+raw: 2224822 us / 87 iter = 25572.6667 us/iter
+raw: 2224657 us / 87 iter = 25570.7701 us/iter
+raw: 2224505 us / 87 iter = 25569.0230 us/iter
+raw: 2224454 us / 87 iter = 25568.4368 us/iter
+raw: 2223704 us / 87 iter = 25559.8161 us/iter
+Pipe bandwidth: 409.96 MB/sec
+
+"read bandwidth
+
+raw: 1002482 us / 313785 iter = 3.1948 us/iter
+raw: 1002169 us / 313785 iter = 3.1938 us/iter
+raw: 999594 us / 313785 iter = 3.1856 us/iter
+raw: 999262 us / 313785 iter = 3.1845 us/iter
+raw: 998972 us / 313785 iter = 3.1836 us/iter
+raw: 998875 us / 313785 iter = 3.1833 us/iter
+raw: 998336 us / 313785 iter = 3.1816 us/iter
+raw: 998212 us / 313785 iter = 3.1812 us/iter
+raw: 997998 us / 313785 iter = 3.1805 us/iter
+raw: 997947 us / 313785 iter = 3.1804 us/iter
+raw: 997559 us / 313785 iter = 3.1791 us/iter
+0.000512 160.84
+
+raw: 1000991 us / 293930 iter = 3.4055 us/iter
+raw: 998340 us / 293930 iter = 3.3965 us/iter
+raw: 998284 us / 293930 iter = 3.3963 us/iter
+raw: 997909 us / 293930 iter = 3.3951 us/iter
+raw: 997843 us / 293930 iter = 3.3948 us/iter
+raw: 996982 us / 293930 iter = 3.3919 us/iter
+raw: 994687 us / 293930 iter = 3.3841 us/iter
+raw: 994419 us / 293930 iter = 3.3832 us/iter
+raw: 994257 us / 293930 iter = 3.3826 us/iter
+raw: 993620 us / 293930 iter = 3.3805 us/iter
+raw: 993238 us / 293930 iter = 3.3792 us/iter
+0.001024 301.90
+
+raw: 996585 us / 266121 iter = 3.7449 us/iter
+raw: 996424 us / 266121 iter = 3.7443 us/iter
+raw: 996328 us / 266121 iter = 3.7439 us/iter
+raw: 996274 us / 266121 iter = 3.7437 us/iter
+raw: 996238 us / 266121 iter = 3.7436 us/iter
+raw: 996194 us / 266121 iter = 3.7434 us/iter
+raw: 996043 us / 266121 iter = 3.7428 us/iter
+raw: 995815 us / 266121 iter = 3.7420 us/iter
+raw: 995786 us / 266121 iter = 3.7419 us/iter
+raw: 995772 us / 266121 iter = 3.7418 us/iter
+raw: 995642 us / 266121 iter = 3.7413 us/iter
+0.002048 547.10
+
+raw: 997757 us / 222914 iter = 4.4760 us/iter
+raw: 996999 us / 222914 iter = 4.4726 us/iter
+raw: 996937 us / 222914 iter = 4.4723 us/iter
+raw: 996541 us / 222914 iter = 4.4705 us/iter
+raw: 996445 us / 222914 iter = 4.4701 us/iter
+raw: 996436 us / 222914 iter = 4.4700 us/iter
+raw: 996377 us / 222914 iter = 4.4698 us/iter
+raw: 996311 us / 222914 iter = 4.4695 us/iter
+raw: 996059 us / 222914 iter = 4.4684 us/iter
+raw: 996005 us / 222914 iter = 4.4681 us/iter
+raw: 995675 us / 222914 iter = 4.4666 us/iter
+0.004096 916.32
+
+raw: 1001437 us / 157442 iter = 6.3607 us/iter
+raw: 1000462 us / 157442 iter = 6.3545 us/iter
+raw: 999859 us / 157442 iter = 6.3506 us/iter
+raw: 999786 us / 157442 iter = 6.3502 us/iter
+raw: 999353 us / 157442 iter = 6.3474 us/iter
+raw: 999345 us / 157442 iter = 6.3474 us/iter
+raw: 999342 us / 157442 iter = 6.3474 us/iter
+raw: 999326 us / 157442 iter = 6.3473 us/iter
+raw: 999273 us / 157442 iter = 6.3469 us/iter
+raw: 999213 us / 157442 iter = 6.3465 us/iter
+raw: 998981 us / 157442 iter = 6.3451 us/iter
+0.008192 1290.61
+
+raw: 1000840 us / 66187 iter = 15.1214 us/iter
+raw: 1000801 us / 66187 iter = 15.1208 us/iter
+raw: 1000694 us / 66187 iter = 15.1192 us/iter
+raw: 1000500 us / 66187 iter = 15.1163 us/iter
+raw: 1000491 us / 66187 iter = 15.1161 us/iter
+raw: 1000361 us / 66187 iter = 15.1142 us/iter
+raw: 1000359 us / 66187 iter = 15.1141 us/iter
+raw: 1000345 us / 66187 iter = 15.1139 us/iter
+raw: 1000256 us / 66187 iter = 15.1126 us/iter
+raw: 1000253 us / 66187 iter = 15.1125 us/iter
+raw: 1000216 us / 66187 iter = 15.1120 us/iter
+0.016384 1084.02
+
+raw: 999399 us / 22431 iter = 44.5544 us/iter
+raw: 999084 us / 22431 iter = 44.5403 us/iter
+raw: 999032 us / 22431 iter = 44.5380 us/iter
+raw: 999009 us / 22431 iter = 44.5370 us/iter
+raw: 999005 us / 22431 iter = 44.5368 us/iter
+raw: 998959 us / 22431 iter = 44.5348 us/iter
+raw: 998842 us / 22431 iter = 44.5295 us/iter
+raw: 998816 us / 22431 iter = 44.5284 us/iter
+raw: 998749 us / 22431 iter = 44.5254 us/iter
+raw: 998532 us / 22431 iter = 44.5157 us/iter
+raw: 998478 us / 22431 iter = 44.5133 us/iter
+0.032768 735.78
+
+raw: 1000051 us / 10473 iter = 95.4885 us/iter
+raw: 999550 us / 10473 iter = 95.4407 us/iter
+raw: 999333 us / 10473 iter = 95.4199 us/iter
+raw: 999295 us / 10473 iter = 95.4163 us/iter
+raw: 999159 us / 10473 iter = 95.4033 us/iter
+raw: 999106 us / 10473 iter = 95.3983 us/iter
+raw: 999096 us / 10473 iter = 95.3973 us/iter
+raw: 998534 us / 10473 iter = 95.3436 us/iter
+raw: 998514 us / 10473 iter = 95.3417 us/iter
+raw: 998482 us / 10473 iter = 95.3387 us/iter
+raw: 998459 us / 10473 iter = 95.3365 us/iter
+0.065536 686.97
+
+raw: 999497 us / 5266 iter = 189.8019 us/iter
+raw: 998651 us / 5266 iter = 189.6413 us/iter
+raw: 998439 us / 5266 iter = 189.6010 us/iter
+raw: 998428 us / 5266 iter = 189.5989 us/iter
+raw: 998418 us / 5266 iter = 189.5970 us/iter
+raw: 998387 us / 5266 iter = 189.5912 us/iter
+raw: 998348 us / 5266 iter = 189.5837 us/iter
+raw: 998210 us / 5266 iter = 189.5575 us/iter
+raw: 997923 us / 5266 iter = 189.5030 us/iter
+raw: 997899 us / 5266 iter = 189.4985 us/iter
+raw: 997885 us / 5266 iter = 189.4958 us/iter
+0.131072 691.34
+
+raw: 999642 us / 2642 iter = 378.3656 us/iter
+raw: 999197 us / 2642 iter = 378.1972 us/iter
+raw: 999184 us / 2642 iter = 378.1923 us/iter
+raw: 999080 us / 2642 iter = 378.1529 us/iter
+raw: 999072 us / 2642 iter = 378.1499 us/iter
+raw: 998966 us / 2642 iter = 378.1098 us/iter
+raw: 998916 us / 2642 iter = 378.0908 us/iter
+raw: 998914 us / 2642 iter = 378.0901 us/iter
+raw: 998851 us / 2642 iter = 378.0662 us/iter
+raw: 998584 us / 2642 iter = 377.9652 us/iter
+raw: 998535 us / 2642 iter = 377.9466 us/iter
+0.262144 693.30
+
+raw: 1000471 us / 1326 iter = 754.5030 us/iter
+raw: 1000316 us / 1326 iter = 754.3861 us/iter
+raw: 1000256 us / 1326 iter = 754.3409 us/iter
+raw: 1000013 us / 1326 iter = 754.1576 us/iter
+raw: 1000000 us / 1326 iter = 754.1478 us/iter
+raw: 999985 us / 1326 iter = 754.1365 us/iter
+raw: 999925 us / 1326 iter = 754.0913 us/iter
+raw: 999898 us / 1326 iter = 754.0709 us/iter
+raw: 999763 us / 1326 iter = 753.9691 us/iter
+raw: 999640 us / 1326 iter = 753.8763 us/iter
+raw: 999499 us / 1326 iter = 753.7700 us/iter
+0.524288 695.22
+
+raw: 1001635 us / 663 iter = 1510.7617 us/iter
+raw: 1001499 us / 663 iter = 1510.5566 us/iter
+raw: 1001289 us / 663 iter = 1510.2398 us/iter
+raw: 1000511 us / 663 iter = 1509.0664 us/iter
+raw: 1000328 us / 663 iter = 1508.7903 us/iter
+raw: 1000254 us / 663 iter = 1508.6787 us/iter
+raw: 1000091 us / 663 iter = 1508.4329 us/iter
+raw: 1000091 us / 663 iter = 1508.4329 us/iter
+raw: 1000078 us / 663 iter = 1508.4133 us/iter
+raw: 999864 us / 663 iter = 1508.0905 us/iter
+raw: 999788 us / 663 iter = 1507.9759 us/iter
+1.05 695.03
+
+raw: 998786 us / 241 iter = 4144.3402 us/iter
+raw: 994464 us / 241 iter = 4126.4066 us/iter
+raw: 994449 us / 241 iter = 4126.3444 us/iter
+raw: 993764 us / 241 iter = 4123.5021 us/iter
+raw: 993428 us / 241 iter = 4122.1079 us/iter
+raw: 993042 us / 241 iter = 4120.5062 us/iter
+raw: 992479 us / 241 iter = 4118.1701 us/iter
+raw: 992073 us / 241 iter = 4116.4855 us/iter
+raw: 991902 us / 241 iter = 4115.7759 us/iter
+raw: 991523 us / 241 iter = 4114.2033 us/iter
+raw: 991201 us / 241 iter = 4112.8672 us/iter
+2.10 508.95
+
+raw: 1000850 us / 72 iter = 13900.6944 us/iter
+raw: 1000211 us / 72 iter = 13891.8194 us/iter
+raw: 1000201 us / 72 iter = 13891.6806 us/iter
+raw: 1000133 us / 72 iter = 13890.7361 us/iter
+raw: 1000067 us / 72 iter = 13889.8194 us/iter
+raw: 999984 us / 72 iter = 13888.6667 us/iter
+raw: 999963 us / 72 iter = 13888.3750 us/iter
+raw: 999962 us / 72 iter = 13888.3611 us/iter
+raw: 999767 us / 72 iter = 13885.6528 us/iter
+raw: 999736 us / 72 iter = 13885.2222 us/iter
+raw: 999677 us / 72 iter = 13884.4028 us/iter
+4.19 301.99
+
+raw: 1001918 us / 33 iter = 30361.1515 us/iter
+raw: 1001696 us / 33 iter = 30354.4242 us/iter
+raw: 1001695 us / 33 iter = 30354.3939 us/iter
+raw: 1001630 us / 33 iter = 30352.4242 us/iter
+raw: 1001461 us / 33 iter = 30347.3030 us/iter
+raw: 1001451 us / 33 iter = 30347.0000 us/iter
+raw: 1001446 us / 33 iter = 30346.8485 us/iter
+raw: 1001355 us / 33 iter = 30344.0909 us/iter
+raw: 1001321 us / 33 iter = 30343.0606 us/iter
+raw: 1001272 us / 33 iter = 30341.5758 us/iter
+raw: 1001161 us / 33 iter = 30338.2121 us/iter
+8.39 276.42
+
+raw: 1040033 us / 17 iter = 61178.4118 us/iter
+raw: 1040011 us / 17 iter = 61177.1176 us/iter
+raw: 1039973 us / 17 iter = 61174.8824 us/iter
+raw: 1039958 us / 17 iter = 61174.0000 us/iter
+raw: 1039837 us / 17 iter = 61166.8824 us/iter
+raw: 1039550 us / 17 iter = 61150.0000 us/iter
+raw: 1039532 us / 17 iter = 61148.9412 us/iter
+raw: 1039513 us / 17 iter = 61147.8235 us/iter
+raw: 1039493 us / 17 iter = 61146.6471 us/iter
+raw: 1039458 us / 17 iter = 61144.5882 us/iter
+raw: 1039435 us / 17 iter = 61143.2353 us/iter
+16.78 274.36
+
+raw: 1100706 us / 9 iter = 122300.6667 us/iter
+raw: 1100599 us / 9 iter = 122288.7778 us/iter
+raw: 1100569 us / 9 iter = 122285.4444 us/iter
+raw: 1100351 us / 9 iter = 122261.2222 us/iter
+raw: 1100332 us / 9 iter = 122259.1111 us/iter
+raw: 1100283 us / 9 iter = 122253.6667 us/iter
+raw: 1100146 us / 9 iter = 122238.4444 us/iter
+raw: 1100123 us / 9 iter = 122235.8889 us/iter
+raw: 1100063 us / 9 iter = 122229.2222 us/iter
+raw: 1099997 us / 9 iter = 122221.8889 us/iter
+raw: 1099879 us / 9 iter = 122208.7778 us/iter
+33.55 274.47
+
+raw: 1217858 us / 5 iter = 243571.6000 us/iter
+raw: 1217789 us / 5 iter = 243557.8000 us/iter
+raw: 1217743 us / 5 iter = 243548.6000 us/iter
+raw: 1217697 us / 5 iter = 243539.4000 us/iter
+raw: 1217475 us / 5 iter = 243495.0000 us/iter
+raw: 1217466 us / 5 iter = 243493.2000 us/iter
+raw: 1217463 us / 5 iter = 243492.6000 us/iter
+raw: 1217421 us / 5 iter = 243484.2000 us/iter
+raw: 1217352 us / 5 iter = 243470.4000 us/iter
+raw: 1217271 us / 5 iter = 243454.2000 us/iter
+raw: 1217158 us / 5 iter = 243431.6000 us/iter
+67.11 275.61
+
+raw: 1463378 us / 3 iter = 487792.6667 us/iter
+raw: 1463291 us / 3 iter = 487763.6667 us/iter
+raw: 1463288 us / 3 iter = 487762.6667 us/iter
+raw: 1463079 us / 3 iter = 487693.0000 us/iter
+raw: 1462952 us / 3 iter = 487650.6667 us/iter
+raw: 1462876 us / 3 iter = 487625.3333 us/iter
+raw: 1462862 us / 3 iter = 487620.6667 us/iter
+raw: 1462828 us / 3 iter = 487609.3333 us/iter
+raw: 1462818 us / 3 iter = 487606.0000 us/iter
+raw: 1462794 us / 3 iter = 487598.0000 us/iter
+raw: 1462620 us / 3 iter = 487540.0000 us/iter
+134.22 275.25
+
+raw: 1951203 us / 2 iter = 975601.5000 us/iter
+raw: 1951197 us / 2 iter = 975598.5000 us/iter
+raw: 1951166 us / 2 iter = 975583.0000 us/iter
+raw: 1951166 us / 2 iter = 975583.0000 us/iter
+raw: 1951165 us / 2 iter = 975582.5000 us/iter
+raw: 1951019 us / 2 iter = 975509.5000 us/iter
+raw: 1950986 us / 2 iter = 975493.0000 us/iter
+raw: 1950974 us / 2 iter = 975487.0000 us/iter
+raw: 1950948 us / 2 iter = 975474.0000 us/iter
+raw: 1950891 us / 2 iter = 975445.5000 us/iter
+raw: 1950812 us / 2 iter = 975406.0000 us/iter
+268.44 275.17
+
+raw: 1951770 us / 1 iter = 1951770.0000 us/iter
+raw: 1951721 us / 1 iter = 1951721.0000 us/iter
+raw: 1951620 us / 1 iter = 1951620.0000 us/iter
+raw: 1951473 us / 1 iter = 1951473.0000 us/iter
+raw: 1951403 us / 1 iter = 1951403.0000 us/iter
+raw: 1951368 us / 1 iter = 1951368.0000 us/iter
+raw: 1951313 us / 1 iter = 1951313.0000 us/iter
+raw: 1951269 us / 1 iter = 1951269.0000 us/iter
+raw: 1951178 us / 1 iter = 1951178.0000 us/iter
+raw: 1950652 us / 1 iter = 1950652.0000 us/iter
+raw: 1950446 us / 1 iter = 1950446.0000 us/iter
+536.87 275.13
+
+raw: 3911581 us / 1 iter = 3911581.0000 us/iter
+raw: 3911576 us / 1 iter = 3911576.0000 us/iter
+raw: 3911230 us / 1 iter = 3911230.0000 us/iter
+raw: 3911093 us / 1 iter = 3911093.0000 us/iter
+raw: 3911049 us / 1 iter = 3911049.0000 us/iter
+raw: 3911021 us / 1 iter = 3911021.0000 us/iter
+raw: 3910903 us / 1 iter = 3910903.0000 us/iter
+raw: 3910828 us / 1 iter = 3910828.0000 us/iter
+raw: 3910712 us / 1 iter = 3910712.0000 us/iter
+raw: 3910712 us / 1 iter = 3910712.0000 us/iter
+raw: 3910513 us / 1 iter = 3910513.0000 us/iter
+1073.74 274.54
+
+"read open2close bandwidth
+
+raw: 1059146 us / 93314 iter = 11.3503 us/iter
+raw: 1049810 us / 93314 iter = 11.2503 us/iter
+raw: 1042920 us / 93314 iter = 11.1765 us/iter
+raw: 1036672 us / 93314 iter = 11.1095 us/iter
+raw: 1004903 us / 93314 iter = 10.7690 us/iter
+raw: 994253 us / 93314 iter = 10.6549 us/iter
+raw: 986821 us / 93314 iter = 10.5753 us/iter
+raw: 983445 us / 93314 iter = 10.5391 us/iter
+raw: 982851 us / 93314 iter = 10.5327 us/iter
+raw: 977997 us / 93314 iter = 10.4807 us/iter
+raw: 977658 us / 93314 iter = 10.4771 us/iter
+0.000512 48.05
+
+raw: 1011575 us / 91647 iter = 11.0377 us/iter
+raw: 1003813 us / 91647 iter = 10.9530 us/iter
+raw: 994628 us / 91647 iter = 10.8528 us/iter
+raw: 992802 us / 91647 iter = 10.8329 us/iter
+raw: 992307 us / 91647 iter = 10.8275 us/iter
+raw: 991226 us / 91647 iter = 10.8157 us/iter
+raw: 989276 us / 91647 iter = 10.7944 us/iter
+raw: 986622 us / 91647 iter = 10.7655 us/iter
+raw: 986395 us / 91647 iter = 10.7630 us/iter
+raw: 986131 us / 91647 iter = 10.7601 us/iter
+raw: 983140 us / 91647 iter = 10.7275 us/iter
+0.001024 94.68
+
+raw: 1017620 us / 88667 iter = 11.4769 us/iter
+raw: 1006247 us / 88667 iter = 11.3486 us/iter
+raw: 1004850 us / 88667 iter = 11.3329 us/iter
+raw: 1004633 us / 88667 iter = 11.3304 us/iter
+raw: 1003200 us / 88667 iter = 11.3142 us/iter
+raw: 1002560 us / 88667 iter = 11.3070 us/iter
+raw: 1001134 us / 88667 iter = 11.2909 us/iter
+raw: 1001033 us / 88667 iter = 11.2898 us/iter
+raw: 999418 us / 88667 iter = 11.2716 us/iter
+raw: 999143 us / 88667 iter = 11.2685 us/iter
+raw: 996750 us / 88667 iter = 11.2415 us/iter
+0.002048 181.13
+
+raw: 1004399 us / 84158 iter = 11.9347 us/iter
+raw: 1001498 us / 84158 iter = 11.9002 us/iter
+raw: 998267 us / 84158 iter = 11.8618 us/iter
+raw: 994484 us / 84158 iter = 11.8169 us/iter
+raw: 994396 us / 84158 iter = 11.8158 us/iter
+raw: 994213 us / 84158 iter = 11.8136 us/iter
+raw: 992869 us / 84158 iter = 11.7977 us/iter
+raw: 992433 us / 84158 iter = 11.7925 us/iter
+raw: 991850 us / 84158 iter = 11.7856 us/iter
+raw: 991147 us / 84158 iter = 11.7772 us/iter
+raw: 990962 us / 84158 iter = 11.7750 us/iter
+0.004096 346.72
+
+raw: 996825 us / 67656 iter = 14.7337 us/iter
+raw: 994817 us / 67656 iter = 14.7040 us/iter
+raw: 992747 us / 67656 iter = 14.6735 us/iter
+raw: 990194 us / 67656 iter = 14.6357 us/iter
+raw: 989981 us / 67656 iter = 14.6326 us/iter
+raw: 989812 us / 67656 iter = 14.6301 us/iter
+raw: 988633 us / 67656 iter = 14.6126 us/iter
+raw: 988570 us / 67656 iter = 14.6117 us/iter
+raw: 988185 us / 67656 iter = 14.6060 us/iter
+raw: 987750 us / 67656 iter = 14.5996 us/iter
+raw: 987208 us / 67656 iter = 14.5916 us/iter
+0.008192 559.94
+
+raw: 1002270 us / 38225 iter = 26.2203 us/iter
+raw: 1001831 us / 38225 iter = 26.2088 us/iter
+raw: 1001119 us / 38225 iter = 26.1902 us/iter
+raw: 1000883 us / 38225 iter = 26.1840 us/iter
+raw: 1000793 us / 38225 iter = 26.1816 us/iter
+raw: 1000680 us / 38225 iter = 26.1787 us/iter
+raw: 1000244 us / 38225 iter = 26.1673 us/iter
+raw: 1000219 us / 38225 iter = 26.1666 us/iter
+raw: 1000182 us / 38225 iter = 26.1657 us/iter
+raw: 1000135 us / 38225 iter = 26.1644 us/iter
+raw: 999907 us / 38225 iter = 26.1585 us/iter
+0.016384 625.85
+
+raw: 996494 us / 18265 iter = 54.5576 us/iter
+raw: 996439 us / 18265 iter = 54.5546 us/iter
+raw: 996401 us / 18265 iter = 54.5525 us/iter
+raw: 996373 us / 18265 iter = 54.5509 us/iter
+raw: 996102 us / 18265 iter = 54.5361 us/iter
+raw: 995947 us / 18265 iter = 54.5276 us/iter
+raw: 995895 us / 18265 iter = 54.5248 us/iter
+raw: 995608 us / 18265 iter = 54.5091 us/iter
+raw: 995192 us / 18265 iter = 54.4863 us/iter
+raw: 995114 us / 18265 iter = 54.4820 us/iter
+raw: 995059 us / 18265 iter = 54.4790 us/iter
+0.032768 600.94
+
+raw: 999448 us / 9522 iter = 104.9620 us/iter
+raw: 999363 us / 9522 iter = 104.9531 us/iter
+raw: 999320 us / 9522 iter = 104.9485 us/iter
+raw: 999150 us / 9522 iter = 104.9307 us/iter
+raw: 999150 us / 9522 iter = 104.9307 us/iter
+raw: 998928 us / 9522 iter = 104.9074 us/iter
+raw: 998917 us / 9522 iter = 104.9062 us/iter
+raw: 998558 us / 9522 iter = 104.8685 us/iter
+raw: 998542 us / 9522 iter = 104.8668 us/iter
+raw: 998257 us / 9522 iter = 104.8369 us/iter
+raw: 998229 us / 9522 iter = 104.8340 us/iter
+0.065536 624.70
+
+raw: 999652 us / 5001 iter = 199.8904 us/iter
+raw: 997786 us / 5001 iter = 199.5173 us/iter
+raw: 996982 us / 5001 iter = 199.3565 us/iter
+raw: 996947 us / 5001 iter = 199.3495 us/iter
+raw: 996928 us / 5001 iter = 199.3457 us/iter
+raw: 996920 us / 5001 iter = 199.3441 us/iter
+raw: 996878 us / 5001 iter = 199.3357 us/iter
+raw: 996864 us / 5001 iter = 199.3329 us/iter
+raw: 996855 us / 5001 iter = 199.3311 us/iter
+raw: 996279 us / 5001 iter = 199.2160 us/iter
+raw: 996097 us / 5001 iter = 199.1796 us/iter
+0.131072 657.52
+
+raw: 1000005 us / 2570 iter = 389.1070 us/iter
+raw: 999989 us / 2570 iter = 389.1008 us/iter
+raw: 999861 us / 2570 iter = 389.0510 us/iter
+raw: 999838 us / 2570 iter = 389.0420 us/iter
+raw: 999775 us / 2570 iter = 389.0175 us/iter
+raw: 999591 us / 2570 iter = 388.9459 us/iter
+raw: 999544 us / 2570 iter = 388.9276 us/iter
+raw: 999523 us / 2570 iter = 388.9195 us/iter
+raw: 999429 us / 2570 iter = 388.8829 us/iter
+raw: 999423 us / 2570 iter = 388.8805 us/iter
+raw: 999399 us / 2570 iter = 388.8712 us/iter
+0.262144 673.99
+
+raw: 998577 us / 1304 iter = 765.7799 us/iter
+raw: 998173 us / 1304 iter = 765.4701 us/iter
+raw: 997740 us / 1304 iter = 765.1380 us/iter
+raw: 997586 us / 1304 iter = 765.0199 us/iter
+raw: 997521 us / 1304 iter = 764.9701 us/iter
+raw: 997515 us / 1304 iter = 764.9655 us/iter
+raw: 997503 us / 1304 iter = 764.9563 us/iter
+raw: 997475 us / 1304 iter = 764.9348 us/iter
+raw: 997470 us / 1304 iter = 764.9310 us/iter
+raw: 997116 us / 1304 iter = 764.6595 us/iter
+raw: 997011 us / 1304 iter = 764.5790 us/iter
+0.524288 685.37
+
+raw: 994933 us / 648 iter = 1535.3904 us/iter
+raw: 994736 us / 648 iter = 1535.0864 us/iter
+raw: 994211 us / 648 iter = 1534.2762 us/iter
+raw: 994128 us / 648 iter = 1534.1481 us/iter
+raw: 994090 us / 648 iter = 1534.0895 us/iter
+raw: 994050 us / 648 iter = 1534.0278 us/iter
+raw: 993881 us / 648 iter = 1533.7670 us/iter
+raw: 993697 us / 648 iter = 1533.4830 us/iter
+raw: 993617 us / 648 iter = 1533.3596 us/iter
+raw: 993604 us / 648 iter = 1533.3395 us/iter
+raw: 993059 us / 648 iter = 1532.4985 us/iter
+1.05 683.54
+
+raw: 987633 us / 232 iter = 4257.0388 us/iter
+raw: 987570 us / 232 iter = 4256.7672 us/iter
+raw: 986079 us / 232 iter = 4250.3405 us/iter
+raw: 985962 us / 232 iter = 4249.8362 us/iter
+raw: 985762 us / 232 iter = 4248.9741 us/iter
+raw: 985463 us / 232 iter = 4247.6853 us/iter
+raw: 985323 us / 232 iter = 4247.0819 us/iter
+raw: 985172 us / 232 iter = 4246.4310 us/iter
+raw: 984206 us / 232 iter = 4242.2672 us/iter
+raw: 984200 us / 232 iter = 4242.2414 us/iter
+raw: 984127 us / 232 iter = 4241.9267 us/iter
+2.10 493.72
+
+raw: 1006476 us / 72 iter = 13978.8333 us/iter
+raw: 1005714 us / 72 iter = 13968.2500 us/iter
+raw: 1005603 us / 72 iter = 13966.7083 us/iter
+raw: 1005584 us / 72 iter = 13966.4444 us/iter
+raw: 1005515 us / 72 iter = 13965.4861 us/iter
+raw: 1005487 us / 72 iter = 13965.0972 us/iter
+raw: 1005437 us / 72 iter = 13964.4028 us/iter
+raw: 1005265 us / 72 iter = 13962.0139 us/iter
+raw: 1005211 us / 72 iter = 13961.2639 us/iter
+raw: 1005133 us / 72 iter = 13960.1806 us/iter
+raw: 1005085 us / 72 iter = 13959.5139 us/iter
+4.19 300.34
+
+raw: 1007075 us / 33 iter = 30517.4242 us/iter
+raw: 1006976 us / 33 iter = 30514.4242 us/iter
+raw: 1006785 us / 33 iter = 30508.6364 us/iter
+raw: 1006744 us / 33 iter = 30507.3939 us/iter
+raw: 1006712 us / 33 iter = 30506.4242 us/iter
+raw: 1006670 us / 33 iter = 30505.1515 us/iter
+raw: 1006601 us / 33 iter = 30503.0606 us/iter
+raw: 1006575 us / 33 iter = 30502.2727 us/iter
+raw: 1006528 us / 33 iter = 30500.8485 us/iter
+raw: 1006459 us / 33 iter = 30498.7576 us/iter
+raw: 1006354 us / 33 iter = 30495.5758 us/iter
+8.39 274.99
+
+raw: 1040368 us / 17 iter = 61198.1176 us/iter
+raw: 1040343 us / 17 iter = 61196.6471 us/iter
+raw: 1040294 us / 17 iter = 61193.7647 us/iter
+raw: 1040287 us / 17 iter = 61193.3529 us/iter
+raw: 1040242 us / 17 iter = 61190.7059 us/iter
+raw: 1040237 us / 17 iter = 61190.4118 us/iter
+raw: 1040199 us / 17 iter = 61188.1765 us/iter
+raw: 1040199 us / 17 iter = 61188.1765 us/iter
+raw: 1040119 us / 17 iter = 61183.4706 us/iter
+raw: 1040044 us / 17 iter = 61179.0588 us/iter
+raw: 1039993 us / 17 iter = 61176.0588 us/iter
+16.78 274.18
+
+raw: 1100490 us / 9 iter = 122276.6667 us/iter
+raw: 1100390 us / 9 iter = 122265.5556 us/iter
+raw: 1100382 us / 9 iter = 122264.6667 us/iter
+raw: 1100292 us / 9 iter = 122254.6667 us/iter
+raw: 1100251 us / 9 iter = 122250.1111 us/iter
+raw: 1100221 us / 9 iter = 122246.7778 us/iter
+raw: 1100214 us / 9 iter = 122246.0000 us/iter
+raw: 1100158 us / 9 iter = 122239.7778 us/iter
+raw: 1100151 us / 9 iter = 122239.0000 us/iter
+raw: 1100136 us / 9 iter = 122237.3333 us/iter
+raw: 1100034 us / 9 iter = 122226.0000 us/iter
+33.55 274.48
+
+raw: 1220906 us / 5 iter = 244181.2000 us/iter
+raw: 1220901 us / 5 iter = 244180.2000 us/iter
+raw: 1220817 us / 5 iter = 244163.4000 us/iter
+raw: 1220803 us / 5 iter = 244160.6000 us/iter
+raw: 1220747 us / 5 iter = 244149.4000 us/iter
+raw: 1220627 us / 5 iter = 244125.4000 us/iter
+raw: 1220623 us / 5 iter = 244124.6000 us/iter
+raw: 1220601 us / 5 iter = 244120.2000 us/iter
+raw: 1220587 us / 5 iter = 244117.4000 us/iter
+raw: 1220584 us / 5 iter = 244116.8000 us/iter
+raw: 1220347 us / 5 iter = 244069.4000 us/iter
+67.11 274.90
+
+raw: 1461779 us / 3 iter = 487259.6667 us/iter
+raw: 1461725 us / 3 iter = 487241.6667 us/iter
+raw: 1461558 us / 3 iter = 487186.0000 us/iter
+raw: 1461354 us / 3 iter = 487118.0000 us/iter
+raw: 1461335 us / 3 iter = 487111.6667 us/iter
+raw: 1461327 us / 3 iter = 487109.0000 us/iter
+raw: 1461300 us / 3 iter = 487100.0000 us/iter
+raw: 1461283 us / 3 iter = 487094.3333 us/iter
+raw: 1461198 us / 3 iter = 487066.0000 us/iter
+raw: 1461129 us / 3 iter = 487043.0000 us/iter
+raw: 1461123 us / 3 iter = 487041.0000 us/iter
+134.22 275.54
+
+raw: 1949045 us / 2 iter = 974522.5000 us/iter
+raw: 1948945 us / 2 iter = 974472.5000 us/iter
+raw: 1948812 us / 2 iter = 974406.0000 us/iter
+raw: 1948754 us / 2 iter = 974377.0000 us/iter
+raw: 1948752 us / 2 iter = 974376.0000 us/iter
+raw: 1948478 us / 2 iter = 974239.0000 us/iter
+raw: 1948458 us / 2 iter = 974229.0000 us/iter
+raw: 1948457 us / 2 iter = 974228.5000 us/iter
+raw: 1948453 us / 2 iter = 974226.5000 us/iter
+raw: 1948427 us / 2 iter = 974213.5000 us/iter
+raw: 1948363 us / 2 iter = 974181.5000 us/iter
+268.44 275.53
+
+raw: 1946595 us / 1 iter = 1946595.0000 us/iter
+raw: 1946492 us / 1 iter = 1946492.0000 us/iter
+raw: 1946475 us / 1 iter = 1946475.0000 us/iter
+raw: 1946462 us / 1 iter = 1946462.0000 us/iter
+raw: 1946438 us / 1 iter = 1946438.0000 us/iter
+raw: 1946432 us / 1 iter = 1946432.0000 us/iter
+raw: 1946380 us / 1 iter = 1946380.0000 us/iter
+raw: 1946249 us / 1 iter = 1946249.0000 us/iter
+raw: 1946231 us / 1 iter = 1946231.0000 us/iter
+raw: 1946205 us / 1 iter = 1946205.0000 us/iter
+raw: 1946161 us / 1 iter = 1946161.0000 us/iter
+536.87 275.82
+
+raw: 3905403 us / 1 iter = 3905403.0000 us/iter
+raw: 3905265 us / 1 iter = 3905265.0000 us/iter
+raw: 3904865 us / 1 iter = 3904865.0000 us/iter
+raw: 3904862 us / 1 iter = 3904862.0000 us/iter
+raw: 3904840 us / 1 iter = 3904840.0000 us/iter
+raw: 3904829 us / 1 iter = 3904829.0000 us/iter
+raw: 3904809 us / 1 iter = 3904809.0000 us/iter
+raw: 3904438 us / 1 iter = 3904438.0000 us/iter
+raw: 3904358 us / 1 iter = 3904358.0000 us/iter
+raw: 3904167 us / 1 iter = 3904167.0000 us/iter
+raw: 3904041 us / 1 iter = 3904041.0000 us/iter
+1073.74 274.98
+
+
+"Mmap read bandwidth
+
+raw: 999753 us / 11856506 iter = 0.0843 us/iter
+raw: 999749 us / 11856506 iter = 0.0843 us/iter
+raw: 999698 us / 11856506 iter = 0.0843 us/iter
+raw: 999696 us / 11856506 iter = 0.0843 us/iter
+raw: 999693 us / 11856506 iter = 0.0843 us/iter
+raw: 999692 us / 11856506 iter = 0.0843 us/iter
+raw: 999692 us / 11856506 iter = 0.0843 us/iter
+raw: 999691 us / 11856506 iter = 0.0843 us/iter
+raw: 999691 us / 11856506 iter = 0.0843 us/iter
+raw: 999688 us / 11856506 iter = 0.0843 us/iter
+raw: 999685 us / 11856506 iter = 0.0843 us/iter
+0.000512 6072.40
+
+raw: 999863 us / 6863187 iter = 0.1457 us/iter
+raw: 999856 us / 6863187 iter = 0.1457 us/iter
+raw: 999856 us / 6863187 iter = 0.1457 us/iter
+raw: 999724 us / 6863187 iter = 0.1457 us/iter
+raw: 999717 us / 6863187 iter = 0.1457 us/iter
+raw: 999707 us / 6863187 iter = 0.1457 us/iter
+raw: 999706 us / 6863187 iter = 0.1457 us/iter
+raw: 999704 us / 6863187 iter = 0.1457 us/iter
+raw: 999701 us / 6863187 iter = 0.1457 us/iter
+raw: 999700 us / 6863187 iter = 0.1457 us/iter
+raw: 999698 us / 6863187 iter = 0.1457 us/iter
+0.001024 7029.96
+
+raw: 1007396 us / 3554204 iter = 0.2834 us/iter
+raw: 1004632 us / 3554204 iter = 0.2827 us/iter
+raw: 1004623 us / 3554204 iter = 0.2827 us/iter
+raw: 1004308 us / 3554204 iter = 0.2826 us/iter
+raw: 1004214 us / 3554204 iter = 0.2825 us/iter
+raw: 1003569 us / 3554204 iter = 0.2824 us/iter
+raw: 1003388 us / 3554204 iter = 0.2823 us/iter
+raw: 1003013 us / 3554204 iter = 0.2822 us/iter
+raw: 1002222 us / 3554204 iter = 0.2820 us/iter
+raw: 1001356 us / 3554204 iter = 0.2817 us/iter
+raw: 1000765 us / 3554204 iter = 0.2816 us/iter
+0.002048 7253.12
+
+raw: 1001902 us / 1772136 iter = 0.5654 us/iter
+raw: 1001081 us / 1772136 iter = 0.5649 us/iter
+raw: 1000268 us / 1772136 iter = 0.5644 us/iter
+raw: 1000265 us / 1772136 iter = 0.5644 us/iter
+raw: 999495 us / 1772136 iter = 0.5640 us/iter
+raw: 998846 us / 1772136 iter = 0.5636 us/iter
+raw: 997635 us / 1772136 iter = 0.5630 us/iter
+raw: 997523 us / 1772136 iter = 0.5629 us/iter
+raw: 997284 us / 1772136 iter = 0.5628 us/iter
+raw: 997152 us / 1772136 iter = 0.5627 us/iter
+raw: 996727 us / 1772136 iter = 0.5624 us/iter
+0.004096 7267.06
+
+raw: 999752 us / 907324 iter = 1.1019 us/iter
+raw: 999744 us / 907324 iter = 1.1019 us/iter
+raw: 999744 us / 907324 iter = 1.1019 us/iter
+raw: 999599 us / 907324 iter = 1.1017 us/iter
+raw: 999595 us / 907324 iter = 1.1017 us/iter
+raw: 999591 us / 907324 iter = 1.1017 us/iter
+raw: 999582 us / 907324 iter = 1.1017 us/iter
+raw: 999580 us / 907324 iter = 1.1017 us/iter
+raw: 999579 us / 907324 iter = 1.1017 us/iter
+raw: 999577 us / 907324 iter = 1.1017 us/iter
+raw: 999576 us / 907324 iter = 1.1017 us/iter
+0.008192 7435.84
+
+raw: 1005913 us / 455930 iter = 2.2063 us/iter
+raw: 1005880 us / 455930 iter = 2.2062 us/iter
+raw: 1004869 us / 455930 iter = 2.2040 us/iter
+raw: 1004538 us / 455930 iter = 2.2033 us/iter
+raw: 1004389 us / 455930 iter = 2.2029 us/iter
+raw: 1004347 us / 455930 iter = 2.2029 us/iter
+raw: 1004249 us / 455930 iter = 2.2026 us/iter
+raw: 1003908 us / 455930 iter = 2.2019 us/iter
+raw: 1003529 us / 455930 iter = 2.2011 us/iter
+raw: 1001630 us / 455930 iter = 2.1969 us/iter
+raw: 1000572 us / 455930 iter = 2.1946 us/iter
+0.016384 7437.63
+
+raw: 998152 us / 224625 iter = 4.4436 us/iter
+raw: 998105 us / 224625 iter = 4.4434 us/iter
+raw: 998080 us / 224625 iter = 4.4433 us/iter
+raw: 998075 us / 224625 iter = 4.4433 us/iter
+raw: 998074 us / 224625 iter = 4.4433 us/iter
+raw: 998074 us / 224625 iter = 4.4433 us/iter
+raw: 998073 us / 224625 iter = 4.4433 us/iter
+raw: 998054 us / 224625 iter = 4.4432 us/iter
+raw: 998045 us / 224625 iter = 4.4432 us/iter
+raw: 998039 us / 224625 iter = 4.4431 us/iter
+raw: 998033 us / 224625 iter = 4.4431 us/iter
+0.032768 7374.72
+
+raw: 997170 us / 41840 iter = 23.8329 us/iter
+raw: 997162 us / 41840 iter = 23.8327 us/iter
+raw: 997111 us / 41840 iter = 23.8315 us/iter
+raw: 997110 us / 41840 iter = 23.8315 us/iter
+raw: 997100 us / 41840 iter = 23.8313 us/iter
+raw: 997089 us / 41840 iter = 23.8310 us/iter
+raw: 997085 us / 41840 iter = 23.8309 us/iter
+raw: 997082 us / 41840 iter = 23.8308 us/iter
+raw: 997078 us / 41840 iter = 23.8307 us/iter
+raw: 997062 us / 41840 iter = 23.8304 us/iter
+raw: 997059 us / 41840 iter = 23.8303 us/iter
+0.065536 2750.03
+
+raw: 999241 us / 18305 iter = 54.5884 us/iter
+raw: 999226 us / 18305 iter = 54.5876 us/iter
+raw: 999222 us / 18305 iter = 54.5874 us/iter
+raw: 999213 us / 18305 iter = 54.5869 us/iter
+raw: 999200 us / 18305 iter = 54.5862 us/iter
+raw: 999159 us / 18305 iter = 54.5839 us/iter
+raw: 998880 us / 18305 iter = 54.5687 us/iter
+raw: 998869 us / 18305 iter = 54.5681 us/iter
+raw: 998848 us / 18305 iter = 54.5669 us/iter
+raw: 998830 us / 18305 iter = 54.5660 us/iter
+raw: 998820 us / 18305 iter = 54.5654 us/iter
+0.131072 2401.29
+
+raw: 999814 us / 8992 iter = 111.1893 us/iter
+raw: 996970 us / 8992 iter = 110.8730 us/iter
+raw: 996961 us / 8992 iter = 110.8720 us/iter
+raw: 996873 us / 8992 iter = 110.8622 us/iter
+raw: 996831 us / 8992 iter = 110.8575 us/iter
+raw: 996795 us / 8992 iter = 110.8535 us/iter
+raw: 996769 us / 8992 iter = 110.8506 us/iter
+raw: 996766 us / 8992 iter = 110.8503 us/iter
+raw: 996705 us / 8992 iter = 110.8435 us/iter
+raw: 996684 us / 8992 iter = 110.8412 us/iter
+raw: 996683 us / 8992 iter = 110.8411 us/iter
+0.262144 2364.78
+
+raw: 999801 us / 4498 iter = 222.2768 us/iter
+raw: 999475 us / 4498 iter = 222.2043 us/iter
+raw: 999365 us / 4498 iter = 222.1799 us/iter
+raw: 999360 us / 4498 iter = 222.1787 us/iter
+raw: 999352 us / 4498 iter = 222.1770 us/iter
+raw: 999350 us / 4498 iter = 222.1765 us/iter
+raw: 999300 us / 4498 iter = 222.1654 us/iter
+raw: 999280 us / 4498 iter = 222.1610 us/iter
+raw: 999254 us / 4498 iter = 222.1552 us/iter
+raw: 999183 us / 4498 iter = 222.1394 us/iter
+raw: 999158 us / 4498 iter = 222.1338 us/iter
+0.524288 2359.78
+
+raw: 999608 us / 2248 iter = 444.6655 us/iter
+raw: 999582 us / 2248 iter = 444.6539 us/iter
+raw: 999370 us / 2248 iter = 444.5596 us/iter
+raw: 999317 us / 2248 iter = 444.5360 us/iter
+raw: 999157 us / 2248 iter = 444.4649 us/iter
+raw: 999054 us / 2248 iter = 444.4190 us/iter
+raw: 999049 us / 2248 iter = 444.4168 us/iter
+raw: 999040 us / 2248 iter = 444.4128 us/iter
+raw: 999018 us / 2248 iter = 444.4030 us/iter
+raw: 998996 us / 2248 iter = 444.3932 us/iter
+raw: 998935 us / 2248 iter = 444.3661 us/iter
+1.05 2359.43
+
+raw: 992297 us / 619 iter = 1603.0646 us/iter
+raw: 991603 us / 619 iter = 1601.9435 us/iter
+raw: 990866 us / 619 iter = 1600.7528 us/iter
+raw: 989597 us / 619 iter = 1598.7027 us/iter
+raw: 989230 us / 619 iter = 1598.1099 us/iter
+raw: 988327 us / 619 iter = 1596.6511 us/iter
+raw: 988040 us / 619 iter = 1596.1874 us/iter
+raw: 988027 us / 619 iter = 1596.1664 us/iter
+raw: 987866 us / 619 iter = 1595.9063 us/iter
+raw: 987330 us / 619 iter = 1595.0404 us/iter
+raw: 986766 us / 619 iter = 1594.1292 us/iter
+2.10 1313.47
+
+raw: 1003959 us / 116 iter = 8654.8190 us/iter
+raw: 1003841 us / 116 iter = 8653.8017 us/iter
+raw: 1003315 us / 116 iter = 8649.2672 us/iter
+raw: 1003254 us / 116 iter = 8648.7414 us/iter
+raw: 1003219 us / 116 iter = 8648.4397 us/iter
+raw: 1003217 us / 116 iter = 8648.4224 us/iter
+raw: 1003213 us / 116 iter = 8648.3879 us/iter
+raw: 1003126 us / 116 iter = 8647.6379 us/iter
+raw: 1003045 us / 116 iter = 8646.9397 us/iter
+raw: 1002869 us / 116 iter = 8645.4224 us/iter
+raw: 1002795 us / 116 iter = 8644.7845 us/iter
+4.19 484.98
+
+raw: 1017763 us / 50 iter = 20355.2600 us/iter
+raw: 1017736 us / 50 iter = 20354.7200 us/iter
+raw: 1017693 us / 50 iter = 20353.8600 us/iter
+raw: 1017651 us / 50 iter = 20353.0200 us/iter
+raw: 1017650 us / 50 iter = 20353.0000 us/iter
+raw: 1017630 us / 50 iter = 20352.6000 us/iter
+raw: 1017621 us / 50 iter = 20352.4200 us/iter
+raw: 1017585 us / 50 iter = 20351.7000 us/iter
+raw: 1017558 us / 50 iter = 20351.1600 us/iter
+raw: 1017518 us / 50 iter = 20350.3600 us/iter
+raw: 1017431 us / 50 iter = 20348.6200 us/iter
+8.39 412.16
+
+raw: 1030221 us / 25 iter = 41208.8400 us/iter
+raw: 1030212 us / 25 iter = 41208.4800 us/iter
+raw: 1030179 us / 25 iter = 41207.1600 us/iter
+raw: 1030173 us / 25 iter = 41206.9200 us/iter
+raw: 1030165 us / 25 iter = 41206.6000 us/iter
+raw: 1030156 us / 25 iter = 41206.2400 us/iter
+raw: 1030121 us / 25 iter = 41204.8400 us/iter
+raw: 1030114 us / 25 iter = 41204.5600 us/iter
+raw: 1030110 us / 25 iter = 41204.4000 us/iter
+raw: 1030105 us / 25 iter = 41204.2000 us/iter
+raw: 1030083 us / 25 iter = 41203.3200 us/iter
+16.78 407.15
+
+raw: 1071326 us / 13 iter = 82409.6923 us/iter
+raw: 1071211 us / 13 iter = 82400.8462 us/iter
+raw: 1071129 us / 13 iter = 82394.5385 us/iter
+raw: 1071128 us / 13 iter = 82394.4615 us/iter
+raw: 1071117 us / 13 iter = 82393.6154 us/iter
+raw: 1071112 us / 13 iter = 82393.2308 us/iter
+raw: 1071097 us / 13 iter = 82392.0769 us/iter
+raw: 1071090 us / 13 iter = 82391.5385 us/iter
+raw: 1071058 us / 13 iter = 82389.0769 us/iter
+raw: 1071035 us / 13 iter = 82387.3077 us/iter
+raw: 1071021 us / 13 iter = 82386.2308 us/iter
+33.55 407.25
+
+raw: 1153117 us / 7 iter = 164731.0000 us/iter
+raw: 1153098 us / 7 iter = 164728.2857 us/iter
+raw: 1153062 us / 7 iter = 164723.1429 us/iter
+raw: 1153033 us / 7 iter = 164719.0000 us/iter
+raw: 1153028 us / 7 iter = 164718.2857 us/iter
+raw: 1153012 us / 7 iter = 164716.0000 us/iter
+raw: 1153003 us / 7 iter = 164714.7143 us/iter
+raw: 1152995 us / 7 iter = 164713.5714 us/iter
+raw: 1152978 us / 7 iter = 164711.1429 us/iter
+raw: 1152959 us / 7 iter = 164708.4286 us/iter
+raw: 1152916 us / 7 iter = 164702.2857 us/iter
+67.11 407.42
+
+raw: 1317787 us / 4 iter = 329446.7500 us/iter
+raw: 1317784 us / 4 iter = 329446.0000 us/iter
+raw: 1317774 us / 4 iter = 329443.5000 us/iter
+raw: 1317746 us / 4 iter = 329436.5000 us/iter
+raw: 1317692 us / 4 iter = 329423.0000 us/iter
+raw: 1317688 us / 4 iter = 329422.0000 us/iter
+raw: 1317670 us / 4 iter = 329417.5000 us/iter
+raw: 1317669 us / 4 iter = 329417.2500 us/iter
+raw: 1317649 us / 4 iter = 329412.2500 us/iter
+raw: 1317626 us / 4 iter = 329406.5000 us/iter
+raw: 1317571 us / 4 iter = 329392.7500 us/iter
+134.22 407.43
+
+raw: 1317745 us / 2 iter = 658872.5000 us/iter
+raw: 1317725 us / 2 iter = 658862.5000 us/iter
+raw: 1317721 us / 2 iter = 658860.5000 us/iter
+raw: 1317688 us / 2 iter = 658844.0000 us/iter
+raw: 1317672 us / 2 iter = 658836.0000 us/iter
+raw: 1317671 us / 2 iter = 658835.5000 us/iter
+raw: 1317667 us / 2 iter = 658833.5000 us/iter
+raw: 1317622 us / 2 iter = 658811.0000 us/iter
+raw: 1317620 us / 2 iter = 658810.0000 us/iter
+raw: 1317564 us / 2 iter = 658782.0000 us/iter
+raw: 1317557 us / 2 iter = 658778.5000 us/iter
+268.44 407.44
+
+raw: 1317676 us / 1 iter = 1317676.0000 us/iter
+raw: 1317641 us / 1 iter = 1317641.0000 us/iter
+raw: 1317640 us / 1 iter = 1317640.0000 us/iter
+raw: 1317640 us / 1 iter = 1317640.0000 us/iter
+raw: 1317631 us / 1 iter = 1317631.0000 us/iter
+raw: 1317620 us / 1 iter = 1317620.0000 us/iter
+raw: 1317613 us / 1 iter = 1317613.0000 us/iter
+raw: 1317607 us / 1 iter = 1317607.0000 us/iter
+raw: 1317586 us / 1 iter = 1317586.0000 us/iter
+raw: 1317581 us / 1 iter = 1317581.0000 us/iter
+raw: 1317575 us / 1 iter = 1317575.0000 us/iter
+536.87 407.46
+
+raw: 2636369 us / 1 iter = 2636369.0000 us/iter
+raw: 2636024 us / 1 iter = 2636024.0000 us/iter
+raw: 2635980 us / 1 iter = 2635980.0000 us/iter
+raw: 2635929 us / 1 iter = 2635929.0000 us/iter
+raw: 2635915 us / 1 iter = 2635915.0000 us/iter
+raw: 2635880 us / 1 iter = 2635880.0000 us/iter
+raw: 2635772 us / 1 iter = 2635772.0000 us/iter
+raw: 2635762 us / 1 iter = 2635762.0000 us/iter
+raw: 2635715 us / 1 iter = 2635715.0000 us/iter
+raw: 2635650 us / 1 iter = 2635650.0000 us/iter
+raw: 2635633 us / 1 iter = 2635633.0000 us/iter
+1073.74 407.36
+
+"Mmap read open2close bandwidth
+
+raw: 1104980 us / 30392 iter = 36.3576 us/iter
+raw: 1095443 us / 30392 iter = 36.0438 us/iter
+raw: 1090874 us / 30392 iter = 35.8935 us/iter
+raw: 1090479 us / 30392 iter = 35.8805 us/iter
+raw: 1088767 us / 30392 iter = 35.8241 us/iter
+raw: 1085304 us / 30392 iter = 35.7102 us/iter
+raw: 1084259 us / 30392 iter = 35.6758 us/iter
+raw: 1080864 us / 30392 iter = 35.5641 us/iter
+raw: 1079820 us / 30392 iter = 35.5297 us/iter
+raw: 1078986 us / 30392 iter = 35.5023 us/iter
+raw: 1069859 us / 30392 iter = 35.2020 us/iter
+0.000512 14.34
+
+raw: 1090597 us / 29747 iter = 36.6624 us/iter
+raw: 1087058 us / 29747 iter = 36.5434 us/iter
+raw: 1079078 us / 29747 iter = 36.2752 us/iter
+raw: 1077107 us / 29747 iter = 36.2089 us/iter
+raw: 1075513 us / 29747 iter = 36.1553 us/iter
+raw: 1074475 us / 29747 iter = 36.1204 us/iter
+raw: 1072675 us / 29747 iter = 36.0599 us/iter
+raw: 1072083 us / 29747 iter = 36.0400 us/iter
+raw: 1068944 us / 29747 iter = 35.9345 us/iter
+raw: 1054282 us / 29747 iter = 35.4416 us/iter
+raw: 1050151 us / 29747 iter = 35.3028 us/iter
+0.001024 28.35
+
+raw: 1055677 us / 30448 iter = 34.6715 us/iter
+raw: 1031397 us / 30448 iter = 33.8740 us/iter
+raw: 1025646 us / 30448 iter = 33.6852 us/iter
+raw: 1024659 us / 30448 iter = 33.6528 us/iter
+raw: 1023955 us / 30448 iter = 33.6296 us/iter
+raw: 1022640 us / 30448 iter = 33.5864 us/iter
+raw: 1022014 us / 30448 iter = 33.5659 us/iter
+raw: 1011443 us / 30448 iter = 33.2187 us/iter
+raw: 999985 us / 30448 iter = 32.8424 us/iter
+raw: 999484 us / 30448 iter = 32.8259 us/iter
+raw: 998022 us / 30448 iter = 32.7779 us/iter
+0.002048 60.98
+
+raw: 1051517 us / 30399 iter = 34.5905 us/iter
+raw: 1049210 us / 30399 iter = 34.5146 us/iter
+raw: 1045450 us / 30399 iter = 34.3909 us/iter
+raw: 1038603 us / 30399 iter = 34.1657 us/iter
+raw: 1038029 us / 30399 iter = 34.1468 us/iter
+raw: 1035502 us / 30399 iter = 34.0637 us/iter
+raw: 1034583 us / 30399 iter = 34.0335 us/iter
+raw: 1028708 us / 30399 iter = 33.8402 us/iter
+raw: 1027900 us / 30399 iter = 33.8136 us/iter
+raw: 1027743 us / 30399 iter = 33.8084 us/iter
+raw: 1021981 us / 30399 iter = 33.6189 us/iter
+0.004096 120.25
+
+raw: 1045542 us / 28896 iter = 36.1829 us/iter
+raw: 1043186 us / 28896 iter = 36.1014 us/iter
+raw: 1041237 us / 28896 iter = 36.0339 us/iter
+raw: 1027244 us / 28896 iter = 35.5497 us/iter
+raw: 1013687 us / 28896 iter = 35.0805 us/iter
+raw: 1012402 us / 28896 iter = 35.0361 us/iter
+raw: 1012389 us / 28896 iter = 35.0356 us/iter
+raw: 1012218 us / 28896 iter = 35.0297 us/iter
+raw: 1010782 us / 28896 iter = 34.9800 us/iter
+raw: 1010234 us / 28896 iter = 34.9610 us/iter
+raw: 1003934 us / 28896 iter = 34.7430 us/iter
+0.008192 233.82
+
+raw: 1001118 us / 25553 iter = 39.1781 us/iter
+raw: 998940 us / 25553 iter = 39.0929 us/iter
+raw: 998703 us / 25553 iter = 39.0836 us/iter
+raw: 997550 us / 25553 iter = 39.0385 us/iter
+raw: 991688 us / 25553 iter = 38.8091 us/iter
+raw: 991528 us / 25553 iter = 38.8028 us/iter
+raw: 990109 us / 25553 iter = 38.7473 us/iter
+raw: 989786 us / 25553 iter = 38.7346 us/iter
+raw: 986579 us / 25553 iter = 38.6091 us/iter
+raw: 984178 us / 25553 iter = 38.5152 us/iter
+raw: 983892 us / 25553 iter = 38.5040 us/iter
+0.016384 422.24
+
+raw: 996725 us / 20616 iter = 48.3472 us/iter
+raw: 996492 us / 20616 iter = 48.3359 us/iter
+raw: 995842 us / 20616 iter = 48.3043 us/iter
+raw: 995780 us / 20616 iter = 48.3013 us/iter
+raw: 995758 us / 20616 iter = 48.3003 us/iter
+raw: 995370 us / 20616 iter = 48.2814 us/iter
+raw: 995152 us / 20616 iter = 48.2709 us/iter
+raw: 995089 us / 20616 iter = 48.2678 us/iter
+raw: 995085 us / 20616 iter = 48.2676 us/iter
+raw: 995034 us / 20616 iter = 48.2651 us/iter
+raw: 994914 us / 20616 iter = 48.2593 us/iter
+0.032768 678.69
+
+raw: 995787 us / 13135 iter = 75.8117 us/iter
+raw: 995388 us / 13135 iter = 75.7813 us/iter
+raw: 995013 us / 13135 iter = 75.7528 us/iter
+raw: 994982 us / 13135 iter = 75.7504 us/iter
+raw: 994978 us / 13135 iter = 75.7501 us/iter
+raw: 994721 us / 13135 iter = 75.7306 us/iter
+raw: 994669 us / 13135 iter = 75.7266 us/iter
+raw: 994490 us / 13135 iter = 75.7130 us/iter
+raw: 994405 us / 13135 iter = 75.7065 us/iter
+raw: 994238 us / 13135 iter = 75.6938 us/iter
+raw: 993840 us / 13135 iter = 75.6635 us/iter
+0.065536 865.38
+
+raw: 996340 us / 8003 iter = 124.4958 us/iter
+raw: 996143 us / 8003 iter = 124.4712 us/iter
+raw: 995864 us / 8003 iter = 124.4363 us/iter
+raw: 995774 us / 8003 iter = 124.4251 us/iter
+raw: 995730 us / 8003 iter = 124.4196 us/iter
+raw: 995711 us / 8003 iter = 124.4172 us/iter
+raw: 995682 us / 8003 iter = 124.4136 us/iter
+raw: 995607 us / 8003 iter = 124.4042 us/iter
+raw: 995597 us / 8003 iter = 124.4030 us/iter
+raw: 995471 us / 8003 iter = 124.3872 us/iter
+raw: 995437 us / 8003 iter = 124.3830 us/iter
+0.131072 1053.49
+
+raw: 997119 us / 4736 iter = 210.5403 us/iter
+raw: 996845 us / 4736 iter = 210.4825 us/iter
+raw: 996796 us / 4736 iter = 210.4721 us/iter
+raw: 996781 us / 4736 iter = 210.4690 us/iter
+raw: 996668 us / 4736 iter = 210.4451 us/iter
+raw: 996660 us / 4736 iter = 210.4434 us/iter
+raw: 996639 us / 4736 iter = 210.4390 us/iter
+raw: 996551 us / 4736 iter = 210.4204 us/iter
+raw: 996544 us / 4736 iter = 210.4189 us/iter
+raw: 996476 us / 4736 iter = 210.4046 us/iter
+raw: 996367 us / 4736 iter = 210.3815 us/iter
+0.262144 1245.67
+
+raw: 1001264 us / 2573 iter = 389.1426 us/iter
+raw: 1000431 us / 2573 iter = 388.8189 us/iter
+raw: 1000424 us / 2573 iter = 388.8162 us/iter
+raw: 1000302 us / 2573 iter = 388.7688 us/iter
+raw: 1000260 us / 2573 iter = 388.7524 us/iter
+raw: 1000255 us / 2573 iter = 388.7505 us/iter
+raw: 1000229 us / 2573 iter = 388.7404 us/iter
+raw: 1000200 us / 2573 iter = 388.7291 us/iter
+raw: 1000165 us / 2573 iter = 388.7155 us/iter
+raw: 1000135 us / 2573 iter = 388.7038 us/iter
+raw: 1000030 us / 2573 iter = 388.6630 us/iter
+0.524288 1348.65
+
+raw: 997663 us / 1356 iter = 735.7397 us/iter
+raw: 996760 us / 1356 iter = 735.0737 us/iter
+raw: 996611 us / 1356 iter = 734.9639 us/iter
+raw: 996467 us / 1356 iter = 734.8577 us/iter
+raw: 996127 us / 1356 iter = 734.6069 us/iter
+raw: 996125 us / 1356 iter = 734.6055 us/iter
+raw: 996120 us / 1356 iter = 734.6018 us/iter
+raw: 996118 us / 1356 iter = 734.6003 us/iter
+raw: 995912 us / 1356 iter = 734.4484 us/iter
+raw: 995836 us / 1356 iter = 734.3923 us/iter
+raw: 995721 us / 1356 iter = 734.3075 us/iter
+1.05 1427.40
+
+raw: 983037 us / 383 iter = 2566.6762 us/iter
+raw: 982924 us / 383 iter = 2566.3812 us/iter
+raw: 980197 us / 383 iter = 2559.2611 us/iter
+raw: 980066 us / 383 iter = 2558.9191 us/iter
+raw: 980034 us / 383 iter = 2558.8355 us/iter
+raw: 980002 us / 383 iter = 2558.7520 us/iter
+raw: 979961 us / 383 iter = 2558.6449 us/iter
+raw: 979745 us / 383 iter = 2558.0809 us/iter
+raw: 979574 us / 383 iter = 2557.6345 us/iter
+raw: 979534 us / 383 iter = 2557.5300 us/iter
+raw: 977090 us / 383 iter = 2551.1488 us/iter
+2.10 819.60
+
+raw: 1001180 us / 96 iter = 10428.9583 us/iter
+raw: 1001122 us / 96 iter = 10428.3542 us/iter
+raw: 1001078 us / 96 iter = 10427.8958 us/iter
+raw: 1001034 us / 96 iter = 10427.4375 us/iter
+raw: 1001005 us / 96 iter = 10427.1354 us/iter
+raw: 1000989 us / 96 iter = 10426.9688 us/iter
+raw: 1000952 us / 96 iter = 10426.5833 us/iter
+raw: 1000949 us / 96 iter = 10426.5521 us/iter
+raw: 1000929 us / 96 iter = 10426.3438 us/iter
+raw: 1000888 us / 96 iter = 10425.9167 us/iter
+raw: 1000711 us / 96 iter = 10424.0729 us/iter
+4.19 402.26
+
+raw: 1003642 us / 43 iter = 23340.5116 us/iter
+raw: 1003507 us / 43 iter = 23337.3721 us/iter
+raw: 1003498 us / 43 iter = 23337.1628 us/iter
+raw: 1003475 us / 43 iter = 23336.6279 us/iter
+raw: 1003471 us / 43 iter = 23336.5349 us/iter
+raw: 1003422 us / 43 iter = 23335.3953 us/iter
+raw: 1003362 us / 43 iter = 23334.0000 us/iter
+raw: 1003348 us / 43 iter = 23333.6744 us/iter
+raw: 1003320 us / 43 iter = 23333.0233 us/iter
+raw: 1003310 us / 43 iter = 23332.7907 us/iter
+raw: 1003274 us / 43 iter = 23331.9535 us/iter
+8.39 359.48
+
+raw: 1029727 us / 22 iter = 46805.7727 us/iter
+raw: 1029638 us / 22 iter = 46801.7273 us/iter
+raw: 1029585 us / 22 iter = 46799.3182 us/iter
+raw: 1029574 us / 22 iter = 46798.8182 us/iter
+raw: 1029530 us / 22 iter = 46796.8182 us/iter
+raw: 1029511 us / 22 iter = 46795.9545 us/iter
+raw: 1029497 us / 22 iter = 46795.3182 us/iter
+raw: 1029493 us / 22 iter = 46795.1364 us/iter
+raw: 1029461 us / 22 iter = 46793.6818 us/iter
+raw: 1029443 us / 22 iter = 46792.8636 us/iter
+raw: 1029408 us / 22 iter = 46791.2727 us/iter
+16.78 358.52
+
+raw: 1027548 us / 11 iter = 93413.4545 us/iter
+raw: 1027525 us / 11 iter = 93411.3636 us/iter
+raw: 1027514 us / 11 iter = 93410.3636 us/iter
+raw: 1027512 us / 11 iter = 93410.1818 us/iter
+raw: 1027472 us / 11 iter = 93406.5455 us/iter
+raw: 1027465 us / 11 iter = 93405.9091 us/iter
+raw: 1027465 us / 11 iter = 93405.9091 us/iter
+raw: 1027445 us / 11 iter = 93404.0909 us/iter
+raw: 1027367 us / 11 iter = 93397.0000 us/iter
+raw: 1027339 us / 11 iter = 93394.4545 us/iter
+raw: 1027334 us / 11 iter = 93394.0000 us/iter
+33.55 359.23
+
+raw: 1118896 us / 6 iter = 186482.6667 us/iter
+raw: 1118877 us / 6 iter = 186479.5000 us/iter
+raw: 1118863 us / 6 iter = 186477.1667 us/iter
+raw: 1118835 us / 6 iter = 186472.5000 us/iter
+raw: 1118831 us / 6 iter = 186471.8333 us/iter
+raw: 1118809 us / 6 iter = 186468.1667 us/iter
+raw: 1118796 us / 6 iter = 186466.0000 us/iter
+raw: 1118779 us / 6 iter = 186463.1667 us/iter
+raw: 1118776 us / 6 iter = 186462.6667 us/iter
+raw: 1118775 us / 6 iter = 186462.5000 us/iter
+raw: 1118723 us / 6 iter = 186453.8333 us/iter
+67.11 359.89
+
+raw: 1119028 us / 3 iter = 373009.3333 us/iter
+raw: 1119025 us / 3 iter = 373008.3333 us/iter
+raw: 1118981 us / 3 iter = 372993.6667 us/iter
+raw: 1118968 us / 3 iter = 372989.3333 us/iter
+raw: 1118959 us / 3 iter = 372986.3333 us/iter
+raw: 1118950 us / 3 iter = 372983.3333 us/iter
+raw: 1118921 us / 3 iter = 372973.6667 us/iter
+raw: 1118918 us / 3 iter = 372972.6667 us/iter
+raw: 1118892 us / 3 iter = 372964.0000 us/iter
+raw: 1118867 us / 3 iter = 372955.6667 us/iter
+raw: 1118854 us / 3 iter = 372951.3333 us/iter
+134.22 359.85
+
+raw: 1493909 us / 2 iter = 746954.5000 us/iter
+raw: 1493849 us / 2 iter = 746924.5000 us/iter
+raw: 1493835 us / 2 iter = 746917.5000 us/iter
+raw: 1493831 us / 2 iter = 746915.5000 us/iter
+raw: 1493821 us / 2 iter = 746910.5000 us/iter
+raw: 1493788 us / 2 iter = 746894.0000 us/iter
+raw: 1493785 us / 2 iter = 746892.5000 us/iter
+raw: 1493749 us / 2 iter = 746874.5000 us/iter
+raw: 1493744 us / 2 iter = 746872.0000 us/iter
+raw: 1493693 us / 2 iter = 746846.5000 us/iter
+raw: 1493689 us / 2 iter = 746844.5000 us/iter
+268.44 359.40
+
+raw: 1495445 us / 1 iter = 1495445.0000 us/iter
+raw: 1495436 us / 1 iter = 1495436.0000 us/iter
+raw: 1495359 us / 1 iter = 1495359.0000 us/iter
+raw: 1495313 us / 1 iter = 1495313.0000 us/iter
+raw: 1495309 us / 1 iter = 1495309.0000 us/iter
+raw: 1495285 us / 1 iter = 1495285.0000 us/iter
+raw: 1495227 us / 1 iter = 1495227.0000 us/iter
+raw: 1495218 us / 1 iter = 1495218.0000 us/iter
+raw: 1495211 us / 1 iter = 1495211.0000 us/iter
+raw: 1495167 us / 1 iter = 1495167.0000 us/iter
+raw: 1495122 us / 1 iter = 1495122.0000 us/iter
+536.87 359.04
+
+raw: 2993985 us / 1 iter = 2993985.0000 us/iter
+raw: 2993951 us / 1 iter = 2993951.0000 us/iter
+raw: 2993897 us / 1 iter = 2993897.0000 us/iter
+raw: 2993842 us / 1 iter = 2993842.0000 us/iter
+raw: 2993801 us / 1 iter = 2993801.0000 us/iter
+raw: 2993735 us / 1 iter = 2993735.0000 us/iter
+raw: 2993652 us / 1 iter = 2993652.0000 us/iter
+raw: 2993652 us / 1 iter = 2993652.0000 us/iter
+raw: 2993597 us / 1 iter = 2993597.0000 us/iter
+raw: 2993575 us / 1 iter = 2993575.0000 us/iter
+raw: 2993509 us / 1 iter = 2993509.0000 us/iter
+1073.74 358.66
+
+
+[Sat Aug 29 17:56:41 CEST 2026]
