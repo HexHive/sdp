@@ -40,11 +40,13 @@ sdp/
 │   └── upstream/             upstream code that SDP branched from
 ├── security-eval/
 │   ├── run_vm.sh             boot one guest
+│   ├── guest.py              drive a booted guest over its serial console
 │   ├── run_poc_ori_kernel.py run PoCs on the unprotected kernel
 │   ├── run_poc_sdp_kernel.py run PoCs on the SDP kernels
 │   └── poc/                  the 19 PoCs
 ├── performance-eval/
-│   ├── lmbench/              our LMbench results, five runs per kernel, and result_parse.py
+│   ├── lmbench/              our LMbench results, five runs per kernel, result_parse.py,
+│   │                         and paper_results.log (the paper's numbers, from paper_parse.py)
 │   │   └── rawprot/          "Protection fault raw" of the eight kernels whose runs above lack it
 │   ├── phoronix/             our Phoronix Test Suite results, one per kernel, run_pts.sh, and result_parse.py
 │   └── kernels/<kernel>/     what build_all_perf.sh leaves for the board
@@ -115,14 +117,14 @@ SDP protects sensitive data against both data-only attacks and control-flow hija
 It mitigates attacks that overwrite sensitive data, sensitive data pointers, or code pointers (Paper §2), whether the attacker controls plain `load/store` or `ld/sd_sc(d)p` of another type (Paper §7.1).
 
 - **Paper results.**
-Paper §8.2, Table 2, Appendix C Table 6.
+Paper §8.2, Table 2, Appendix A Table 5.
 
 ##### C2: Performance Evaluation
 - **Claim.**
-SDP's performance overhead is negligible compared with the data-only attack mitigation baseline xMP and the control-flow hijacking mitigation baselines SCS and KCFI.
+SDP's performance overhead is negligible: substantially lower than the data-only attack mitigation baseline xMP, and comparable to the control-flow hijacking mitigation baselines SCS and KCFI.
 
 - **Paper results.**
-Paper §8.3, Figures 3–8.
+Paper §8.3, Figures 4–9.
 
 #### 5.2 Experiments
 ##### E1: Security Evaluation
@@ -139,7 +141,7 @@ The 19 PoCs cover all the attack paths, classified along two axes: *what* each o
     - **Direct sensitive pointer** (2):
       - `nsproxy`, `fs`: repoints `task_struct.nsproxy`/`.fs` at `init_nsproxy`/`init_fs`.
     - **Indirect sensitive pointer** (2):
-      - `page_table`, `init_mm`: walk `pgd → pud → pmd → pte` from `init_mm.pgd` and flips a kernel code page's leaf PTE from R+X to R+W+X.
+      - `page_table`, `init_mm`: walk `pgd → pud → pmd → pte` from `init_mm.pgd` and flip a kernel code page's leaf PTE from R+X to R+W+X.
     - **Direct code pointer** (3):
       - `return_address`: overwrites a saved return address on the stack.
       - `thread`: overwrites the saved `ra` in `task_struct.thread`.
@@ -205,7 +207,7 @@ For each kernel, reboot the board and, in the GRUB menu, pick *Advanced options 
   ```
   Note that during the execution, nothing else should run on the board.
   When it is done, `~/lmbench/results/` has a new `sdpboard.<n>`.
-  After all the 13 kernels have run, `python3 ~/lmbench/results/result_parse.py` prints the latency and bandwidth of each primitive, one column per kernel.
+  After all the 13 kernels have run, `python3 ~/lmbench/results/result_parse.py` writes `~/lmbench/results/ae_results.log`: one block per LMbench figure, with the latency and bandwidth of each primitive, one column per kernel.
 
   *Optional: rebuild the kernels (~3 h).*
   To rebuild them instead of using the installed ones, run the following, install `performance-eval/kernels/<kernel>/` on the board, and then follow the steps above.
@@ -214,12 +216,12 @@ For each kernel, reboot the board and, in the GRUB menu, pick *Advanced options 
   ```
 
 - **Expected results.**
-The results should follow the trend of the LMbench overheads in Paper §8.3, but may show the variability noted above.
+The results should follow the trend of the LMbench overheads in Paper §8.3 (Figures 4, 6, and 8), but may show the variability noted above.
 
 #### 5.3 Additional Experiment
 ##### E3: Performance Evaluation on Phoronix benchmarks
 This experiment is not one of the proposed experiments for the artifact evaluation: Phoronix takes ~14 h per kernel, ~8 days for all 13 kernels, far beyond the one-day limit.
-We include it for completeness, as it reproduces Paper Figures 4, 6, and 8.
+We include it for completeness, as it reproduces Paper Figures 5, 7, and 9.
 
 - **Steps.**
 For each kernel, boot it as in E2 and run the benchmark, passing its GRUB entry's name after `Linux 6.6-`, e.g. for the vanilla Linux:

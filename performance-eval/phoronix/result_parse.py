@@ -40,11 +40,11 @@ KERNELS = {
 # order of their bars, after the baseline.
 BASELINE = "ori"
 FIGURES = [
-    ("Figure 4: protecting different program assets",
+    ("Figure 5: protecting different program assets",
      ["sd", "ret", "fp", "fpifp", "sdretfp"]),
-    ("Figure 6: comparing with xMP",
+    ("Figure 7: comparing with xMP",
      ["cred", "pt", "credpt"]),
-    ("Figure 8: comparing with SCS and KCFI",
+    ("Figure 9: comparing with SCS and KCFI",
      ["scs", "ret", "kcfi", "fp", "scskcfi", "retfp"]),
 ]
 
