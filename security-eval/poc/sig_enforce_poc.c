@@ -84,7 +84,7 @@ void overwrite_sig_enforce(int fd, unsigned long sig_enforce_addr) {
 
 // The module insmod'd below is an ordinary in-tree module built =m in .config.
 // Modules in the build tree are unsigned - CONFIG_MODULE_SIG_ALL only signs at
-// 'make modules_install' - so no out of tree build is needed; build.sh copies
+// 'make modules_install' - so no out of tree build is needed; run_vm.sh copies
 // msdos.ko here so its vermagic always matches the running kernel.
 #define TEST_MOD_PATH "msdos.ko"
 #define TEST_MOD_NAME "msdos"

@@ -8,9 +8,9 @@
 #
 #   cd ~/poc && ./poc_table.sh          # in the guest: run every PoC
 #   cd ~/poc && ./poc_table.sh cred fs  # in the guest: run just these
-#   cd sensitive-data-protect && ./run_poc_ori_kernel.py
-#                                           # on the host: boot both VMs, build
-#                                           # the PoCs and check every one of them
+#   security-eval/run_poc_ori_kernel.py     # on the host, in a session (README
+#                                           # E1): boot both VMs, build the PoCs
+#                                           # and check every one of them
 #
 # The addresses come from the vmlinux the running kernel was built from and are
 # valid only for that build (the boot cmdline carries "nokaslr", so link-time
@@ -19,7 +19,7 @@
 # across rebuilds on their own; the values below are the fallback for running
 # this file by hand in the guest, where there is no vmlinux to read.
 #
-#   cd sdp-linux-6.6
+#   cd src/kernel-ori
 #   nm vmlinux | grep -E ' (core_pattern|modprobe_path|init_fs|init_nsproxy|init_mm|kernel_map|thread_hijack_target|sig_enforce|selinux_state|aa_g_audit|sysctl_unprivileged_bpf_disabled|sysctl_io_uring_disabled|kptr_restrict|panic_on_oops|softirq_vec|vulnerable_function)$'
 #   pahole -C task_struct  vmlinux | grep -E 'cred;|fs;|files;|nsproxy;|mm;|thread;'
 #   pahole -C mm_struct    vmlinux | grep -E 'pgd;|start_brk;'
@@ -100,7 +100,7 @@ POC_OUT[fs]="[+] SUCCESS: task_struct.fs was redirected to init_fs"
 POC_RESTORE[fs]="[+] Restoring original task->fs"
 
 # The walk assumes Sv48, so the guest must boot with "no5lvl" (see
-# run_oriqemu_cuslinux.sh); "no4lvl" gives Sv39 and the walk aborts at level 1.
+# security-eval/run_vm.sh); "no4lvl" gives Sv39 and the walk aborts at level 1.
 POC_CMD[page_table]="./page_table_poc 0 $INIT_MM $MM_PGD_OFF $VULN_FUNC $KERNEL_MAP"
 POC_OUT[page_table]="[+] A kernel code page that was read-execute is now read-write-execute."
 POC_RESTORE[page_table]="[+] Restoring original PTE (R+X)..."
@@ -120,7 +120,7 @@ POC_DMESG[thread]="arb_rw: *** THREAD RA HIJACK SUCCESS! ***"
 POC_NOTE[thread]="the hijacked child dies; the cgroup_exit WARNING in dmesg is expected"
 
 # Needs msdos.ko, an unsigned module from THIS kernel build, in this directory;
-# build.sh copies it here.
+# run_vm.sh copies it here.
 POC_CMD[sig_enforce]="./sig_enforce_poc 0 $SIG_ENFORCE"
 POC_OUT[sig_enforce]="[+] Unsigned module load went from rejected to accepted"
 POC_RESTORE[sig_enforce]="[+] sig_enforce restored"
@@ -129,7 +129,7 @@ POC_NOTE[sig_enforce]="CONFIG_MODULE_UNLOAD is off, so msdos stays resident; reb
 POC_CMD[selinux_state]="PATH=/usr/sbin:/sbin:\$PATH ./selinux_state_poc 0 $SELINUX_ENFORCING"
 POC_OUT[selinux_state]="[+] Exploit succeeded! SELinux is in permissive mode now."
 POC_RESTORE[selinux_state]="[+] state_enforce restored"
-POC_NOTE[selinux_state]="needs the SELinux VM (run_oriqemu_cuslinux.sh --selinux); the default VM boots lsm=capability,apparmor"
+POC_NOTE[selinux_state]="needs the SELinux VM (run_vm.sh --selinux); the default VM boots lsm=capability,apparmor"
 
 POC_CMD[aa_g_audit]="./aa_g_audit_poc 0 $AA_G_AUDIT"
 POC_OUT[aa_g_audit]="Audit mode is AUDIT_QUIET now, which would quiet all messages"

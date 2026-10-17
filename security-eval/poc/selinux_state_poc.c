@@ -59,7 +59,7 @@ int read_enforce(void) {
 void require_selinux(void) {
   if (read_enforce() < 0) {
     printf("[-] SELinux is not active. Boot with "
-           "run_oriqemu_cuslinux.sh --selinux\n");
+           "run_vm.sh --selinux\n");
     exit(1);
   }
 

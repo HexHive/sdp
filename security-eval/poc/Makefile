@@ -17,8 +17,7 @@ ifeq ($(STATIC),1)
 LDFLAGS += -static
 endif
 
-# Every .c file in this directory is a self contained PoC; test/ is a separate
-# scratch area and is deliberately left out.
+# Every .c file in this directory is a self contained PoC.
 SRCS := $(wildcard *.c)
 BINS := $(SRCS:.c=)
 
